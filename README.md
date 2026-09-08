@@ -21,7 +21,7 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Dashboard and SQL Lab | Operational prototype | Three dashboard views, verified exception filters, and an interactive two-table SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Pending | Initial warm local pipeline baseline: 42.84 seconds; no scale claim yet |
-| Docker, Spark parity, hosted CI | Unverified | Definitions exist; execute and resolve failures before release |
+| Docker, Spark parity, hosted CI | Partial | GitHub CI run #4 passed in 38s; Docker and Spark/Java remain unverified |
 | Public portfolio release | Pending | Complete acceptance criteria and approve public visibility |
 
 ### Latest project session
