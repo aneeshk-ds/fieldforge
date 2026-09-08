@@ -1,5 +1,14 @@
 # ASTRA Worklog
 
+## 2026-09-08 — Source-aware exception investigation
+
+- **Learner evidence:** Aneesh correctly identified `ORD-0000028`, explained that delivery predates order placement, and requested order-placement and dispatch context before changing data. This demonstrates the intended no-guessing quarantine behavior. Follow-up inspection showed the contract has no dispatch timestamp, so the evidence request was refined to placement, dispatch, and delivery events with timezone, event IDs, and audit history.
+- **Implemented from the investigation:** Added selectable record evidence to the exception workbench, source-aware event timelines, separate `Not supplied` and `Missing` states, preserved raw values and provenance, and generated source-owner requests. For `ORD-0000028`, the UI exposes order placement at `2026-08-28T16:32:00`, dispatch as `Not supplied`, and delivery at `2026-08-27T16:32:00` without proposing an unsupported correction.
+- **Verification:** Added a sixth Python test proving the original invalid order is preserved, its delivery timestamp is earlier than placement, the dispatch field is identified as contract-absent, and the evidence request contains the required audit context. Targeted tests passed 2/2; Ruff and compilation passed. Streamlit AppTest exercised source and rule filters with no exceptions. Browser QA verified the exact two-record filter, selected evidence panel, event values, and visual hierarchy.
+- **Operational correction:** Browser QA exposed stale `test-run` metadata after pipeline files changed because the dashboard cache had no data-version input. Added a Parquet modification fingerprint so cached controls invalidate when durable outputs change, then rebuilt the normal pipeline: dbt PASS=25/WARN=0/ERROR=0 and reconciliation passed. A one-time hot-reload import error was resolved by restarting only the owned Streamlit process; a clean import rendered successfully.
+- **Handover:** Documented a five-step source-owner triage procedure and added this case to the ten-minute demo path.
+- **Next:** Audit fact-ineligible financial rows and identity coverage. Test-output isolation remains open even though the dashboard now detects refreshed data correctly.
+
 ## 2026-09-08 — Operational Data Quality Overview
 
 - **Implemented:** Rebuilt the primary Streamlit experience as a polished Northstar Commerce command center with summary-first control totals, acceptance and quarantine cards, source-level quality distribution, rule-failure diagnostics, a filterable exception workbench, business-health charts, and lineage/governance traceability. Added a repository-owned Streamlit theme and a reusable `dashboard/data_quality.py` data-access layer.

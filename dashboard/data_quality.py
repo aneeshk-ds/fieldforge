@@ -17,6 +17,21 @@ SOURCES = (
     ("tickets", "Support tickets"),
 )
 
+TIMELINE_FIELDS = {
+    "customers": (("created_at", "Customer created"),),
+    "subscriptions": (
+        ("start_date", "Subscription started"),
+        ("cancelled_at", "Subscription cancelled"),
+    ),
+    "invoices": (("paid_at", "Invoice paid"), ("refunded_at", "Refunded")),
+    "orders": (
+        ("ordered_at", "Order placed"),
+        ("dispatched_at", "Dispatched"),
+        ("delivered_at", "Delivered"),
+    ),
+    "tickets": (("opened_at", "Ticket opened"), ("resolved_at", "Ticket resolved")),
+}
+
 
 @dataclass(frozen=True)
 class QualitySnapshot:
@@ -30,6 +45,60 @@ class QualitySnapshot:
     reconciled: bool
     run_id: str
     ingested_at: str
+
+
+def load_quarantined_record(root: Path, source: str, source_row: int) -> dict[str, object]:
+    """Return one original quarantined row, including provenance and rejection metadata."""
+    valid_sources = {name for name, _ in SOURCES}
+    if source not in valid_sources:
+        raise ValueError(f"Unknown source: {source}")
+    path = root / "data" / "quarantine" / f"{source}.parquet"
+    if not path.exists():
+        raise FileNotFoundError(f"Missing pipeline output: {path}")
+    with duckdb.connect() as connection:
+        frame = connection.execute(
+            "SELECT * FROM read_parquet(?) WHERE _source_row_number = ?",
+            [str(path), source_row],
+        ).df()
+    if len(frame) != 1:
+        raise LookupError(f"Expected one {source} record at source row {source_row}; found {len(frame)}")
+    return frame.iloc[0].to_dict()
+
+
+def build_timeline(source: str, record: dict[str, object]) -> list[dict[str, str]]:
+    """Describe available, missing, and contract-absent events for a source record."""
+    events = []
+    for field, label in TIMELINE_FIELDS.get(source, ()):
+        if field not in record:
+            events.append({"field": field, "label": label, "value": "Not supplied", "state": "absent"})
+            continue
+        value = record[field]
+        if pd.isna(value) or str(value).strip() == "":
+            events.append({"field": field, "label": label, "value": "Missing", "state": "missing"})
+            continue
+        events.append({"field": field, "label": label, "value": str(value), "state": "available"})
+    return events
+
+
+def evidence_request(record: dict[str, object]) -> str:
+    """Give the smallest useful source-owner request for the failed rule."""
+    rule_codes = str(record.get("_rule_codes", ""))
+    record_key = str(record.get("_raw_key", "record"))
+    if "ORDER_DATES_INVALID" in rule_codes:
+        return (
+            f"Request the original placement, dispatch, and delivery events for {record_key}, "
+            "including timestamps, timezones, event IDs, and audit history. Do not correct either "
+            "date until the source sequence is confirmed."
+        )
+    if "TICKET_DATES_INVALID" in rule_codes or "SUBSCRIPTION_DATES_INVALID" in rule_codes:
+        return (
+            f"Request the complete source event history for {record_key}, including timestamps, "
+            "timezones, and the system audit trail before correcting chronology."
+        )
+    return (
+        f"Request the authoritative source record and audit history for {record_key}; confirm the "
+        "failed fields with the source owner before correction or release."
+    )
 
 
 def load_quality_snapshot(root: Path) -> QualitySnapshot:

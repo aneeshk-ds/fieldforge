@@ -17,8 +17,8 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
 | Identity resolution and analytical models | Prototype | 11 dbt models; audit unmatched revenue and dimensional completeness |
-| Automated quality checks | Initial local checks passed | 14 dbt tests, 5 Python tests; stronger independent controls still needed |
-| Dashboard and SQL Lab | Operational prototype | Three dashboard views, verified exception filters, and an interactive two-table SQL Lab |
+| Automated quality checks | Initial local checks passed | 14 dbt tests, 6 Python tests; stronger independent controls still needed |
+| Dashboard and SQL Lab | Operational prototype | Three views, source-aware exception investigation, and an interactive two-table SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Pending | Initial warm local pipeline baseline: 42.84 seconds; no scale claim yet |
 | Docker, Spark parity, hosted CI | Partial | GitHub CI run #4 passed in 38s; Docker and Spark/Java remain unverified |
@@ -26,7 +26,7 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ### Latest project session
 
-Built and visually inspected the first operational command center. It traces **10,163 received = 10,134 accepted + 29 quarantined (99.71% accepted)** across all six sources. The exception workbench was exercised from all records to Orders (6) to `ORDER_DATES_INVALID` (2), with exact record keys and reasons. Business health keeps USD, CAD, and GBP separate; governance exposes run metadata, evidence paths, and dashboard SQL.
+Built and visually inspected the operational command center. It traces **10,163 received = 10,134 accepted + 29 quarantined (99.71% accepted)** across all six sources. The exception workbench was exercised from all records to Orders (6) to `ORDER_DATES_INVALID` (2), then extended with selectable raw evidence, source-aware event timelines, contract-gap labels, and source-owner requests. Business health keeps USD, CAD, and GBP separate; governance exposes run metadata, evidence paths, and dashboard SQL.
 
 ### How progress stays current
 

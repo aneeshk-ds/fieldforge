@@ -6,11 +6,18 @@ import html
 from pathlib import Path
 
 import duckdb
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from dashboard.data_quality import QualitySnapshot, load_quality_snapshot
+from dashboard.data_quality import (
+    QualitySnapshot,
+    build_timeline,
+    evidence_request,
+    load_quality_snapshot,
+    load_quarantined_record,
+)
 from dashboard.queries import QUERIES
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,6 +57,18 @@ h1,h2,h3 { font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-se
 .ff-kicker { color:#8793a8; margin-top:-.6rem; margin-bottom:1rem; }
 .ff-verdict { border-left:3px solid #f6c85f; background:rgba(246,200,95,.07); padding:1rem 1.1rem;
  border-radius:0 14px 14px 0; color:#d9dfeb; margin:1rem 0 1.5rem; }
+.ff-investigation { margin-top:1.4rem; border:1px solid rgba(151,166,196,.16); border-radius:18px;
+ background:linear-gradient(145deg,rgba(20,25,38,.92),rgba(12,16,25,.78)); padding:1.25rem; }
+.ff-investigation-head { display:flex; justify-content:space-between; gap:1rem; align-items:center; margin-bottom:1rem; }
+.ff-investigation-status { color:#f6c85f; font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+.ff-timeline { display:grid; grid-template-columns:repeat(3,1fr); gap:.7rem; margin:.7rem 0 1.2rem; }
+.ff-event { border:1px solid rgba(151,166,196,.16); border-radius:13px; padding:.85rem; min-height:92px; }
+.ff-event--absent,.ff-event--missing { border-style:dashed; background:rgba(246,200,95,.04); }
+.ff-event-label { color:#8793a8; font-size:.69rem; letter-spacing:.08em; text-transform:uppercase; }
+.ff-event-value { color:#eef3fb; font-size:.9rem; margin-top:.4rem; overflow-wrap:anywhere; }
+.ff-event--absent .ff-event-value,.ff-event--missing .ff-event-value { color:#f6c85f; }
+.ff-evidence { border-left:3px solid #a78bfa; background:rgba(167,139,250,.07); padding:.85rem 1rem;
+ border-radius:0 12px 12px 0; color:#d9dfeb; font-size:.88rem; }
 .ff-lineage { display:grid; grid-template-columns:1fr auto 1fr auto 1fr auto 1fr; gap:.55rem; align-items:center; margin:1rem 0 2rem; }
 .ff-node { background:rgba(19,25,38,.8); border:1px solid rgba(151,166,196,.18); padding:.85rem .65rem; border-radius:12px; text-align:center; color:#cbd5e5; font-size:.77rem; }
 .ff-node strong { color:#fff; display:block; font-size:.88rem; margin-bottom:.15rem; }
@@ -59,7 +78,7 @@ h1,h2,h3 { font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-se
 [data-baseweb="tab-highlight"] { background-color:#4de2d3; }
 [data-testid="stDataFrame"] { border:1px solid rgba(151,166,196,.14); border-radius:14px; overflow:hidden; }
 div[data-testid="stSelectbox"] > div > div { background:rgba(18,24,36,.86); }
-@media(max-width:800px){.ff-lineage{grid-template-columns:1fr}.ff-arrow{transform:rotate(90deg)}.ff-title{font-size:2.8rem}}
+@media(max-width:800px){.ff-lineage,.ff-timeline{grid-template-columns:1fr}.ff-arrow{transform:rotate(90deg)}.ff-title{font-size:2.8rem}}
 </style>
 """,
     unsafe_allow_html=True,
@@ -67,8 +86,19 @@ div[data-testid="stSelectbox"] > div > div { background:rgba(18,24,36,.86); }
 
 
 @st.cache_data(show_spinner=False)
-def quality_data() -> QualitySnapshot:
+def quality_data(fingerprint: tuple[int, ...]) -> QualitySnapshot:
+    del fingerprint
     return load_quality_snapshot(ROOT)
+
+
+def pipeline_fingerprint() -> tuple[int, ...]:
+    """Invalidate cached controls whenever a durable pipeline output changes."""
+    paths = [
+        ROOT / "data" / layer / f"{source}.parquet"
+        for layer in ("bronze", "silver", "quarantine")
+        for source in ("customers", "subscriptions", "invoices", "orders", "order_items", "tickets")
+    ]
+    return tuple(path.stat().st_mtime_ns if path.exists() else 0 for path in paths)
 
 
 def card(label: str, value: str, note: str, tone: str = "") -> None:
@@ -185,6 +215,55 @@ def data_quality_page(snapshot: QualitySnapshot) -> None:
             },
         )
 
+    if filtered.empty:
+        st.info("No quarantined records match these filters.")
+        return
+
+    selected_index = st.selectbox(
+        "Inspect record",
+        filtered.index.tolist(),
+        format_func=lambda index: (
+            f"{filtered.loc[index, 'record_key']} · {filtered.loc[index, 'source_label']} · "
+            f"raw row {int(filtered.loc[index, 'source_row'])}"
+        ),
+    )
+    selected = filtered.loc[selected_index]
+    raw_record = load_quarantined_record(
+        ROOT, str(selected["source"]), int(selected["source_row"])
+    )
+    timeline = build_timeline(str(selected["source"]), raw_record)
+    event_cards = "".join(
+        '<div class="ff-event ff-event--{state}"><div class="ff-event-label">{label}</div>'
+        '<div class="ff-event-value">{value}</div></div>'.format(
+            state=html.escape(event["state"]),
+            label=html.escape(event["label"]),
+            value=html.escape(event["value"]),
+        )
+        for event in timeline
+    )
+    st.markdown(
+        '<div class="ff-investigation"><div class="ff-investigation-head">'
+        f'<strong>{html.escape(str(selected["record_key"]))}</strong>'
+        '<span class="ff-investigation-status">Needs source-owner evidence</span></div>'
+        f'<div class="ff-timeline">{event_cards}</div>'
+        f'<div class="ff-evidence"><strong>Recommended request ·</strong> '
+        f'{html.escape(evidence_request(raw_record))}</div></div>',
+        unsafe_allow_html=True,
+    )
+    visible_record = {
+        key: ("—" if pd.isna(value) or str(value).strip() == "" else str(value))
+        for key, value in raw_record.items()
+        if key not in {"_row_checksum", "_planted_error"}
+    }
+    with st.expander("View preserved source record and provenance"):
+        st.dataframe(
+            pd.DataFrame(
+                {"Field": list(visible_record), "Preserved value": list(visible_record.values())}
+            ),
+            hide_index=True,
+            width="stretch",
+        )
+
 
 def business_page() -> None:
     if not DB.exists():
@@ -267,7 +346,7 @@ st.markdown(
 )
 
 try:
-    snapshot = quality_data()
+    snapshot = quality_data(pipeline_fingerprint())
 except FileNotFoundError as error:
     st.error(f"{error}. Run `make pipeline` from the repository root, then refresh this page.")
     st.stop()
