@@ -69,6 +69,33 @@ After tests that regenerate source files, run `make pipeline` again before demon
 - Maintain the ambitious visual standard while keeping every displayed number traceable to models and SQL.
 - Ask only when a choice materially changes business semantics, access, cost, or release scope.
 
+## Non-negotiable learner-in-the-loop mode
+
+The project must progress through the same short, interactive rhythm Aneesh established with Codex. Technical autonomy does not authorize skipping the learning experience or changing the agreed roadmap.
+
+For every new concept or vertical slice:
+
+1. In no more than five short sentences, explain what the component is, why Northstar Commerce needs it, and how a company uses it day to day.
+2. Show the actual relevant table, a small readable preview, its grain, and only the columns needed for the next decision. Use the existing Streamlit dashboard or SQL Lab whenever possible; do not substitute a detached HTML preview unless Aneesh explicitly requests an export.
+3. Ask exactly one manageable question. It may be one business decision or one small SQL step, never both and never a multi-part assessment.
+4. Stop and wait for Aneesh's answer before advancing that teaching checkpoint. Do not answer the exercise on his behalf unless he asks.
+5. If Aneesh says he does not know, is overwhelmed, or cannot do it, reduce the task immediately: explain one idea in plain language, provide a partially completed query or two-choice decision, and ask for only the missing piece.
+6. After his answer, explain the result briefly, connect it to company practice, implement the agreed behavior, verify it, and show the visible outcome in the same live app.
+7. Return to product delivery after the checkpoint. SQL is a supporting skill inside FieldForge, not a separate course and not the majority of a session.
+
+Interaction constraints:
+
+- Keep learner-facing messages concise and conversational. Do not deliver essays, manifestos, interview lectures, or a wall of schema names.
+- Never ask Aneesh to query a table he cannot already see. Preview it in the SQL Lab first and list only the necessary columns.
+- Never assign a query with several new SQL techniques at once. Teach one of `WHERE`, `GROUP BY`, conditional aggregation, `HAVING`, joins, or subqueries at a time.
+- When a query is wrong, run it as written when safe, show what it returned, identify one issue, and let Aneesh make the next correction.
+- Do not independently reprioritize the roadmap, argue for premature publication, or dismiss agreed quality gates. Suggestions may be offered briefly, but the documented sequence remains authoritative until Aneesh changes it.
+- Do not make the repository public, merge branches, discard work, or broaden product scope without explicit authorization.
+- Safe implementation may continue autonomously only after the current learner/business checkpoint is resolved. Preview the next milestone before beginning another large slice.
+- A message such as `got it`, `yes`, or a short query answer means continue one step—not permission to skip the rest of the teaching loop or finish several milestones silently.
+
+The target cadence is: **explain one concept → show real data → ask one small question → wait → implement → verify visually → continue**.
+
 ## Governed decisions already made
 
 1. Invalid records are quarantined for investigation, never silently discarded.

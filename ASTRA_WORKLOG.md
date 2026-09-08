@@ -1,5 +1,12 @@
 # ASTRA Worklog
 
+## 2026-09-08 — Cross-agent teaching protocol correction
+
+- **User feedback:** Claude preserved technical continuity but did not preserve the established collaboration style. It advanced through a large modelling slice, challenged the agreed priority order, presented a dense multi-part SQL exercise before making the data easy to inspect, and created a detached HTML preview only after Aneesh requested visibility.
+- **Decision:** The continuity contract now requires a learner-in-the-loop cadence: one short concept explanation, an actual preview in the existing dashboard or SQL Lab, one manageable question, a wait for Aneesh's response, implementation, verification, and a visible outcome. `got it` advances only one step. SQL remains subordinate to delivering FieldForge.
+- **Safety:** Claude's committed dimensional work at `01f9c4c` and its in-progress test-isolation changes were preserved. No engineering files were merged, reverted, or modified during this correction.
+- **Next:** Resume with a small visual review of the order-line integrity model before accepting its governed semantics, then review the isolated-test change as a separate checkpoint.
+
 ## 2026-09-08 — Dimensional coverage, declared grains, and order-line integrity
 
 - **Agent:** Claude, working from `CLAUDE.md` sequence item 2 after verifying item 1 locally. Branch `claudework` off `main` at `6ba3c96`.
