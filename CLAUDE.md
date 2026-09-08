@@ -90,3 +90,22 @@ After tests that regenerate source files, run `make pipeline` again before demon
 ## Handoff discipline
 
 Start from the first unfinished item supported by evidence, not from a claim in conversation. Inspect the current diff and generated artifacts, run the smallest relevant checks, then run `make all` and hosted CI before marking a milestone verified. Keep this file current whenever the resume procedure or major remaining-work list changes.
+
+## Bidirectional agent-switch protocol
+
+This file is shared continuity state, not a one-time handoff to Claude. Before Claude hands the project back to Codex—or before any development agent stops because of usage limits—it must:
+
+1. Update `README.md` with the current milestone, honest completion status, and next action.
+2. Add a dated entry to `ASTRA_WORKLOG.md` covering work performed, decisions, errors, verification evidence, and unresolved blockers.
+3. Update this file if architecture, commands, governed decisions, learning state, or the next implementation sequence changed.
+4. Run the strongest safe local verification available and record the exact result. Never describe an unexecuted check as passing.
+5. Commit and push the checkpoint to the private `main` branch when credentials and repository state allow it. If not, leave the working tree intact and document every uncommitted file and why it was not pushed.
+6. Report the final commit SHA, branch, synchronization state, tests executed, failures, open processes, and the first unfinished task.
+
+Use this prompt when returning to Codex:
+
+> Resume FieldForge in `/Users/aneeshkumar/Documents/ChatGPT/FieldForge`. Read `CLAUDE.md`, `README.md`, and the newest entries in `ASTRA_WORKLOG.md`. Inspect Git status and recent commits, verify rather than assume the previous agent's claims, preserve existing work, and continue from the first unfinished item. Keep teaching Aneesh through the project and maintain the same bidirectional handoff before stopping.
+
+Use this prompt when returning to Claude:
+
+> Resume FieldForge in `/Users/aneeshkumar/Documents/ChatGPT/FieldForge`. Read `CLAUDE.md`, `README.md`, and the newest entries in `ASTRA_WORKLOG.md`. Inspect Git status and recent commits, verify rather than assume the previous agent's claims, preserve existing work, and continue from the first unfinished item. Keep teaching Aneesh through the project and maintain the same bidirectional handoff before stopping.
