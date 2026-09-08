@@ -1,5 +1,15 @@
 # ASTRA Worklog
 
+## 2026-09-08 — Operational Data Quality Overview
+
+- **Implemented:** Rebuilt the primary Streamlit experience as a polished Northstar Commerce command center with summary-first control totals, acceptance and quarantine cards, source-level quality distribution, rule-failure diagnostics, a filterable exception workbench, business-health charts, and lineage/governance traceability. Added a repository-owned Streamlit theme and a reusable `dashboard/data_quality.py` data-access layer.
+- **Data semantics:** The dashboard reads durable bronze, silver, and quarantine Parquet outputs rather than duplicated display constants. It distinguishes **29 quarantined records** from **31 rule failures** because a single invoice can violate more than one rule. Multi-rule codes and reasons are exploded together so their pairing remains correct. Revenue is still separated by transaction currency; no unapproved FX conversion was introduced.
+- **Verification:** Reconciled 10,163 received records to 10,134 accepted plus 29 quarantined across all six sources. Ruff and Python compilation passed. Streamlit AppTest loaded all three views with no exceptions and found the expected hero totals. Browser QA verified the visual layout and exercised filters from 29 total exceptions to 6 Orders exceptions and then 2 `ORDER_DATES_INVALID` records. Business-health and governance tabs rendered their expected charts and metadata.
+- **Automated evidence:** Added a fifth Python test that traces dashboard totals to current pipeline outputs, checks per-source reconciliation, verifies every exception has a key/rule/reason, and acknowledges that rule failures may exceed rejected-record count.
+- **Learning handoff:** Next learner task is operational, not an isolated SQL drill: investigate one invalid-date order in the exception workbench, identify its exact record key and failure reason, and state what evidence should be requested from the storefront owner before correction.
+- **Errors corrected:** Early UI test code incorrectly assumed Plotly elements had a dedicated AppTest accessor; the dashboard itself was not at fault. Development syntax/patch issues were corrected before lint and application verification.
+- **Next:** Audit fact-ineligible financial rows and identity coverage, then complete dimensional models and expand the executive narrative. Docker, Spark/Java, clean-clone, hosted CI, and scaled benchmarks remain release blockers.
+
 ## 2026-09-08 — Private GitHub publication preparation
 
 - User explicitly authorized private GitHub publication with a maintained progress README.

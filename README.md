@@ -10,23 +10,23 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ## Progress — updated 8 September 2026
 
-**Current stage:** working local prototype and guided project learning. **Next milestone:** a polished Data Quality Overview showing received, accepted, and quarantined records, with rejection drill-downs.
+**Current stage:** operational data-quality command center and guided project learning. **Next milestone:** audit identity-excluded financial records and complete the dimensional model before expanding the executive experience.
 
 | Milestone | Status | Evidence / next action |
 |---|---|---|
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
 | Identity resolution and analytical models | Prototype | 11 dbt models; audit unmatched revenue and dimensional completeness |
-| Automated quality checks | Initial local checks passed | 14 dbt tests, 4 Python tests; stronger independent controls still needed |
-| Dashboard and SQL Lab | Prototype | Four dashboard queries checked; interactive SQL Lab supports two order tables |
-| Data Quality Overview and visual design | Next | Build an operational view, then verify it together |
+| Automated quality checks | Initial local checks passed | 14 dbt tests, 5 Python tests; stronger independent controls still needed |
+| Dashboard and SQL Lab | Operational prototype | Three dashboard views, verified exception filters, and an interactive two-table SQL Lab |
+| Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Pending | Initial warm local pipeline baseline: 42.84 seconds; no scale claim yet |
 | Docker, Spark parity, hosted CI | Unverified | Definitions exist; execute and resolve failures before release |
 | Public portfolio release | Pending | Complete acceptance criteria and approve public visibility |
 
 ### Latest project session
 
-Traced a customer order through normalization, identity matching, quarantine, and reporting. Queried actual order data: **1,500 incoming = 1,494 accepted + 6 quarantined (0.4%)**. Practised counts, grouping, filters, and aliases; scalar subqueries were guided and need reinforcement through project work.
+Built and visually inspected the first operational command center. It traces **10,163 received = 10,134 accepted + 29 quarantined (99.71% accepted)** across all six sources. The exception workbench was exercised from all records to Orders (6) to `ORDER_DATES_INVALID` (2), with exact record keys and reasons. Business health keeps USD, CAD, and GBP separate; governance exposes run metadata, evidence paths, and dashboard SQL.
 
 ### How progress stays current
 
