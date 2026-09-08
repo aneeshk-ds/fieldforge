@@ -1,18 +1,118 @@
 version: 2
 models:
+  - name: stg_customers
+    description: "Grain: one row per accepted CRM customer record."
+    columns:
+      - name: crm_customer_id
+        tests: [unique, not_null]
+      - name: normalized_email
+        tests: [not_null]
+  - name: stg_subscriptions
+    description: "Grain: one row per accepted subscription."
+    columns:
+      - name: subscription_id
+        tests: [unique, not_null]
+      - name: plan_code
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_plan')
+                field: plan_code
+  - name: stg_invoices
+    description: "Grain: one row per accepted invoice."
+    columns:
+      - name: invoice_id
+        tests: [unique, not_null]
+      - name: paid_at
+        tests: [not_null]
+  - name: stg_orders
+    description: "Grain: one row per accepted order header."
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: currency
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [USD, CAD, GBP]
+  - name: stg_order_items
+    description: "Grain: one row per accepted order line (order_id, line_number). Uniqueness is enforced by assert_order_item_grain_unique."
+    columns:
+      - name: order_id
+        tests: [not_null]
+      - name: line_number
+        tests: [not_null]
+      - name: quantity
+        tests: [not_null]
+      - name: extended_amount_cents
+        tests: [not_null]
+  - name: stg_quarantined_order_items
+    description: "Grain: one row per rejected order line, retained with rule code and reason."
+    columns:
+      - name: _rule_codes
+        tests: [not_null]
+      - name: _rejection_reasons
+        tests: [not_null]
+  - name: stg_tickets
+    description: "Grain: one row per accepted support ticket."
+    columns:
+      - name: ticket_id
+        tests: [unique, not_null]
+  - name: stg_identity_crosswalk
+    description: "Grain: one row per source system and source identity. customer_sk is null when identity is unresolved."
+    columns:
+      - name: source_system
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [customers, subscriptions, orders, tickets]
+      - name: match_method
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [normalized_email_exact, unmatched]
+      - name: confidence
+        tests: [not_null]
   - name: dim_customer
-    description: One row per accepted canonical CRM customer.
+    description: "Grain: one row per accepted canonical CRM customer, keyed by customer_sk."
     columns:
       - name: customer_sk
         tests: [unique, not_null]
       - name: crm_customer_id
         tests: [unique, not_null]
+      - name: normalized_email
+        tests: [not_null]
   - name: dim_plan
+    description: "Grain: one row per governed subscription plan_code. Reference dimension, not source-derived."
     columns:
       - name: plan_code
         tests: [unique, not_null]
+      - name: list_price_cents
+        tests: [not_null]
+  - name: dim_product
+    description: "Grain: one row per product_id observed on an accepted order line. Derived because no product master extract exists."
+    columns:
+      - name: product_sk
+        tests: [unique, not_null]
+      - name: product_id
+        tests: [unique, not_null]
+      - name: observed_order_lines
+        tests: [not_null]
+  - name: dim_date
+    description: "Grain: one row per calendar date in the observed reporting window, derived from accepted source events."
+    columns:
+      - name: date_key
+        tests: [unique, not_null]
+      - name: calendar_month
+        tests: [not_null]
+      - name: month_end_date
+        tests: [not_null]
   - name: fct_revenue
-    description: Recognized subscription and one-off revenue at transaction grain.
+    description: "Grain: one row per recognized revenue transaction (invoice or non-cancelled order), keyed by revenue_id."
     columns:
       - name: revenue_id
         tests: [unique, not_null]
@@ -22,6 +122,25 @@ models:
               arguments:
                 to: ref('dim_customer')
                 field: customer_sk
+      - name: recognized_date
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: revenue_type
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [subscription, one_off]
+      - name: currency
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [USD, CAD, GBP]
       - name: attribution_status
         tests:
           - not_null
@@ -30,15 +149,98 @@ models:
                 values: [attributed, unattributed]
       - name: net_revenue_cents
         tests: [not_null]
+  - name: fct_order_item
+    description: "Grain: one row per accepted order line (order_id, line_number), keyed by order_item_sk. Lines whose parent order was quarantined are retained with order_link_status 'order_not_accepted'."
+    columns:
+      - name: order_item_sk
+        tests: [unique, not_null]
+      - name: order_id
+        tests: [not_null]
+      - name: line_number
+        tests: [not_null]
+      - name: product_sk
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_sk
+      - name: customer_sk
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_sk
+      - name: order_date_key
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: order_link_status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [linked, order_not_accepted]
+      - name: attribution_status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [attributed, unattributed]
+      - name: quantity
+        tests: [not_null]
+      - name: extended_amount_cents
+        tests: [not_null]
   - name: mart_monthly_kpis
+    description: "Grain: one row per calendar_month, revenue_type and currency. Uniqueness is enforced by assert_monthly_kpis_grain_unique."
     columns:
       - name: calendar_month
+        tests: [not_null]
+      - name: revenue_type
+        tests: [not_null]
+      - name: currency
         tests: [not_null]
       - name: attributed_net_revenue_cents
         tests: [not_null]
       - name: unattributed_net_revenue_cents
         tests: [not_null]
   - name: mart_subscription_health
+    description: "Grain: one row per calendar_month and plan_code. The month spine comes from dim_date."
     columns:
+      - name: calendar_month
+        tests: [not_null]
+      - name: plan_code
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_plan')
+                field: plan_code
       - name: active_subscribers
         tests: [not_null]
+  - name: mart_support_health
+    description: "Grain: one row per calendar_month and support category."
+    columns:
+      - name: calendar_month
+        tests: [not_null]
+      - name: category
+        tests: [not_null]
+      - name: ticket_count
+        tests: [not_null]
+  - name: mart_order_line_integrity
+    description: "Grain: one row per accepted order. States whether accepted lines reconcile to the order header amount and whether any difference is explained by a quarantined line."
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: header_amount_cents
+        tests: [not_null]
+      - name: accepted_line_amount_cents
+        tests: [not_null]
+      - name: line_coverage_status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [complete, incomplete_quarantined_line, incomplete_unexplained_line]

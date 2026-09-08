@@ -1,3 +1,4 @@
+-- Grain: one row per accepted canonical CRM customer (customer_sk).
 select
   substr(sha256('customer|' || normalized_email), 1, 16) as customer_sk,
   crm_customer_id,

@@ -7,4 +7,4 @@ select
   country,
   cast(created_at as timestamp) as created_at,
   _run_id
-from read_parquet('data/silver/customers.parquet')
+from {{ source('silver', 'customers') }}

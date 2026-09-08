@@ -1,3 +1,5 @@
+-- Grain: one row per calendar_month, revenue_type and currency.
+-- Monetary columns are never summed across currencies.
 select
   date_trunc('month', recognized_date)::date as calendar_month,
   revenue_type,

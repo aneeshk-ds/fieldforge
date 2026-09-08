@@ -1,24 +1,22 @@
 version: 2
 sources:
   - name: silver
+    description: Validated, standardized records that passed every source contract rule.
     meta:
+      external_location: "data/silver/{name}.parquet"
       owner: data-platform
     tables:
       - name: customers
-        external:
-          location: "data/silver/customers.parquet"
       - name: subscriptions
-        external:
-          location: "data/silver/subscriptions.parquet"
       - name: invoices
-        external:
-          location: "data/silver/invoices.parquet"
       - name: orders
-        external:
-          location: "data/silver/orders.parquet"
+      - name: order_items
       - name: tickets
-        external:
-          location: "data/silver/tickets.parquet"
       - name: identity_crosswalk
-        external:
-          location: "data/silver/identity_crosswalk.parquet"
+  - name: quarantine
+    description: Records rejected by a source contract rule, retained with rule code and reason.
+    meta:
+      external_location: "data/quarantine/{name}.parquet"
+      owner: data-platform
+    tables:
+      - name: order_items

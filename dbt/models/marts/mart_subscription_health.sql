@@ -1,5 +1,7 @@
+-- Grain: one row per calendar month and plan_code.
+-- The month spine comes from dim_date, so the reporting window follows the data.
 with months as (
-  select unnest(generate_series(date '2025-01-01', date '2026-08-01', interval 1 month))::date calendar_month
+  select distinct calendar_month from {{ ref('dim_date') }}
 ), base as (
   select m.calendar_month, s.plan_code,
     count(*) filter (where s.start_date <= last_day(m.calendar_month) and (s.cancelled_at is null or s.cancelled_at > last_day(m.calendar_month))) active_subscribers,

@@ -43,6 +43,11 @@ def reconcile() -> None:
             "attribution_partition": con.execute("select count(*)=0 from mart_monthly_kpis where net_revenue_cents <> attributed_net_revenue_cents + unattributed_net_revenue_cents or transactions <> attributed_transactions + unattributed_transactions").fetchone()[0],
             "attributed_customer_fk": con.execute("select count(*)=0 from fct_revenue f left join dim_customer d using(customer_sk) where f.attribution_status='attributed' and d.customer_sk is null").fetchone()[0],
             "unattributed_customer_null": con.execute("select count(*)=0 from fct_revenue where attribution_status='unattributed' and customer_sk is not null").fetchone()[0],
+            "order_item_row_parity": con.execute("select (select count(*) from fct_order_item) = (select count(*) from stg_order_items)").fetchone()[0],
+            "order_item_grain_unique": con.execute("select count(*)=0 from (select order_id, line_number from fct_order_item group by 1,2 having count(*)>1)").fetchone()[0],
+            "order_item_product_fk": con.execute("select count(*)=0 from fct_order_item f left join dim_product p using(product_sk) where p.product_sk is null").fetchone()[0],
+            "order_line_variance_explained": con.execute("select (select count(*) from mart_order_line_integrity where line_coverage_status='incomplete_unexplained_line') <= (select count(*) from stg_quarantined_order_items where _rule_codes like '%ORDER_ITEM_ORPHAN%')").fetchone()[0],
+            "revenue_date_dimension_fk": con.execute("select count(*)=0 from fct_revenue f left join dim_date d on d.date_key = f.recognized_date where d.date_key is null").fetchone()[0],
         }
     write_json(ARTIFACTS / "reconciliation.json", checks)
     if not all(checks.values()):

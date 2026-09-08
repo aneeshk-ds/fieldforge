@@ -10,14 +10,14 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ## Progress — updated 8 September 2026
 
-**Current stage:** operational data-quality command center with governed revenue attribution. **Next milestone:** complete dimensional coverage and isolate generated test data before expanding the executive experience.
+**Current stage:** complete dimensional coverage with declared grains, key tests, and order-line integrity reporting. **Next milestone:** isolate generated test outputs, then audit synthetic chronology before expanding the executive experience.
 
 | Milestone | Status | Evidence / next action |
 |---|---|---|
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
-| Identity resolution and analytical models | Attribution audited | 11 dbt models; unattributed revenue retained; dimensional completeness remains open |
-| Automated quality checks | Local checks passed | 20 dbt tests, 8 Python tests, 5 dashboard query checks; test isolation still needed |
+| Identity resolution and analytical models | Dimensional coverage complete | 18 dbt models; every source modelled; grains declared on every model; unattributed revenue retained |
+| Automated quality checks | Local checks passed | 100 dbt tests, 12 Python tests, 12 reconciliation controls, 5 dashboard query checks; test isolation still needed |
 | Dashboard and SQL Lab | Operational prototype | Three views, revenue coverage, source-aware investigation, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Pending | Initial warm local pipeline baseline: 42.84 seconds; no scale claim yet |
@@ -26,7 +26,7 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ### Latest project session
 
-Converted the identity decision into governed financial models. All **5,646 valid revenue transactions** now remain in company totals; 5,525 are customer-attributed and 121 are explicitly unattributed with null customer keys. The dashboard reports coverage independently by currency: CAD 98.08%, GBP 100%, and USD 96.71%. No cross-currency total or invented identity is introduced.
+Closed the dimensional gap. `order_items` was generated, validated, and quarantined but never modelled; it now flows through `stg_order_items` into `fct_order_item` at order-line grain, joined to a derived `dim_product` and a data-driven `dim_date`. Every model declares its grain, staging models read governed dbt sources instead of raw file paths, and `mart_order_line_integrity` publishes the consequence of quarantining a line: **3 of 1,494 accepted orders** no longer reconcile to their line totals, and **8 of 3,021 accepted lines** belong to a quarantined order and are retained with `order_link_status = 'order_not_accepted'` rather than dropped. Prior marts are unchanged: 5,646 revenue transactions and 31,597,300 net cents, with monthly KPI, subscription, and support outputs identical to the previous run.
 
 ### How progress stays current
 
@@ -35,9 +35,10 @@ At each completed project milestone, update this section's date, status, evidenc
 ### Before calling this complete
 
 - [x] Account for financial records excluded by unresolved identities.
-- [ ] Audit synthetic chronology, KPI semantics, and independent reconciliation.
+- [x] Complete dimensional models with declared grains and key tests.
 - [ ] Isolate test data and lock the full dependency environment.
-- [ ] Complete dimensional models and validate dashboard values and visuals.
+- [ ] Audit synthetic chronology, KPI semantics, and independent reconciliation.
+- [ ] Validate dashboard values and visuals against the completed models.
 - [ ] Verify Docker, Spark parity, and clean-clone setup; keep hosted CI green.
 - [ ] Publish reproducible scale benchmarks and finish customer handover.
 

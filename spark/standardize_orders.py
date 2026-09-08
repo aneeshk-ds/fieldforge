@@ -1,7 +1,9 @@
 """Optional Spark parity slice for accepted silver orders."""
+
 from pathlib import Path
 
-from pyspark.sql import SparkSession, functions as F
+from pyspark.sql import SparkSession
+from pyspark.sql import functions as F
 
 root = Path(__file__).resolve().parents[1]
 spark = SparkSession.builder.master("local[*]").appName("fieldforge-orders").getOrCreate()

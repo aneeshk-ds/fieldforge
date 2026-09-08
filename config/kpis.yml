@@ -47,3 +47,27 @@ kpis:
     model: mart_subscription_health
     column: logo_churn_rate
     caveat: Null when the prior-month active denominator is zero.
+  order_line_coverage:
+    label: Order line coverage status
+    owner: Data Operations
+    grain: order_id
+    definition: Classification of each accepted order as complete, incomplete with a quarantined line on the same order, or incomplete without order-scoped quarantine evidence.
+    model: mart_order_line_integrity
+    column: line_coverage_status
+    caveat: An incomplete order is reported, never repaired. A rejected line that lost its parent order id cannot be attributed back to that order.
+  order_line_variance:
+    label: Order line variance
+    owner: Data Operations
+    grain: order_id
+    definition: Order header amount less the sum of accepted order line extended amounts, in the order currency.
+    model: mart_order_line_integrity
+    column: line_variance_cents
+    caveat: Never negative, because accepted lines can be missing but are never invented. Do not aggregate across currencies.
+  accepted_order_lines:
+    label: Accepted order lines
+    owner: Data Operations
+    grain: order_id, line_number
+    definition: Count of accepted order lines in fct_order_item, including lines whose parent order was quarantined.
+    model: fct_order_item
+    column: order_item_sk
+    caveat: Lines with order_link_status 'order_not_accepted' have no order date, status, currency, or customer key.

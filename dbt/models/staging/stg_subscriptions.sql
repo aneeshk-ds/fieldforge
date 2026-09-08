@@ -8,4 +8,4 @@ select
   try_cast(nullif(cancelled_at, '') as date) as cancelled_at,
   cast(monthly_price_cents as bigint) as monthly_price_cents,
   currency
-from read_parquet('data/silver/subscriptions.parquet')
+from {{ source('silver', 'subscriptions') }}

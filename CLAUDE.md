@@ -28,7 +28,10 @@ Preserve unrelated user changes. Use the existing environment when present; othe
 - Bronze/silver/gold local lakehouse on Parquet and DuckDB
 - Explicit rule-coded quarantine with no silent record loss
 - Deterministic exact-email identity crosswalk with unmatched identities retained
-- dbt dimensions, revenue fact, KPI marts, tests, reconciliation, and evidence artifacts
+- dbt sources, dimensions, revenue and order-line facts, KPI marts, tests, reconciliation, and evidence artifacts
+- 18 dbt models with grain declared on every model, 100 dbt tests, and 12 reconciliation controls
+- Order lines whose parent order was quarantined are retained with `order_link_status = 'order_not_accepted'`
+- `mart_order_line_integrity` publishes orders whose accepted lines no longer reconcile to the header amount
 - Streamlit/Plotly command center plus a guided DuckDB SQL Lab
 - Source-aware exception workbench with raw evidence, event timeline, and source-owner request
 - Company revenue includes valid unattributed transactions; customer metrics use attributed revenue only
@@ -77,15 +80,24 @@ After tests that regenerate source files, run `make pipeline` again before demon
 
 ## Next implementation sequence
 
-1. Confirm the current branch and hosted CI are green.
-2. Complete dimensional coverage and explicitly declare fact grains and key tests.
-3. Isolate Python test outputs so tests never replace demo run metadata.
-4. Audit and correct synthetic customer/order chronology.
-5. Produce larger seeded scale profiles and reproducible benchmarks without overstating laptop results.
-6. Verify Docker on a Docker-capable host and PySpark parity on a Java-capable host.
-7. Lock the complete dependency environment and execute a clean-clone verification.
-8. Finish customer handover, troubleshooting, portfolio story, screenshots, and demo rehearsal.
-9. Request explicit user approval before changing the private repository to public.
+Items 1 and 2 are complete. Item 1 was confirmed on 2026-09-08 (`main` clean at `6ba3c96`, synchronized with origin). Item 2 was delivered on branch `claudework`; see the newest `ASTRA_WORKLOG.md` entry for evidence.
+
+1. Isolate Python test outputs so tests never replace demo run metadata. Running `pytest` still rewrites `data/source` with `test-run` metadata, so `make pipeline` must be re-run before any demonstration.
+2. Audit and correct synthetic customer/order chronology.
+3. Validate dashboard values and visuals against the completed dimensional models, and migrate Streamlit `use_container_width` to `width` before its removal date.
+4. Produce larger seeded scale profiles and reproducible benchmarks without overstating laptop results.
+5. Verify Docker on a Docker-capable host and PySpark parity on a Java-capable host.
+6. Lock the complete dependency environment and execute a clean-clone verification.
+7. Finish customer handover, troubleshooting, portfolio story, screenshots, and demo rehearsal.
+8. Request explicit user approval before changing the private repository to public.
+
+## Branch convention
+
+Work delivered by Claude lands on a `claudework` branch so Codex can identify it, review it, and merge or continue from it. `main` is only advanced by Aneesh or by an agent he has explicitly asked to commit there.
+
+## Environment note
+
+The `.venv` in this repository is macOS-only. An agent running in a Linux sandbox cannot use it and must install a separate environment outside the repository rather than replacing `.venv`. Verification produced on Linux is real but is not proof of macOS parity; say which platform produced any evidence recorded.
 
 ## Handoff discipline
 
