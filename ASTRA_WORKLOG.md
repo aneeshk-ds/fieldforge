@@ -1,5 +1,15 @@
 # ASTRA Worklog
 
+## 2026-09-08 — Chronology audit findings and governed lifecycle decision
+
+- **Agent:** Claude, branch `claudework` at `04566e5` on the SSD workspace. Documentation-only checkpoint; no code was changed.
+- **Audit executed on the current demo run (read-only against `data/fieldforge.duckdb`):** of 473 accepted customers who have at least one accepted order, 190 (40.2%) have a CRM `created_at` later than their own first order date. The worst cases are 347, 340, 339, 338 and 331 days late (`CRM-000070`, `CRM-000163`, `CRM-000188`, `CRM-000134`, `CRM-000359`). Of 398 accepted customers with a subscription, 202 have `created_at` later than their first subscription start date.
+- **Cause:** `fieldforge/generate.py` draws customer `created_at` independently of the events it later generates. Customers get `datetime(2025,1,1) + up to 600 days`, orders are drawn from `2025-09-01 + up to 365 days`, and subscription starts from `2025-01-01 + up to 560 days`, so nothing forces the customer record to precede its own activity.
+- **Governed decision (Aneesh, 2026-09-08):** `created_at` is the customer's canonical first-seen date. It must fall on or before the earliest subscription, order, or support event associated with that customer. Where the two disagree, `created_at` is the value that is wrong, not the event date.
+- **Exact next implementation task:** (1) In `fieldforge/generate.py`, generate subscriptions, orders and tickets first, then derive each customer's `created_at` as a date on or before that customer's earliest generated event, keeping the draw seeded so the same seed still produces byte-identical files. Customers with no events keep an independently drawn date. (2) Add a dbt singular test asserting zero accepted customers whose `created_at` is later than their first event, joining `stg_customers` to `stg_orders`, `stg_subscriptions` and `stg_tickets` on `normalized_email`. (3) Add the same check as a reconciliation control in `fieldforge/cli.py` so a failure blocks release. (4) Do not add a quarantine rule for this: it is a generator invariant, not an incoming source defect, and a new rule would change the planted-error counts that `config/planted_errors.yml` and `tests/test_pipeline.py` assert. (5) Re-run `make all` and expect source CSV checksums to change while quarantine counts, revenue totals and order-line integrity figures stay the same, because no validation rule or monetary model reads `created_at`. (6) Re-check the lesson-01 teaching example (`ORD-0000001` with `CRM-000475`) and any document quoting its dates, since that example was chosen to illustrate the defect.
+- **Scope note:** work stopped here at Aneesh's instruction because session usage was nearly exhausted. No generator, model, test or dashboard file was modified in this checkpoint.
+- **Next:** implement the chronology rewrite above through the learner-in-the-loop protocol, one checkpoint at a time.
+
 ## 2026-09-08 — Canonical workspace moved to AK-SSD-MAC
 
 - **User correction:** Aneesh requires all FieldForge work and generated artifacts to live on the external SSD, not internal Mac storage.

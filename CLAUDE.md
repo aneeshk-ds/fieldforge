@@ -112,12 +112,13 @@ The target cadence is: **explain one concept → show real data → ask one smal
 4. Supported currencies are USD, CAD, and GBP. Never sum them into one monetary total without an approved FX model.
 5. Unresolved identity must not be guessed. Valid revenue remains in company totals, carries `attribution_status = 'unattributed'`, has a null customer key, and is excluded from customer-level metrics.
 6. Source-event contradictions require source-owner evidence before correction.
+7. `created_at` is the customer's canonical first-seen date and must fall on or before that customer's earliest subscription, order, or support event. Where the two disagree, `created_at` is wrong, not the event date.
 
 ## Next implementation sequence
 
 Branch and CI confirmation, dimensional coverage, and test-output isolation are complete, all on branch `claudework`. See the two newest `ASTRA_WORKLOG.md` entries for evidence.
 
-1. Audit and correct synthetic customer/order chronology. CRM `created_at` currently falls after that customer's order dates, which is visible in the lesson-01 example and would not survive a demo question.
+1. Correct synthetic customer chronology. The audit is done: 190 of 473 customers with orders (40.2%) have `created_at` after their first order, worst case 347 days, and 202 of 398 customers with subscriptions have it after their first subscription. Governed decision 7 above settles the semantics. The six-step implementation task is written out in the 2026-09-08 chronology entry in `ASTRA_WORKLOG.md`; start from there rather than re-deriving it.
 2. Validate dashboard values and visuals against the completed dimensional models, surface `mart_order_line_integrity` in the app, and migrate Streamlit `use_container_width` to `width` before its removal date.
 3. Produce larger seeded scale profiles and reproducible benchmarks without overstating laptop results. The relocated-run capability above makes this possible without touching demo data.
 4. Verify Docker on a Docker-capable host and PySpark parity on a Java-capable host.
@@ -148,6 +149,8 @@ Verify these rather than trusting the summary above.
 9. **Known deprecation.** Streamlit warns that `use_container_width` stops working after 2025-12-31. Not yet migrated.
 10. **CI lint scope.** GitHub Actions lints only `fieldforge dashboard tests`, so `spark/` is uncovered. `ruff check .` is currently clean; keep checking the whole tree.
 11. **Teaching contract.** The learner-in-the-loop section above is binding. It was violated earlier in this session and Aneesh stopped the work. One concept, real data in the live app, one question, then wait.
+12. **Chronology fix changes generated data.** Regenerating with corrected `created_at` changes every source CSV checksum. Quarantine counts, revenue totals and order-line integrity figures should not move, because no validation rule or monetary model reads `created_at`. If any of them do move, stop and investigate rather than updating the documented figures.
+13. **SQL Lab coverage.** The lab exposes only `quarantined_orders` and `incoming_orders`. Any teaching checkpoint about customers or chronology needs a customer table wired into `dashboard/sql_lab.py` first, so Aneesh can see the data before being asked about it.
 
 ## Handoff discipline
 
