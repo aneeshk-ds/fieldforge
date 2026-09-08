@@ -1,5 +1,12 @@
 # ASTRA Worklog
 
+## 2026-09-08 — Private GitHub publication preparation
+
+- User explicitly authorized private GitHub publication with a maintained progress README.
+- README now includes milestone status, prior verification evidence, learning context, release caveats, and next action. Corrected setup prerequisites, dependency-lock wording, and unverified Docker instructions.
+- Update README and worklog alongside future milestone commits; public visibility remains a separate release decision.
+- Verified GitHub CLI account aneeshk-ds over approved network access. Repository existence check found no aneeshk-ds/fieldforge repository. Generated datasets and local environments are excluded from tracked files; diff whitespace check passed.
+
 ## 2026-09-08 — Save and resume checkpoint
 
 - User requested a local commit and pause. All implementation and SQL Lab changes are included; generated data, virtual environments, caches, and database artifacts remain excluded by .gitignore.

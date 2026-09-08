@@ -8,9 +8,44 @@ FieldForge is a zero-cost customer data onboarding platform built around a ficti
 
 The repository demonstrates the work expected of a Data Engineer, Analytics Engineer, AI & Data Consultant, or Forward Deployed Engineer: discovery, data contracts, profiling, validation, quarantine, identity resolution, dimensional modelling, KPI governance, delivery automation, and customer handover.
 
+## Progress — updated 8 September 2026
+
+**Current stage:** working local prototype and guided project learning. **Next milestone:** a polished Data Quality Overview showing received, accepted, and quarantined records, with rejection drill-downs.
+
+| Milestone | Status | Evidence / next action |
+|---|---|---|
+| Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
+| Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
+| Identity resolution and analytical models | Prototype | 11 dbt models; audit unmatched revenue and dimensional completeness |
+| Automated quality checks | Initial local checks passed | 14 dbt tests, 4 Python tests; stronger independent controls still needed |
+| Dashboard and SQL Lab | Prototype | Four dashboard queries checked; interactive SQL Lab supports two order tables |
+| Data Quality Overview and visual design | Next | Build an operational view, then verify it together |
+| Larger-scale benchmarks | Pending | Initial warm local pipeline baseline: 42.84 seconds; no scale claim yet |
+| Docker, Spark parity, hosted CI | Unverified | Definitions exist; execute and resolve failures before release |
+| Public portfolio release | Pending | Complete acceptance criteria and approve public visibility |
+
+### Latest project session
+
+Traced a customer order through normalization, identity matching, quarantine, and reporting. Queried actual order data: **1,500 incoming = 1,494 accepted + 6 quarantined (0.4%)**. Practised counts, grouping, filters, and aliases; scalar subqueries were guided and need reinforcement through project work.
+
+### How progress stays current
+
+At each completed project milestone, update this section's date, status, evidence, and next action in the same commit as the work. Append detailed decisions and verification to [ASTRA_WORKLOG.md](ASTRA_WORKLOG.md). This is a maintained progress record, not an automatic percentage-complete estimate.
+
+### Before calling this complete
+
+- [ ] Account for financial records excluded by unresolved identities.
+- [ ] Audit synthetic chronology, KPI semantics, and independent reconciliation.
+- [ ] Isolate test data and lock the full dependency environment.
+- [ ] Complete dimensional models and validate dashboard values and visuals.
+- [ ] Verify Docker, Spark parity, clean-clone setup, and GitHub CI.
+- [ ] Publish reproducible scale benchmarks and finish customer handover.
+
+Learning follows project milestones: explain the concept, make a useful change, operate it, and verify the outcome. SQL practice supports delivery.
+
 ## Quick start
 
-Requirements: Python 3.11–3.13 and `make`. No cloud account, secrets, or paid API is required.
+Requirements: `uv`, `make`, and internet access for initial dependency downloads. Setup provisions Python 3.13 locally. No cloud account, secrets, or paid API is required.
 
 ```bash
 make setup
@@ -18,22 +53,21 @@ make all
 make dashboard
 ```
 
-Or with Docker:
+SQL practice workspace after running the pipeline:
 
 ```bash
-docker compose run --rm fieldforge make all
-docker compose up dashboard
+.venv/bin/streamlit run dashboard/sql_lab.py --server.port 8502
 ```
 
-The pipeline is deterministic. Outputs are written to `data/` and `artifacts/`, both ignored by Git.
+Source generation is seeded. Outputs are written to `data/` and `artifacts/`, both ignored by Git. Docker/Compose files are experimental and still require workflow verification.
 
 ## Commands
 
 | Command | Purpose |
 |---|---|
-| `make setup` | Create `.venv` and install locked project dependencies |
+| `make setup` | Create `.venv` and install pinned direct dependencies (full lock pending) |
 | `make pipeline` | Generate → profile → bronze → silver → gold → reconcile |
-| `make test` | Unit/integration tests plus dbt model tests |
+| `make test` | Python tests and dashboard query smoke check |
 | `make all` | Run the pipeline and all tests |
 | `make dashboard` | Start the Streamlit KPI application |
 | `make spark` | Run the selected optional PySpark equivalent |
@@ -73,7 +107,7 @@ config/              Source contracts and governed KPI definitions
 
 ## Definition of done
 
-The release gate is encoded in `make all`: deterministic generation, explicit quarantine, count and revenue reconciliation, referential integrity, governed KPI SQL, dashboard smoke validation, and dbt tests must pass. See [acceptance-criteria.md](docs/acceptance-criteria.md) for the complete checklist. Completion is claimed only when the verification evidence in `ASTRA_WORKLOG.md` is current.
+`make all` exercises the current automated checks; passing it alone does not prove the full release criteria. See [acceptance-criteria.md](docs/acceptance-criteria.md) and the remaining work above. Completion requires current evidence for the entire checklist.
 
 ## Data safety
 
