@@ -53,6 +53,7 @@ h1,h2,h3 { font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-se
 .ff-card-note { color:#aab5c8; font-size:.78rem; }
 .ff-card--alert .ff-card-value { color:#f6c85f; }
 .ff-card--good .ff-card-value { color:#4de2d3; }
+.ff-card--compact .ff-card-value { font-size:clamp(1.3rem,2vw,1.8rem); white-space:nowrap; }
 .ff-section { margin-top:2.2rem; color:#f3f6fb; }
 .ff-kicker { color:#8793a8; margin-top:-.6rem; margin-bottom:1rem; }
 .ff-verdict { border-left:3px solid #f6c85f; background:rgba(246,200,95,.07); padding:1rem 1.1rem;
@@ -270,12 +271,41 @@ def business_page() -> None:
         st.info("Gold warehouse not found. Run `make all` to build business models.")
         return
     with duckdb.connect(str(DB), read_only=True) as connection:
+        attribution = connection.execute(QUERIES["revenue_attribution"]).df()
         revenue = connection.execute(QUERIES["revenue_trend"]).df()
         subs = connection.execute(QUERIES["subscriber_trend"]).df()
         support = connection.execute(QUERIES["support"]).df()
     st.markdown('<h2 class="ff-section">Business health</h2>', unsafe_allow_html=True)
     st.markdown('<div class="ff-kicker">Governed outputs by currency, plan, and support category</div>', unsafe_allow_html=True)
-    st.info("Revenue remains separated by transaction currency; no FX conversion has been invented.")
+    st.info(
+        "Company revenue includes valid unattributed transactions. Customer-level metrics use only "
+        "attributed revenue. Currencies remain separate; no FX conversion has been invented."
+    )
+    st.markdown("#### Revenue identity coverage")
+    coverage_columns = st.columns(len(attribution))
+    for column, row in zip(coverage_columns, attribution.itertuples(index=False), strict=True):
+        with column:
+            card(
+                f"{row.currency} company net",
+                f"{row.currency} {row.company_net_revenue:,.2f}",
+                f"{row.currency} {row.unattributed_net_revenue:,.2f} unattributed · "
+                f"{row.attribution_rate:.2f}% attributed",
+                "ff-card--good ff-card--compact"
+                if row.attribution_rate >= 95
+                else "ff-card--alert ff-card--compact",
+            )
+    coverage = px.bar(
+        attribution,
+        x="currency",
+        y="attribution_rate",
+        text=attribution["attribution_rate"].map(lambda value: f"{value:.2f}%"),
+        color_discrete_sequence=["#a78bfa"],
+        labels={"currency": "Transaction currency", "attribution_rate": "Revenue attributed (%)"},
+    )
+    coverage.update_yaxes(range=[0, 100])
+    coverage.update_traces(textposition="outside", hovertemplate="%{x}<br>%{y:.2f}% attributed<extra></extra>")
+    st.plotly_chart(style_figure(coverage, 330), width="stretch", config={"displayModeBar": False})
+    st.markdown("#### Company revenue trend")
     fig = px.line(
         revenue,
         x="calendar_month",

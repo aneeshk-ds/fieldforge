@@ -10,23 +10,23 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ## Progress — updated 8 September 2026
 
-**Current stage:** operational data-quality command center and guided project learning. **Next milestone:** audit identity-excluded financial records and complete the dimensional model before expanding the executive experience.
+**Current stage:** operational data-quality command center with governed revenue attribution. **Next milestone:** complete dimensional coverage and isolate generated test data before expanding the executive experience.
 
 | Milestone | Status | Evidence / next action |
 |---|---|---|
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
-| Identity resolution and analytical models | Prototype | 11 dbt models; audit unmatched revenue and dimensional completeness |
-| Automated quality checks | Initial local checks passed | 14 dbt tests, 6 Python tests; stronger independent controls still needed |
-| Dashboard and SQL Lab | Operational prototype | Three views, source-aware exception investigation, and an interactive two-table SQL Lab |
+| Identity resolution and analytical models | Attribution audited | 11 dbt models; unattributed revenue retained; dimensional completeness remains open |
+| Automated quality checks | Local checks passed | 20 dbt tests, 8 Python tests, 5 dashboard query checks; test isolation still needed |
+| Dashboard and SQL Lab | Operational prototype | Three views, revenue coverage, source-aware investigation, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Pending | Initial warm local pipeline baseline: 42.84 seconds; no scale claim yet |
-| Docker, Spark parity, hosted CI | Partial | GitHub CI run #4 passed in 38s; Docker and Spark/Java remain unverified |
+| Docker, Spark parity, hosted CI | Partial | Hosted CI is green on published `main`; Docker and Spark/Java remain unverified |
 | Public portfolio release | Pending | Complete acceptance criteria and approve public visibility |
 
 ### Latest project session
 
-Built and visually inspected the operational command center. It traces **10,163 received = 10,134 accepted + 29 quarantined (99.71% accepted)** across all six sources. The exception workbench was exercised from all records to Orders (6) to `ORDER_DATES_INVALID` (2), then extended with selectable raw evidence, source-aware event timelines, contract-gap labels, and source-owner requests. Business health keeps USD, CAD, and GBP separate; governance exposes run metadata, evidence paths, and dashboard SQL.
+Converted the identity decision into governed financial models. All **5,646 valid revenue transactions** now remain in company totals; 5,525 are customer-attributed and 121 are explicitly unattributed with null customer keys. The dashboard reports coverage independently by currency: CAD 98.08%, GBP 100%, and USD 96.71%. No cross-currency total or invented identity is introduced.
 
 ### How progress stays current
 
@@ -34,14 +34,16 @@ At each completed project milestone, update this section's date, status, evidenc
 
 ### Before calling this complete
 
-- [ ] Account for financial records excluded by unresolved identities.
+- [x] Account for financial records excluded by unresolved identities.
 - [ ] Audit synthetic chronology, KPI semantics, and independent reconciliation.
 - [ ] Isolate test data and lock the full dependency environment.
 - [ ] Complete dimensional models and validate dashboard values and visuals.
-- [ ] Verify Docker, Spark parity, clean-clone setup, and GitHub CI.
+- [ ] Verify Docker, Spark parity, and clean-clone setup; keep hosted CI green.
 - [ ] Publish reproducible scale benchmarks and finish customer handover.
 
 Learning follows project milestones: explain the concept, make a useful change, operate it, and verify the outcome. SQL practice supports delivery.
+
+If another coding agent must continue this exact local project, start with [CLAUDE.md](CLAUDE.md), then read this README and [ASTRA_WORKLOG.md](ASTRA_WORKLOG.md).
 
 ## Quick start
 

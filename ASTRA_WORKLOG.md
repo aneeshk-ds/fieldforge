@@ -1,5 +1,15 @@
 # ASTRA Worklog
 
+## 2026-09-08 — Governed revenue attribution
+
+- **Business decision:** Aneesh chose to keep financially valid unmatched transactions in company revenue, exclude them from customer-level metrics, and label them `unattributed`. This avoids both financial loss and fabricated customer relationships.
+- **Audit finding:** The old inner-join fact excluded 121 valid transactions solely because identity was unresolved: USD 6,658.50 and CAD 1,233.75 net. Identity crosswalk coverage includes 5 unmatched billing identities and 7 unmatched storefront identities; their repeated transactions explain the larger fact count.
+- **Implemented:** Changed `fct_revenue` to preserve all valid invoice and non-cancelled order transactions through left joins, with nullable `customer_sk` and governed `attribution_status`. Extended monthly KPIs with attributed/unattributed amounts and transactions plus currency-safe revenue attribution rate. Added KPI registry definitions, reconciliation controls, model tests, dashboard queries, and three currency-specific coverage cards plus a percentage chart.
+- **Governance:** Company net revenue is the full financial total. Customer-attributed net revenue is the only amount eligible for customer-level segmentation. Unattributed net revenue is an operational identity backlog. USD, CAD, and GBP remain separate at every monetary aggregation.
+- **Verification:** Default pipeline completed with dbt PASS=31/WARN=0/ERROR=0 across 11 models and 20 data tests. All seven reconciliation controls passed. Two new Python tests verified complete source-to-fact revenue and exact attribution partitioning. Dashboard smoke passed all five production queries. AppTest verified the CAD, GBP, and USD coverage cards, and browser QA confirmed the visual layout and exact rates.
+- **Continuity:** Added root-level `CLAUDE.md` with the absolute repository path, commands, current architecture and decisions, Aneesh's learning approach, remaining release blockers, and resume sequence for cross-agent continuation.
+- **Next:** Complete dimensional coverage, then isolate test outputs. Public visibility still requires explicit user approval.
+
 ## 2026-09-08 — Source-aware exception investigation
 
 - **Learner evidence:** Aneesh correctly identified `ORD-0000028`, explained that delivery predates order placement, and requested order-placement and dispatch context before changing data. This demonstrates the intended no-guessing quarantine behavior. Follow-up inspection showed the contract has no dispatch timestamp, so the evidence request was refined to placement, dispatch, and delivery events with timezone, event IDs, and audit history.

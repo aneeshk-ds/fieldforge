@@ -4,10 +4,34 @@ kpis:
     label: Net revenue
     owner: Finance Analytics
     grain: calendar_month, revenue_type, currency
-    definition: Sum of recognized gross amounts less refunds; cancelled orders excluded.
+    definition: Sum of all valid recognized gross amounts less refunds; cancelled orders excluded. Includes attributed and unattributed transactions.
     model: mart_monthly_kpis
     column: net_revenue_cents
     caveat: Values are presented by transaction currency and are not FX-converted.
+  attributed_net_revenue:
+    label: Customer-attributed net revenue
+    owner: Finance Analytics
+    grain: calendar_month, revenue_type, currency
+    definition: Net revenue from valid transactions linked to a canonical customer through the identity crosswalk.
+    model: mart_monthly_kpis
+    column: attributed_net_revenue_cents
+    caveat: Suitable for customer-level analysis; excludes financially valid transactions with unresolved identity.
+  unattributed_net_revenue:
+    label: Unattributed net revenue
+    owner: Data Operations
+    grain: calendar_month, revenue_type, currency
+    definition: Net revenue from valid transactions that cannot currently be linked to a canonical customer.
+    model: mart_monthly_kpis
+    column: unattributed_net_revenue_cents
+    caveat: Included in company totals but excluded from customer-level metrics. Investigate identity coverage; do not invent a customer key.
+  revenue_attribution_rate:
+    label: Revenue attribution rate
+    owner: Data Operations
+    grain: calendar_month, revenue_type, currency
+    definition: Customer-attributed net revenue divided by total net revenue within the same transaction currency.
+    model: mart_monthly_kpis
+    column: revenue_attribution_rate
+    caveat: Never aggregate monetary values across currencies before calculating this rate.
   active_subscribers:
     label: Active subscribers at month end
     owner: Growth Analytics

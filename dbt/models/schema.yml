@@ -15,19 +15,28 @@ models:
     description: Recognized subscription and one-off revenue at transaction grain.
     columns:
       - name: revenue_id
-        tests: [not_null]
+        tests: [unique, not_null]
       - name: customer_sk
         tests:
-          - not_null
           - relationships:
               arguments:
                 to: ref('dim_customer')
                 field: customer_sk
+      - name: attribution_status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [attributed, unattributed]
       - name: net_revenue_cents
         tests: [not_null]
   - name: mart_monthly_kpis
     columns:
       - name: calendar_month
+        tests: [not_null]
+      - name: attributed_net_revenue_cents
+        tests: [not_null]
+      - name: unattributed_net_revenue_cents
         tests: [not_null]
   - name: mart_subscription_health
     columns:
