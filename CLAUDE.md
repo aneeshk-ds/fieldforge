@@ -4,7 +4,7 @@ This is the local continuity contract for Claude Code or any replacement develop
 
 ## Repository
 
-- Local path: `/Users/aneeshkumar/Documents/ChatGPT/FieldForge`
+- Local path: `/Volumes/AK-SSD-MAC/Codex Work/FieldForge`
 - Private remote: `https://github.com/aneeshk-ds/fieldforge`
 - Default branch: `main`
 - Product: zero-cost Customer Data Onboarding Platform for fictional customer Northstar Commerce
@@ -13,7 +13,7 @@ This is the local continuity contract for Claude Code or any replacement develop
 Before changing anything, run:
 
 ```bash
-cd "/Users/aneeshkumar/Documents/ChatGPT/FieldForge"
+cd "/Volumes/AK-SSD-MAC/Codex Work/FieldForge"
 git status --short
 git log -5 --oneline
 sed -n '1,180p' README.md
@@ -166,8 +166,8 @@ This file is shared continuity state, not a one-time handoff to Claude. Before C
 
 Use this prompt when returning to Codex:
 
-> Resume FieldForge in `/Users/aneeshkumar/Documents/ChatGPT/FieldForge`. Read `CLAUDE.md`, `README.md`, and the newest entries in `ASTRA_WORKLOG.md`. Inspect Git status and recent commits, verify rather than assume the previous agent's claims, preserve existing work, and continue from the first unfinished item. Keep teaching Aneesh through the project and maintain the same bidirectional handoff before stopping.
+> Resume FieldForge in `/Volumes/AK-SSD-MAC/Codex Work/FieldForge`. Read `CLAUDE.md`, `README.md`, and the newest entries in `ASTRA_WORKLOG.md`. Inspect Git status and recent commits, verify rather than assume the previous agent's claims, preserve existing work, and continue from the first unfinished item. Keep teaching Aneesh through the project and maintain the same bidirectional handoff before stopping.
 
 Use this prompt when returning to Claude:
 
-> Resume FieldForge in `/Users/aneeshkumar/Documents/ChatGPT/FieldForge`. Read `CLAUDE.md`, `README.md`, and the newest entries in `ASTRA_WORKLOG.md`. Inspect Git status and recent commits, verify rather than assume the previous agent's claims, preserve existing work, and continue from the first unfinished item. Keep teaching Aneesh through the project and maintain the same bidirectional handoff before stopping.
+> Resume FieldForge in `/Volumes/AK-SSD-MAC/Codex Work/FieldForge`. Read `CLAUDE.md`, `README.md`, and the newest entries in `ASTRA_WORKLOG.md`. Inspect Git status and recent commits, verify rather than assume the previous agent's claims, preserve existing work, and continue from the first unfinished item. Keep teaching Aneesh through the project and maintain the same bidirectional handoff before stopping.

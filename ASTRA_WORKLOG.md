@@ -1,5 +1,14 @@
 # ASTRA Worklog
 
+## 2026-09-08 — Canonical workspace moved to AK-SSD-MAC
+
+- **User correction:** Aneesh requires all FieldForge work and generated artifacts to live on the external SSD, not internal Mac storage.
+- **Migration:** Copied the complete repository, Git history, `claudework` branch, generated data, and local dependency caches to `/Volumes/AK-SSD-MAC/Codex Work/FieldForge`. The path-bound `.venv` was not reused; a fresh Python 3.13 environment with all 83 project packages was created directly on the SSD.
+- **Path contract:** Updated `CLAUDE.md` so the canonical path, preflight command, and both agent-resume prompts point to the SSD. Future agents must not resume from `/Users/aneeshkumar/Documents/ChatGPT/FieldForge`.
+- **macOS verification from SSD:** `make all` passed: dbt PASS=118/WARN=0/ERROR=0 across 18 models and 100 tests, four gold marts exported, all 12 reconciliation controls passed, 13 Python tests passed, and all five dashboard SQL checks passed.
+- **Safety:** The internal-storage folder remains only as a temporary migration backup until the SSD checkpoint and branch push are verified. It is not the active workspace and must receive no further project work.
+- **Next:** Push `claudework`, switch the live dashboard to the SSD checkout, then resume the chronology audit through the learner-in-the-loop flow.
+
 ## 2026-09-08 — Test-run isolation and failed-run evidence retention
 
 - **Agent:** Claude, continuing on branch `claudework` from `01f9c4c`. Sequence item: isolate Python test outputs.
