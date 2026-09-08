@@ -1,10 +1,10 @@
 import duckdb
 
-from fieldforge.settings import WAREHOUSE
+from fieldforge.settings import warehouse_path
 
 
 def test_order_lines_reach_the_fact_without_row_loss_or_invented_keys():
-    with duckdb.connect(str(WAREHOUSE), read_only=True) as connection:
+    with duckdb.connect(str(warehouse_path()), read_only=True) as connection:
         accepted_lines = connection.execute("select count(*) from stg_order_items").fetchone()[0]
         fact_lines = connection.execute("select count(*) from fct_order_item").fetchone()[0]
         duplicate_grain = connection.execute(
@@ -27,7 +27,7 @@ def test_order_lines_reach_the_fact_without_row_loss_or_invented_keys():
 
 
 def test_lines_whose_parent_order_was_quarantined_are_retained_not_guessed():
-    with duckdb.connect(str(WAREHOUSE), read_only=True) as connection:
+    with duckdb.connect(str(warehouse_path()), read_only=True) as connection:
         orphaned = connection.execute(
             "select count(*) from fct_order_item where order_link_status = 'order_not_accepted'"
         ).fetchone()[0]
@@ -48,7 +48,7 @@ def test_lines_whose_parent_order_was_quarantined_are_retained_not_guessed():
 
 
 def test_order_line_variance_is_explained_by_quarantine_evidence():
-    with duckdb.connect(str(WAREHOUSE), read_only=True) as connection:
+    with duckdb.connect(str(warehouse_path()), read_only=True) as connection:
         negative_variance = connection.execute(
             "select count(*) from mart_order_line_integrity where line_variance_cents < 0"
         ).fetchone()[0]
@@ -71,7 +71,7 @@ def test_order_line_variance_is_explained_by_quarantine_evidence():
 
 
 def test_date_dimension_covers_every_recognized_revenue_date():
-    with duckdb.connect(str(WAREHOUSE), read_only=True) as connection:
+    with duckdb.connect(str(warehouse_path()), read_only=True) as connection:
         gaps = connection.execute(
             "select count(*) from (select date_key, lag(date_key) over (order by date_key) as previous_date_key "
             "from dim_date) where previous_date_key is not null "

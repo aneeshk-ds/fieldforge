@@ -32,6 +32,8 @@ Preserve unrelated user changes. Use the existing environment when present; othe
 - 18 dbt models with grain declared on every model, 100 dbt tests, and 12 reconciliation controls
 - Order lines whose parent order was quarantined are retained with `order_link_status = 'order_not_accepted'`
 - `mart_order_line_integrity` publishes orders whose accepted lines no longer reconcile to the header amount
+- Paths resolve at call time from `FIELDFORGE_DATA_ROOT` and `FIELDFORGE_ARTIFACTS_ROOT`, so a run can be relocated
+- Tests run against a temporary root and never touch the demo run; a failing run retains evidence in `artifacts/test-runs/<run-id>/`
 - Streamlit/Plotly command center plus a guided DuckDB SQL Lab
 - Source-aware exception workbench with raw evidence, event timeline, and source-owner request
 - Company revenue includes valid unattributed transactions; customer metrics use attributed revenue only
@@ -54,6 +56,12 @@ SQL Lab:
 
 ```bash
 .venv/bin/streamlit run dashboard/sql_lab.py --server.port 8502
+```
+
+Relocated run, for a benchmark or experiment that must not disturb the demo data:
+
+```bash
+FIELDFORGE_DATA_ROOT=/tmp/ff/data FIELDFORGE_ARTIFACTS_ROOT=/tmp/ff/artifacts make all
 ```
 
 After tests that regenerate source files, run `make pipeline` again before demonstrating the dashboard so normal run metadata is restored. The dashboard fingerprints Parquet outputs and refreshes its cache when they change.
@@ -107,16 +115,15 @@ The target cadence is: **explain one concept → show real data → ask one smal
 
 ## Next implementation sequence
 
-Items 1 and 2 are complete. Item 1 was confirmed on 2026-09-08 (`main` clean at `6ba3c96`, synchronized with origin). Item 2 was delivered on branch `claudework`; see the newest `ASTRA_WORKLOG.md` entry for evidence.
+Branch and CI confirmation, dimensional coverage, and test-output isolation are complete, all on branch `claudework`. See the two newest `ASTRA_WORKLOG.md` entries for evidence.
 
-1. Isolate Python test outputs so tests never replace demo run metadata. Running `pytest` still rewrites `data/source` with `test-run` metadata, so `make pipeline` must be re-run before any demonstration.
-2. Audit and correct synthetic customer/order chronology.
-3. Validate dashboard values and visuals against the completed dimensional models, and migrate Streamlit `use_container_width` to `width` before its removal date.
-4. Produce larger seeded scale profiles and reproducible benchmarks without overstating laptop results.
-5. Verify Docker on a Docker-capable host and PySpark parity on a Java-capable host.
-6. Lock the complete dependency environment and execute a clean-clone verification.
-7. Finish customer handover, troubleshooting, portfolio story, screenshots, and demo rehearsal.
-8. Request explicit user approval before changing the private repository to public.
+1. Audit and correct synthetic customer/order chronology. CRM `created_at` currently falls after that customer's order dates, which is visible in the lesson-01 example and would not survive a demo question.
+2. Validate dashboard values and visuals against the completed dimensional models, surface `mart_order_line_integrity` in the app, and migrate Streamlit `use_container_width` to `width` before its removal date.
+3. Produce larger seeded scale profiles and reproducible benchmarks without overstating laptop results. The relocated-run capability above makes this possible without touching demo data.
+4. Verify Docker on a Docker-capable host and PySpark parity on a Java-capable host.
+5. Lock the complete dependency environment and execute a clean-clone verification.
+6. Finish customer handover, troubleshooting, portfolio story, screenshots, and demo rehearsal.
+7. Request explicit user approval before changing the private repository to public.
 
 ## Branch convention
 
@@ -125,6 +132,22 @@ Work delivered by Claude lands on a `claudework` branch so Codex can identify it
 ## Environment note
 
 The `.venv` in this repository is macOS-only. An agent running in a Linux sandbox cannot use it and must install a separate environment outside the repository rather than replacing `.venv`. Verification produced on Linux is real but is not proof of macOS parity; say which platform produced any evidence recorded.
+
+## Review notes for the next agent
+
+Verify these rather than trusting the summary above.
+
+1. **Branch state.** `claudework` carries all Claude work and has never been pushed; no GitHub credential is available in the Cowork session shell. `main` is untouched at `6ba3c96`. Run `git log --oneline main..claudework` before assuming what is in each.
+2. **Platform of the evidence.** Every verification claim in the two newest worklog entries was produced on Linux in a session sandbox, not with the macOS `.venv`. Re-run `make all` on macOS before treating any of it as release evidence.
+3. **The path refactor is the highest-risk change.** `fieldforge/settings.py` no longer exports `DATA`, `SOURCE`, `BRONZE`, `SILVER`, `QUARANTINE`, `GOLD`, `WAREHOUSE` or `ARTIFACTS` as constants; they are functions now. Anything written against the old names fails on import. `spark/standardize_orders.py` still builds its own paths and was not migrated.
+4. **dbt now depends on an environment variable.** `profiles.yml` and `sources.yml` use `env_var('FIELDFORGE_DATA_ROOT', 'data')`. Setting it for Python but not for dbt, or the reverse, splits the two halves of a run apart.
+5. **`dashboard/data_quality.py` changed signature.** `load_quality_snapshot` and `load_quarantined_record` take the data directory now, not the repository root.
+6. **Order-line governance is deliberate, not a defect.** 8 accepted lines carry `order_link_status = 'order_not_accepted'` and 3 accepted orders do not reconcile to their line totals. Both are published on purpose. Do not resolve them by dropping rows or inferring a parent order.
+7. **Test isolation has a boundary.** Only modules requesting the `isolated_data_root` fixture are isolated. A new mutating test that forgets it will write to the demo run again.
+8. **Failed-run evidence accumulates.** `artifacts/test-runs/<run-id>/` is Git-ignored and never cleaned automatically.
+9. **Known deprecation.** Streamlit warns that `use_container_width` stops working after 2025-12-31. Not yet migrated.
+10. **CI lint scope.** GitHub Actions lints only `fieldforge dashboard tests`, so `spark/` is uncovered. `ruff check .` is currently clean; keep checking the whole tree.
+11. **Teaching contract.** The learner-in-the-loop section above is binding. It was violated earlier in this session and Aneesh stopped the work. One concept, real data in the live app, one question, then wait.
 
 ## Handoff discipline
 

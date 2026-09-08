@@ -10,14 +10,14 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ## Progress — updated 8 September 2026
 
-**Current stage:** complete dimensional coverage with declared grains, key tests, and order-line integrity reporting. **Next milestone:** isolate generated test outputs, then audit synthetic chronology before expanding the executive experience.
+**Current stage:** dimensional coverage complete and test runs isolated from the demo run. **Next milestone:** audit synthetic chronology, then validate the dashboard against the completed models.
 
 | Milestone | Status | Evidence / next action |
 |---|---|---|
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
 | Identity resolution and analytical models | Dimensional coverage complete | 18 dbt models; every source modelled; grains declared on every model; unattributed revenue retained |
-| Automated quality checks | Local checks passed | 100 dbt tests, 12 Python tests, 12 reconciliation controls, 5 dashboard query checks; test isolation still needed |
+| Automated quality checks | Local checks passed; tests isolated | 100 dbt tests, 13 Python tests, 12 reconciliation controls, 5 dashboard query checks; tests write to a temporary root and never touch the demo run |
 | Dashboard and SQL Lab | Operational prototype | Three views, revenue coverage, source-aware investigation, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Pending | Initial warm local pipeline baseline: 42.84 seconds; no scale claim yet |
@@ -25,6 +25,10 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Public portfolio release | Pending | Complete acceptance criteria and approve public visibility |
 
 ### Latest project session
+
+Isolated test outputs from the demo run. `FIELDFORGE_DATA_ROOT` and `FIELDFORGE_ARTIFACTS_ROOT` now decide where a run lands, resolved when a path is used rather than at import, and `dbt/profiles.yml` and `sources.yml` read the same variable through `env_var` with a `data` default. Tests point it at a temporary directory, so `pytest` no longer rewrites source records, evidence artifacts, or the run ID the dashboard reports. Evidence from a passing test run is disposable; a failing run copies its evidence JSON and a failure report to the Git-ignored `artifacts/test-runs/<run-id>/`. A complete run against a separate root also passes, dbt included, which makes parallel and benchmark runs possible without disturbing demo data.
+
+### Previous session
 
 Closed the dimensional gap. `order_items` was generated, validated, and quarantined but never modelled; it now flows through `stg_order_items` into `fct_order_item` at order-line grain, joined to a derived `dim_product` and a data-driven `dim_date`. Every model declares its grain, staging models read governed dbt sources instead of raw file paths, and `mart_order_line_integrity` publishes the consequence of quarantining a line: **3 of 1,494 accepted orders** no longer reconcile to their line totals, and **8 of 3,021 accepted lines** belong to a quarantined order and are retained with `order_link_status = 'order_not_accepted'` rather than dropped. Prior marts are unchanged: 5,646 revenue transactions and 31,597,300 net cents, with monthly KPI, subscription, and support outputs identical to the previous run.
 
@@ -36,7 +40,8 @@ At each completed project milestone, update this section's date, status, evidenc
 
 - [x] Account for financial records excluded by unresolved identities.
 - [x] Complete dimensional models with declared grains and key tests.
-- [ ] Isolate test data and lock the full dependency environment.
+- [x] Isolate test data so tests never replace the demo run.
+- [ ] Lock the full dependency environment.
 - [ ] Audit synthetic chronology, KPI semantics, and independent reconciliation.
 - [ ] Validate dashboard values and visuals against the completed models.
 - [ ] Verify Docker, Spark parity, and clean-clone setup; keep hosted CI green.

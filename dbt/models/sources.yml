@@ -3,7 +3,7 @@ sources:
   - name: silver
     description: Validated, standardized records that passed every source contract rule.
     meta:
-      external_location: "data/silver/{name}.parquet"
+      external_location: "{{ env_var('FIELDFORGE_DATA_ROOT', 'data') }}/silver/{name}.parquet"
       owner: data-platform
     tables:
       - name: customers
@@ -16,7 +16,7 @@ sources:
   - name: quarantine
     description: Records rejected by a source contract rule, retained with rule code and reason.
     meta:
-      external_location: "data/quarantine/{name}.parquet"
+      external_location: "{{ env_var('FIELDFORGE_DATA_ROOT', 'data') }}/quarantine/{name}.parquet"
       owner: data-platform
     tables:
       - name: order_items

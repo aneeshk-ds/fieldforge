@@ -1,13 +1,12 @@
 """A disposable SQL workspace over FieldForge's synthetic quarantine data."""
 
-from pathlib import Path
-
 import duckdb
 import streamlit as st
 
-ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "data/quarantine/orders.parquet"
-INCOMING = ROOT / "data/bronze/orders.parquet"
+from fieldforge.settings import bronze_dir, quarantine_dir
+
+SOURCE = quarantine_dir() / "orders.parquet"
+INCOMING = bronze_dir() / "orders.parquet"
 
 st.set_page_config(page_title="FieldForge SQL Lab", page_icon="🔎", layout="wide")
 st.title("FieldForge · SQL Lab")

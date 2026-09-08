@@ -19,9 +19,11 @@ from dashboard.data_quality import (
     load_quarantined_record,
 )
 from dashboard.queries import QUERIES
+from fieldforge.settings import data_root, warehouse_path
 
 ROOT = Path(__file__).resolve().parents[1]
-DB = ROOT / "data" / "fieldforge.duckdb"
+DATA = data_root()
+DB = warehouse_path()
 
 st.set_page_config(
     page_title="FieldForge · Northstar Commerce",
@@ -89,13 +91,13 @@ div[data-testid="stSelectbox"] > div > div { background:rgba(18,24,36,.86); }
 @st.cache_data(show_spinner=False)
 def quality_data(fingerprint: tuple[int, ...]) -> QualitySnapshot:
     del fingerprint
-    return load_quality_snapshot(ROOT)
+    return load_quality_snapshot(DATA)
 
 
 def pipeline_fingerprint() -> tuple[int, ...]:
     """Invalidate cached controls whenever a durable pipeline output changes."""
     paths = [
-        ROOT / "data" / layer / f"{source}.parquet"
+        DATA / layer / f"{source}.parquet"
         for layer in ("bronze", "silver", "quarantine")
         for source in ("customers", "subscriptions", "invoices", "orders", "order_items", "tickets")
     ]
@@ -230,7 +232,7 @@ def data_quality_page(snapshot: QualitySnapshot) -> None:
     )
     selected = filtered.loc[selected_index]
     raw_record = load_quarantined_record(
-        ROOT, str(selected["source"]), int(selected["source_row"])
+        DATA, str(selected["source"]), int(selected["source_row"])
     )
     timeline = build_timeline(str(selected["source"]), raw_record)
     event_cards = "".join(

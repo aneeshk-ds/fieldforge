@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pandas as pd
 
 from dashboard.data_quality import (
@@ -9,12 +7,13 @@ from dashboard.data_quality import (
     load_quality_snapshot,
     load_quarantined_record,
 )
+from fieldforge.settings import data_root
 
-ROOT = Path(__file__).resolve().parents[1]
+DATA = data_root()
 
 
 def test_dashboard_quality_snapshot_traces_to_reconciled_pipeline_outputs():
-    snapshot = load_quality_snapshot(ROOT)
+    snapshot = load_quality_snapshot(DATA)
 
     assert snapshot.reconciled
     assert snapshot.received == snapshot.accepted + snapshot.quarantined
@@ -31,9 +30,9 @@ def test_dashboard_quality_snapshot_traces_to_reconciled_pipeline_outputs():
 
 
 def test_order_investigation_preserves_evidence_and_exposes_contract_gap():
-    snapshot = load_quality_snapshot(ROOT)
+    snapshot = load_quality_snapshot(DATA)
     exception = snapshot.rejected.query("record_key == 'ORD-0000028'").iloc[0]
-    record = load_quarantined_record(ROOT, "orders", int(exception["source_row"]))
+    record = load_quarantined_record(DATA, "orders", int(exception["source_row"]))
     timeline = build_timeline("orders", record)
 
     assert record["order_id"] == "ORD-0000028"

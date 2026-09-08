@@ -9,7 +9,13 @@ import duckdb
 
 from fieldforge.generate import generate
 from fieldforge.pipeline import ingest_bronze, profile_sources, resolve_identities, validate_silver
-from fieldforge.settings import ARTIFACTS, DATA, GOLD, WAREHOUSE, ensure_directories
+from fieldforge.settings import (
+    artifacts_root,
+    data_root,
+    ensure_directories,
+    gold_dir,
+    warehouse_path,
+)
 from fieldforge.utils import write_json
 
 
@@ -26,15 +32,15 @@ def run_pipeline(seed: int, customers: int) -> None:
 
 def export_gold() -> None:
     ensure_directories()
-    with duckdb.connect(str(WAREHOUSE), read_only=True) as con:
+    with duckdb.connect(str(warehouse_path()), read_only=True) as con:
         models = [x[0] for x in con.execute("select table_name from information_schema.tables where table_schema='main' and table_name like 'mart_%'").fetchall()]
         for model in models:
-            con.execute(f"COPY {model} TO '{GOLD / (model + '.parquet')}' (FORMAT PARQUET, OVERWRITE_OR_IGNORE 1)")
+            con.execute(f"COPY {model} TO '{gold_dir() / (model + '.parquet')}' (FORMAT PARQUET, OVERWRITE_OR_IGNORE 1)")
     print(f"Exported {len(models)} gold marts")
 
 
 def reconcile() -> None:
-    with duckdb.connect(str(WAREHOUSE), read_only=True) as con:
+    with duckdb.connect(str(warehouse_path()), read_only=True) as con:
         checks = {
             "all_invoice_net_cents": con.execute("select coalesce(sum(gross_amount_cents-refund_amount_cents),0) from stg_invoices").fetchone()[0] == con.execute("select coalesce(sum(net_revenue_cents),0) from fct_revenue where revenue_type='subscription'").fetchone()[0],
             "all_order_net_cents": con.execute("select coalesce(sum(order_amount_cents-refund_amount_cents),0) from stg_orders where status <> 'cancelled'").fetchone()[0] == con.execute("select coalesce(sum(net_revenue_cents),0) from fct_revenue where revenue_type='one_off'").fetchone()[0],
@@ -49,7 +55,7 @@ def reconcile() -> None:
             "order_line_variance_explained": con.execute("select (select count(*) from mart_order_line_integrity where line_coverage_status='incomplete_unexplained_line') <= (select count(*) from stg_quarantined_order_items where _rule_codes like '%ORDER_ITEM_ORPHAN%')").fetchone()[0],
             "revenue_date_dimension_fk": con.execute("select count(*)=0 from fct_revenue f left join dim_date d on d.date_key = f.recognized_date where d.date_key is null").fetchone()[0],
         }
-    write_json(ARTIFACTS / "reconciliation.json", checks)
+    write_json(artifacts_root() / "reconciliation.json", checks)
     if not all(checks.values()):
         raise SystemExit(f"Reconciliation failed: {checks}")
     print("Reconciliation passed")
@@ -57,14 +63,14 @@ def reconcile() -> None:
 
 def dashboard_check() -> None:
     from dashboard.queries import QUERIES
-    with duckdb.connect(str(WAREHOUSE), read_only=True) as con:
+    with duckdb.connect(str(warehouse_path()), read_only=True) as con:
         for _name, query in QUERIES.items():
             con.execute(query).fetchone()
     print(f"Dashboard smoke check passed ({len(QUERIES)} queries)")
 
 
 def clean() -> None:
-    for path in (DATA, ARTIFACTS):
+    for path in (data_root(), artifacts_root()):
         if path.exists():
             shutil.rmtree(path)
     print("Removed generated data and artifacts")
@@ -74,7 +80,7 @@ def benchmark() -> None:
     started = time.perf_counter()
     run_pipeline(20260907, 500)
     payload = {"stage": "pre_dbt_pipeline", "customers": 500, "elapsed_seconds": round(time.perf_counter() - started, 3)}
-    write_json(ARTIFACTS / "benchmark.json", payload)
+    write_json(artifacts_root() / "benchmark.json", payload)
     print(payload)
 
 

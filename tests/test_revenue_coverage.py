@@ -1,10 +1,10 @@
 import duckdb
 
-from fieldforge.settings import WAREHOUSE
+from fieldforge.settings import warehouse_path
 
 
 def test_company_revenue_keeps_unattributed_transactions_visible():
-    with duckdb.connect(str(WAREHOUSE), read_only=True) as connection:
+    with duckdb.connect(str(warehouse_path()), read_only=True) as connection:
         source_subscription = connection.execute(
             "select sum(gross_amount_cents-refund_amount_cents) from stg_invoices"
         ).fetchone()[0]
@@ -30,7 +30,7 @@ def test_company_revenue_keeps_unattributed_transactions_visible():
 
 
 def test_revenue_attribution_partition_and_customer_keys_are_consistent():
-    with duckdb.connect(str(WAREHOUSE), read_only=True) as connection:
+    with duckdb.connect(str(warehouse_path()), read_only=True) as connection:
         inconsistent_facts = connection.execute(
             "select count(*) from fct_revenue where "
             "(attribution_status='attributed' and customer_sk is null) or "

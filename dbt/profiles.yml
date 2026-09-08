@@ -3,5 +3,5 @@ fieldforge:
   outputs:
     dev:
       type: duckdb
-      path: data/fieldforge.duckdb
+      path: "{{ env_var('FIELDFORGE_DATA_ROOT', 'data') }}/fieldforge.duckdb"
       threads: 4

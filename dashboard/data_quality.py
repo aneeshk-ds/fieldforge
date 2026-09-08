@@ -47,12 +47,12 @@ class QualitySnapshot:
     ingested_at: str
 
 
-def load_quarantined_record(root: Path, source: str, source_row: int) -> dict[str, object]:
+def load_quarantined_record(data_dir: Path, source: str, source_row: int) -> dict[str, object]:
     """Return one original quarantined row, including provenance and rejection metadata."""
     valid_sources = {name for name, _ in SOURCES}
     if source not in valid_sources:
         raise ValueError(f"Unknown source: {source}")
-    path = root / "data" / "quarantine" / f"{source}.parquet"
+    path = data_dir / "quarantine" / f"{source}.parquet"
     if not path.exists():
         raise FileNotFoundError(f"Missing pipeline output: {path}")
     with duckdb.connect() as connection:
@@ -101,9 +101,9 @@ def evidence_request(record: dict[str, object]) -> str:
     )
 
 
-def load_quality_snapshot(root: Path) -> QualitySnapshot:
+def load_quality_snapshot(data_dir: Path) -> QualitySnapshot:
     """Read durable lakehouse outputs and calculate the current-run control totals."""
-    data = root / "data"
+    data = data_dir
     rows: list[dict[str, object]] = []
     rejected_frames: list[pd.DataFrame] = []
 

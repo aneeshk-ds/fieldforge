@@ -7,7 +7,14 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from fieldforge.settings import ARTIFACTS, BRONZE, QUARANTINE, SILVER, SOURCE, ensure_directories
+from fieldforge.settings import (
+    artifacts_root,
+    bronze_dir,
+    ensure_directories,
+    quarantine_dir,
+    silver_dir,
+    source_dir,
+)
 from fieldforge.utils import normalize_email, normalize_phone, stable_hash, write_json
 
 SOURCES = ("customers", "subscriptions", "invoices", "orders", "order_items", "tickets")
@@ -18,23 +25,23 @@ def profile_sources() -> dict:
     ensure_directories()
     report = {}
     for name in SOURCES:
-        df = pd.read_csv(SOURCE / f"{name}.csv")
+        df = pd.read_csv(source_dir() / f"{name}.csv")
         report[name] = {"rows": len(df), "columns": len(df.columns), "nulls": {c: int(df[c].isna().sum()) for c in df}, "distinct": {c: int(df[c].nunique(dropna=True)) for c in df}}
-    write_json(ARTIFACTS / "source_profile.json", report)
+    write_json(artifacts_root() / "source_profile.json", report)
     return report
 
 
 def ingest_bronze(run_id: str) -> None:
     ensure_directories()
     for name in SOURCES:
-        path = SOURCE / f"{name}.csv"
+        path = source_dir() / f"{name}.csv"
         df = pd.read_csv(path, dtype=str, keep_default_na=False)
         df.insert(0, "_source_row_number", range(2, len(df) + 2))
         df["_source_file"] = path.name
         df["_ingested_at_utc"] = datetime.now(UTC).isoformat()
         df["_run_id"] = run_id
         df["_row_checksum"] = df.apply(lambda row: stable_hash(*row.astype(str).tolist()), axis=1)
-        df.to_parquet(BRONZE / f"{name}.parquet", index=False)
+        df.to_parquet(bronze_dir() / f"{name}.parquet", index=False)
 
 
 def _reasons(name: str, row: pd.Series, context: dict) -> list[tuple[str, str]]:
@@ -67,7 +74,7 @@ def _reasons(name: str, row: pd.Series, context: dict) -> list[tuple[str, str]]:
 
 
 def validate_silver() -> dict:
-    frames = {name: pd.read_parquet(BRONZE / f"{name}.parquet") for name in SOURCES}
+    frames = {name: pd.read_parquet(bronze_dir() / f"{name}.parquet") for name in SOURCES}
     context = {"customer_ids": frames["customers"]["crm_customer_id"].value_counts().to_dict(), "order_ids": set(frames["orders"]["order_id"])}
     summary = {}
     for name, df in frames.items():
@@ -92,25 +99,25 @@ def validate_silver() -> dict:
             valid["normalized_email"] = valid["requester_email"].map(normalize_email)
         if "phone" in valid:
             valid["normalized_phone"] = valid["phone"].map(normalize_phone)
-        valid.to_parquet(SILVER / f"{name}.parquet", index=False)
+        valid.to_parquet(silver_dir() / f"{name}.parquet", index=False)
         if invalid.empty:
             invalid = pd.DataFrame(columns=list(df.columns) + ["_rule_codes", "_rejection_reasons", "_raw_key"])
-        pq.write_table(pa.Table.from_pandas(invalid, preserve_index=False), QUARANTINE / f"{name}.parquet")
+        pq.write_table(pa.Table.from_pandas(invalid, preserve_index=False), quarantine_dir() / f"{name}.parquet")
         summary[name] = {"bronze": len(df), "accepted": len(valid), "quarantined": len(invalid), "reconciled": len(df) == len(valid) + len(invalid)}
-    write_json(ARTIFACTS / "validation_summary.json", summary)
+    write_json(artifacts_root() / "validation_summary.json", summary)
     return summary
 
 
 def resolve_identities() -> pd.DataFrame:
-    customers = pd.read_parquet(SILVER / "customers.parquet")
+    customers = pd.read_parquet(silver_dir() / "customers.parquet")
     canonical = {row.normalized_email: stable_hash("customer", row.normalized_email)[:16] for _, row in customers.iterrows()}
     rows = []
     for source, key_col in (("customers", "crm_customer_id"), ("subscriptions", "billing_customer_id"), ("orders", "storefront_customer_id"), ("tickets", "ticket_id")):
-        df = pd.read_parquet(SILVER / f"{source}.parquet")
+        df = pd.read_parquet(silver_dir() / f"{source}.parquet")
         for _, row in df.iterrows():
             email = row.get("normalized_email")
             cid = canonical.get(email)
             rows.append({"source_system": source, "source_identity": row[key_col], "customer_sk": cid, "match_method": "normalized_email_exact" if cid else "unmatched", "confidence": 1.0 if cid else 0.0, "normalized_email": email})
     crosswalk = pd.DataFrame(rows).drop_duplicates(["source_system", "source_identity"])
-    crosswalk.to_parquet(SILVER / "identity_crosswalk.parquet", index=False)
+    crosswalk.to_parquet(silver_dir() / "identity_crosswalk.parquet", index=False)
     return crosswalk

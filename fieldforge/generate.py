@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from faker import Faker
 
-from fieldforge.settings import ARTIFACTS, DEFAULT_SEED, SOURCE, ensure_directories
+from fieldforge.settings import DEFAULT_SEED, artifacts_root, ensure_directories, source_dir
 from fieldforge.utils import write_json
 
 
@@ -113,7 +113,7 @@ def generate(seed: int = DEFAULT_SEED, customers: int = 500) -> dict[str, int]:
 
     frames = {"customers": customers_df, "subscriptions": subs_df, "invoices": invoices_df, "orders": orders_df, "order_items": items_df, "tickets": tickets_df}
     for name, frame in frames.items():
-        frame.to_csv(SOURCE / f"{name}.csv", index=False, date_format="%Y-%m-%dT%H:%M:%S")
+        frame.to_csv(source_dir() / f"{name}.csv", index=False, date_format="%Y-%m-%dT%H:%M:%S")
     manifest = {"banner": "SYNTHETIC DATA — NOT REAL CUSTOMERS", "seed": seed, "customers_requested": customers, "row_counts": {k: len(v) for k, v in frames.items()}, "planted_counts": {k: int(v["_planted_error"].ne("").sum()) for k, v in frames.items()}}
-    write_json(ARTIFACTS / "synthetic_manifest.json", manifest)
+    write_json(artifacts_root() / "synthetic_manifest.json", manifest)
     return manifest["row_counts"]
