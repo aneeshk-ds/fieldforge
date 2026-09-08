@@ -1,0 +1,7 @@
+fieldforge:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: data/fieldforge.duckdb
+      threads: 4

@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fieldforge"
+version = "0.1.0"
+description = "Zero-cost customer data onboarding reference platform"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+license = {text = "MIT"}
+dependencies = [
+  "duckdb==1.4.0",
+  "pandas==2.3.2",
+  "pyarrow==21.0.0",
+  "PyYAML==6.0.2",
+  "Faker==37.6.0",
+  "pandera[pandas]==0.26.1",
+  "dbt-core==1.10.11",
+  "dbt-duckdb==1.9.6",
+  "streamlit==1.49.1",
+  "plotly==6.3.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==8.4.2", "ruff==0.12.11"]
+spark = ["pyspark==4.0.0"]
+
+[project.scripts]
+fieldforge = "fieldforge.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["fieldforge"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]

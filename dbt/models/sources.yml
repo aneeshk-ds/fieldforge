@@ -1,0 +1,24 @@
+version: 2
+sources:
+  - name: silver
+    meta:
+      owner: data-platform
+    tables:
+      - name: customers
+        external:
+          location: "data/silver/customers.parquet"
+      - name: subscriptions
+        external:
+          location: "data/silver/subscriptions.parquet"
+      - name: invoices
+        external:
+          location: "data/silver/invoices.parquet"
+      - name: orders
+        external:
+          location: "data/silver/orders.parquet"
+      - name: tickets
+        external:
+          location: "data/silver/tickets.parquet"
+      - name: identity_crosswalk
+        external:
+          location: "data/silver/identity_crosswalk.parquet"

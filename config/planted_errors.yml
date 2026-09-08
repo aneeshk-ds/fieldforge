@@ -1,0 +1,9 @@
+version: 1
+purpose: Deterministic defects used to prove contract and quarantine behavior.
+rules:
+  customers: {malformed_email: 3, duplicate_primary_key: 2, missing_country: 2}
+  subscriptions: {invalid_date_order: 2, unknown_plan: 2}
+  invoices: {negative_gross_amount: 2, refund_exceeds_gross: 2}
+  orders: {unsupported_currency: 2, delivered_before_ordered: 2, missing_customer_identity: 2}
+  order_items: {nonpositive_quantity: 2, orphan_order: 2}
+  tickets: {resolved_before_opened: 2, invalid_csat: 2}

@@ -1,0 +1,25 @@
+version: 1
+kpis:
+  net_revenue:
+    label: Net revenue
+    owner: Finance Analytics
+    grain: calendar_month, revenue_type, currency
+    definition: Sum of recognized gross amounts less refunds; cancelled orders excluded.
+    model: mart_monthly_kpis
+    column: net_revenue_cents
+    caveat: Values are presented by transaction currency and are not FX-converted.
+  active_subscribers:
+    label: Active subscribers at month end
+    owner: Growth Analytics
+    grain: calendar_month, plan_code
+    definition: A subscription started on or before month end and not cancelled before month end.
+    model: mart_subscription_health
+    column: active_subscribers
+  logo_churn_rate:
+    label: Logo churn rate
+    owner: Growth Analytics
+    grain: calendar_month, plan_code
+    definition: Subscriptions cancelling in month divided by subscriptions active at prior month end.
+    model: mart_subscription_health
+    column: logo_churn_rate
+    caveat: Null when the prior-month active denominator is zero.

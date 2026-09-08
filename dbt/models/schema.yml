@@ -1,0 +1,35 @@
+version: 2
+models:
+  - name: dim_customer
+    description: One row per accepted canonical CRM customer.
+    columns:
+      - name: customer_sk
+        tests: [unique, not_null]
+      - name: crm_customer_id
+        tests: [unique, not_null]
+  - name: dim_plan
+    columns:
+      - name: plan_code
+        tests: [unique, not_null]
+  - name: fct_revenue
+    description: Recognized subscription and one-off revenue at transaction grain.
+    columns:
+      - name: revenue_id
+        tests: [not_null]
+      - name: customer_sk
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_sk
+      - name: net_revenue_cents
+        tests: [not_null]
+  - name: mart_monthly_kpis
+    columns:
+      - name: calendar_month
+        tests: [not_null]
+  - name: mart_subscription_health
+    columns:
+      - name: active_subscribers
+        tests: [not_null]

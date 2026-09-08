@@ -1,0 +1,15 @@
+.venv/
+.uv-cache/
+.uv-python/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+target/
+logs/
+dbt/logs/
+dbt/.user.yml
+dbt/target/
+data/
+artifacts/
+*.duckdb.wal
+.DS_Store

@@ -1,0 +1,9 @@
+services:
+  fieldforge:
+    build: .
+    volumes: ["./data:/app/data", "./artifacts:/app/artifacts"]
+    command: make all
+  dashboard:
+    build: .
+    ports: ["8501:8501"]
+    volumes: ["./data:/app/data", "./artifacts:/app/artifacts"]
