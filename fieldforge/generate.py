@@ -27,6 +27,17 @@ def generate(seed: int = DEFAULT_SEED, customers: int = 500) -> dict[str, int]:
     end = date(2026, 8, 31)
     countries = ["US", "CA", "GB"]
     currencies = {"US": "USD", "CA": "CAD", "GB": "GBP"}
+    earliest_event_by_customer: dict[int, datetime] = {}
+
+    def record_customer_event(customer_index: int, event_at: date | datetime) -> None:
+        timestamp = (
+            event_at
+            if isinstance(event_at, datetime)
+            else datetime.combine(event_at, datetime.min.time())
+        )
+        current = earliest_event_by_customer.get(customer_index)
+        if current is None or timestamp < current:
+            earliest_event_by_customer[customer_index] = timestamp
 
     people = []
     for i in range(customers):
@@ -57,6 +68,7 @@ def generate(seed: int = DEFAULT_SEED, customers: int = 500) -> dict[str, int]:
         if rng.random() > 0.83:
             continue
         start = date(2025, 1, 1) + timedelta(days=rng.randrange(560))
+        record_customer_event(i, start)
         cancelled = start + timedelta(days=rng.randrange(45, 450)) if rng.random() < 0.22 else None
         if cancelled and cancelled > end:
             cancelled = None
@@ -83,6 +95,7 @@ def generate(seed: int = DEFAULT_SEED, customers: int = 500) -> dict[str, int]:
         pidx = rng.randrange(customers)
         person = customers_df.iloc[pidx]
         ordered = datetime(2025, 9, 1) + timedelta(minutes=rng.randrange(365 * 24 * 60))
+        record_customer_event(pidx, ordered)
         status = rng.choices(["delivered", "refunded", "cancelled"], [0.88, 0.07, 0.05])[0]
         line_count = rng.randint(1, 3)
         total = 0
@@ -105,11 +118,16 @@ def generate(seed: int = DEFAULT_SEED, customers: int = 500) -> dict[str, int]:
     for tid in range(customers):
         pidx = rng.randrange(customers)
         opened = datetime(2025, 9, 1) + timedelta(minutes=rng.randrange(365 * 24 * 60))
+        record_customer_event(pidx, opened)
         resolved = opened + timedelta(hours=rng.randrange(1, 120)) if rng.random() < 0.92 else None
         tickets.append({"ticket_id": f"TKT-{tid + 1:06d}", "requester_email": customers_df.iloc[pidx].email, "opened_at": opened, "resolved_at": resolved, "category": rng.choice(["billing", "delivery", "product", "account"]), "csat": int(np_rng.integers(1, 6)) if resolved else None, "_planted_error": ""})
     tickets_df = pd.DataFrame(tickets)
     _plant(tickets_df, [12, 22], "resolved_before_opened", lambda d, i: d.__setitem__("resolved_at", d["resolved_at"].mask(d.index == i, d.at[i, "opened_at"] - timedelta(hours=1))))
     _plant(tickets_df, [32, 42], "invalid_csat", lambda d, i: d.__setitem__("csat", d["csat"].mask(d.index == i, 9)))
+
+    for customer_index, first_event_at in earliest_event_by_customer.items():
+        candidate = customers_df.at[customer_index, "created_at"]
+        customers_df.at[customer_index, "created_at"] = min(candidate, first_event_at)
 
     frames = {"customers": customers_df, "subscriptions": subs_df, "invoices": invoices_df, "orders": orders_df, "order_items": items_df, "tickets": tickets_df}
     for name, frame in frames.items():

@@ -29,7 +29,7 @@ Preserve unrelated user changes. Use the existing environment when present; othe
 - Explicit rule-coded quarantine with no silent record loss
 - Deterministic exact-email identity crosswalk with unmatched identities retained
 - dbt sources, dimensions, revenue and order-line facts, KPI marts, tests, reconciliation, and evidence artifacts
-- 18 dbt models with grain declared on every model, 100 dbt tests, and 12 reconciliation controls
+- 18 dbt models with grain declared on every model, 101 dbt tests, and 13 reconciliation controls
 - Order lines whose parent order was quarantined are retained with `order_link_status = 'order_not_accepted'`
 - `mart_order_line_integrity` publishes orders whose accepted lines no longer reconcile to the header amount
 - Paths resolve at call time from `FIELDFORGE_DATA_ROOT` and `FIELDFORGE_ARTIFACTS_ROOT`, so a run can be relocated
@@ -118,13 +118,12 @@ The target cadence is: **explain one concept → show real data → ask one smal
 
 Branch and CI confirmation, dimensional coverage, and test-output isolation are complete, all on branch `claudework`. See the two newest `ASTRA_WORKLOG.md` entries for evidence.
 
-1. Correct synthetic customer chronology. The audit is done: 190 of 473 customers with orders (40.2%) have `created_at` after their first order, worst case 347 days, and 202 of 398 customers with subscriptions have it after their first subscription. Governed decision 7 above settles the semantics. The six-step implementation task is written out in the 2026-09-08 chronology entry in `ASTRA_WORKLOG.md`; start from there rather than re-deriving it.
-2. Validate dashboard values and visuals against the completed dimensional models, surface `mart_order_line_integrity` in the app, and migrate Streamlit `use_container_width` to `width` before its removal date.
-3. Produce larger seeded scale profiles and reproducible benchmarks without overstating laptop results. The relocated-run capability above makes this possible without touching demo data.
-4. Verify Docker on a Docker-capable host and PySpark parity on a Java-capable host.
-5. Lock the complete dependency environment and execute a clean-clone verification.
-6. Finish customer handover, troubleshooting, portfolio story, screenshots, and demo rehearsal.
-7. Request explicit user approval before changing the private repository to public.
+1. Validate dashboard values and visuals against the completed dimensional models, surface `mart_order_line_integrity` in the app, and migrate Streamlit `use_container_width` to `width` before its removal date.
+2. Produce larger seeded scale profiles and reproducible benchmarks without overstating laptop results. The relocated-run capability above makes this possible without touching demo data.
+3. Verify Docker on a Docker-capable host and PySpark parity on a Java-capable host.
+4. Lock the complete dependency environment and execute a clean-clone verification.
+5. Finish customer handover, troubleshooting, portfolio story, screenshots, and demo rehearsal.
+6. Request explicit user approval before changing the private repository to public.
 
 ## Branch convention
 
@@ -150,7 +149,7 @@ Verify these rather than trusting the summary above.
 10. **CI lint scope.** GitHub Actions lints only `fieldforge dashboard tests`, so `spark/` is uncovered. `ruff check .` is currently clean; keep checking the whole tree.
 11. **Teaching contract.** The learner-in-the-loop section above is binding. It was violated earlier in this session and Aneesh stopped the work. One concept, real data in the live app, one question, then wait.
 12. **Chronology fix changes generated data.** Regenerating with corrected `created_at` changes every source CSV checksum. Quarantine counts, revenue totals and order-line integrity figures should not move, because no validation rule or monetary model reads `created_at`. If any of them do move, stop and investigate rather than updating the documented figures.
-13. **SQL Lab coverage.** The lab exposes only `quarantined_orders` and `incoming_orders`. Any teaching checkpoint about customers or chronology needs a customer table wired into `dashboard/sql_lab.py` first, so Aneesh can see the data before being asked about it.
+13. **SQL Lab coverage.** The lab exposes `quarantined_orders`, `incoming_orders`, and the one-row-per-accepted-customer `customer_chronology` table. Keep future teaching tables equally small and traceable.
 
 ## Handoff discipline
 

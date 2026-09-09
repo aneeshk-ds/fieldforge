@@ -1,5 +1,16 @@
 # ASTRA Worklog
 
+## 2026-09-09 — Customer first-seen chronology corrected and guarded
+
+- **Learner checkpoint:** The SQL Lab first exposed `customer_chronology` at one row per accepted CRM customer. Aneesh identified that the later CRM `created_at`, not the dated event evidence, must be corrected under the governed canonical-first-seen rule.
+- **Implemented:** The seeded generator records each customer's earliest subscription, order, or support event and derives final `created_at` as the earlier of its independent seeded candidate and that first event. Customers without events keep the independent candidate. Event dates and all non-customer source files remain unchanged.
+- **Controls:** Added the `assert_customer_created_before_first_event` dbt singular test, the release-blocking `customer_chronology` reconciliation control, and the same invariant to the isolated Python pipeline test. No quarantine rule was added because this is a synthetic generator invariant, not an incoming-source defect.
+- **Visible outcome:** Before correction, the combined SQL Lab view showed 284 of 493 event-bearing accepted customers with `created_at` after their first event; after correction it shows zero. Lesson customer `CRM-000475` now has `created_at = 2025-09-25 11:18`, equal to `ORD-0000001`'s `ordered_at`, rather than following it.
+- **Portfolio presentation:** Expanded the README with a truthful tools-and-technology matrix and a skills-to-evidence matrix. Optional Docker and PySpark paths remain explicitly labelled as pending runtime verification.
+- **Regression evidence:** Only `customers.csv` changed checksum (`bb1bc2...` to `30a561...`); subscriptions, invoices, orders, order items, and tickets remained byte-identical. Revenue remained 5,646 transactions and 31,597,300 net cents. Order-line integrity remained 1,491 complete, 1 incomplete from a quarantined line, and 2 incomplete from unexplained lines. Quarantine counts remained 29 records.
+- **Verification on macOS from the SSD workspace:** `make all` passed: dbt PASS=119/WARN=0/ERROR=0 across 18 models and 101 tests, four gold marts exported, all 13 reconciliation controls passed, 13 Python tests passed, and all five dashboard SQL checks passed. `ruff check .` and `git diff --check` passed. Streamlit AppTest rendered the corrected SQL Lab with zero exceptions and reported 493 event-bearing customers with zero violations; the lab's deprecated dataframe width arguments were also migrated.
+- **Next:** Validate dashboard values and visuals against the completed dimensional models, surface `mart_order_line_integrity`, and migrate deprecated Streamlit width arguments.
+
 ## 2026-09-08 — Chronology audit findings and governed lifecycle decision
 
 - **Agent:** Claude, branch `claudework` at `04566e5` on the SSD workspace. Documentation-only checkpoint; no code was changed.

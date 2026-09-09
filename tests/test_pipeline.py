@@ -66,6 +66,26 @@ def test_no_silent_loss_and_explicit_reasons(test_run_id):
             assert quarantine["_rejection_reasons"].str.len().gt(0).all()
             assert quarantine["_run_id"].eq(test_run_id).all()
 
+    customers = pd.read_parquet(settings.silver_dir() / "customers.parquet")
+    event_frames = []
+    for source, event_column in (
+        ("subscriptions", "start_date"),
+        ("orders", "ordered_at"),
+        ("tickets", "opened_at"),
+    ):
+        events = pd.read_parquet(settings.silver_dir() / f"{source}.parquet")
+        event_frames.append(
+            events[["normalized_email", event_column]].rename(columns={event_column: "event_at"})
+        )
+    first_events = (
+        pd.concat(event_frames)
+        .assign(event_at=lambda frame: pd.to_datetime(frame["event_at"], format="mixed"))
+        .groupby("normalized_email", as_index=False)["event_at"]
+        .min()
+    )
+    chronology = customers.merge(first_events, on="normalized_email", how="inner")
+    assert (pd.to_datetime(chronology["created_at"]) <= chronology["event_at"]).all()
+
 
 def test_identity_crosswalk_explains_every_match():
     crosswalk = resolve_identities()

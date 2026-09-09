@@ -8,17 +8,39 @@ FieldForge is a zero-cost customer data onboarding platform built around a ficti
 
 The repository demonstrates the work expected of a Data Engineer, Analytics Engineer, AI & Data Consultant, or Forward Deployed Engineer: discovery, data contracts, profiling, validation, quarantine, identity resolution, dimensional modelling, KPI governance, delivery automation, and customer handover.
 
-## Progress — updated 8 September 2026
+## Tools and technology
 
-**Current stage:** dimensional coverage complete and test runs isolated from the demo run. **Next milestone:** audit synthetic chronology, then validate the dashboard against the completed models.
+| Area | Tools | How FieldForge uses them |
+|---|---|---|
+| Data engineering | Python, pandas, PyArrow, Pandera | Seeded source generation, contracts, profiling, bronze/silver processing, quarantine, and evidence artifacts |
+| Analytics engineering | DuckDB, SQL, dbt Core, dbt-duckdb | Staging models, dimensions, facts, marts, lineage, tests, and currency-safe KPI logic |
+| Product experience | Streamlit, Plotly | Operational quality console, investigation workflow, governed business views, and SQL Lab |
+| Quality and delivery | pytest, Ruff, Make, GitHub Actions | Reproducible orchestration, regression checks, linting, hosted CI, and release-blocking reconciliation |
+| Portable execution | Parquet, Docker/Compose, optional PySpark | Local lakehouse storage and portability paths; Docker and Spark runtime parity are still pending verification |
+
+## Skills demonstrated
+
+| Skill | Evidence in the project |
+|---|---|
+| Customer data onboarding | Six-source discovery, source contracts, provenance, normalization, and no-silent-loss processing |
+| Data quality governance | Rule-coded quarantine, record-level evidence, source-owner requests, chronology controls, and reconciliation |
+| Identity resolution | Deterministic exact-email crosswalk with unmatched identities retained instead of guessed |
+| Dimensional modelling | Customer, plan, product, and date dimensions with revenue and order-line facts at declared grains |
+| KPI design | Currency-separated revenue, attribution coverage, subscription health, support health, and order-line integrity |
+| Analytical SQL | Joins, window functions, conditional aggregation, grain tests, and traceable dashboard queries |
+| Product and consulting delivery | Customer brief, decisions, acceptance criteria, operational UI, demo path, troubleshooting, and handover documentation |
+
+## Progress — updated 9 September 2026
+
+**Current stage:** synthetic customer chronology corrected and guarded. **Next milestone:** validate the dashboard against the completed dimensional models.
 
 | Milestone | Status | Evidence / next action |
 |---|---|---|
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
 | Identity resolution and analytical models | Dimensional coverage complete | 18 dbt models; every source modelled; grains declared on every model; unattributed revenue retained |
-| Automated quality checks | Local checks passed; tests isolated | 100 dbt tests, 13 Python tests, 12 reconciliation controls, 5 dashboard query checks; tests write to a temporary root and never touch the demo run |
-| Dashboard and SQL Lab | Operational prototype | Three views, revenue coverage, source-aware investigation, and an interactive SQL Lab |
+| Automated quality checks | Local checks passed; tests isolated | 101 dbt tests, 13 Python tests, 13 reconciliation controls, 5 dashboard query checks; tests write to a temporary root and never touch the demo run |
+| Dashboard and SQL Lab | Operational prototype | Three views, revenue coverage, source-aware investigation, and an interactive SQL Lab with customer chronology |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Pending | Initial warm local pipeline baseline: 42.84 seconds; no scale claim yet |
 | Docker, Spark parity, hosted CI | Partial | Hosted CI is green on published `main`; Docker and Spark/Java remain unverified |
@@ -26,9 +48,13 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ### Latest project session
 
-Isolated test outputs from the demo run. `FIELDFORGE_DATA_ROOT` and `FIELDFORGE_ARTIFACTS_ROOT` now decide where a run lands, resolved when a path is used rather than at import, and `dbt/profiles.yml` and `sources.yml` read the same variable through `env_var` with a `data` default. Tests point it at a temporary directory, so `pytest` no longer rewrites source records, evidence artifacts, or the run ID the dashboard reports. Evidence from a passing test run is disposable; a failing run copies its evidence JSON and a failure report to the Git-ignored `artifacts/test-runs/<run-id>/`. A complete run against a separate root also passes, dbt included, which makes parallel and benchmark runs possible without disturbing demo data.
+Corrected the seeded customer lifecycle chronology after a learner checkpoint established that event timestamps are evidence and the later CRM first-seen value is wrong. The generator now derives each event-bearing customer's `created_at` on or before their earliest subscription, order, or support event; customers without events retain their independent seeded date. A dbt singular test and release reconciliation control both require zero violations, and the SQL Lab exposes the actual one-row-per-customer chronology preview. The SSD `make all` run passed with 101 dbt tests, 13 Python tests, 13 reconciliation controls, and five dashboard checks. Revenue, quarantine, and order-line integrity figures did not move.
 
 ### Previous session
+
+Isolated test outputs from the demo run. `FIELDFORGE_DATA_ROOT` and `FIELDFORGE_ARTIFACTS_ROOT` now decide where a run lands, resolved when a path is used rather than at import, and `dbt/profiles.yml` and `sources.yml` read the same variable through `env_var` with a `data` default. Tests point it at a temporary directory, so `pytest` no longer rewrites source records, evidence artifacts, or the run ID the dashboard reports. Evidence from a passing test run is disposable; a failing run copies its evidence JSON and a failure report to the Git-ignored `artifacts/test-runs/<run-id>/`. A complete run against a separate root also passes, dbt included, which makes parallel and benchmark runs possible without disturbing demo data.
+
+### Earlier session
 
 Closed the dimensional gap. `order_items` was generated, validated, and quarantined but never modelled; it now flows through `stg_order_items` into `fct_order_item` at order-line grain, joined to a derived `dim_product` and a data-driven `dim_date`. Every model declares its grain, staging models read governed dbt sources instead of raw file paths, and `mart_order_line_integrity` publishes the consequence of quarantining a line: **3 of 1,494 accepted orders** no longer reconcile to their line totals, and **8 of 3,021 accepted lines** belong to a quarantined order and are retained with `order_link_status = 'order_not_accepted'` rather than dropped. Prior marts are unchanged: 5,646 revenue transactions and 31,597,300 net cents, with monthly KPI, subscription, and support outputs identical to the previous run.
 
@@ -42,7 +68,8 @@ At each completed project milestone, update this section's date, status, evidenc
 - [x] Complete dimensional models with declared grains and key tests.
 - [x] Isolate test data so tests never replace the demo run.
 - [ ] Lock the full dependency environment.
-- [ ] Audit synthetic chronology, KPI semantics, and independent reconciliation.
+- [x] Correct synthetic customer chronology and enforce it in dbt and reconciliation.
+- [ ] Audit remaining KPI semantics and independent reconciliation.
 - [ ] Validate dashboard values and visuals against the completed models.
 - [ ] Verify Docker, Spark parity, and clean-clone setup; keep hosted CI green.
 - [ ] Publish reproducible scale benchmarks and finish customer handover.

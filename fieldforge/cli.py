@@ -54,6 +54,21 @@ def reconcile() -> None:
             "order_item_product_fk": con.execute("select count(*)=0 from fct_order_item f left join dim_product p using(product_sk) where p.product_sk is null").fetchone()[0],
             "order_line_variance_explained": con.execute("select (select count(*) from mart_order_line_integrity where line_coverage_status='incomplete_unexplained_line') <= (select count(*) from stg_quarantined_order_items where _rule_codes like '%ORDER_ITEM_ORPHAN%')").fetchone()[0],
             "revenue_date_dimension_fk": con.execute("select count(*)=0 from fct_revenue f left join dim_date d on d.date_key = f.recognized_date where d.date_key is null").fetchone()[0],
+            "customer_chronology": con.execute("""
+                with customer_events as (
+                    select normalized_email, cast(start_date as timestamp) event_at from stg_subscriptions
+                    union all
+                    select normalized_email, ordered_at from stg_orders
+                    union all
+                    select normalized_email, opened_at from stg_tickets
+                ), first_events as (
+                    select normalized_email, min(event_at) first_event_at
+                    from customer_events group by normalized_email
+                )
+                select count(*)=0
+                from stg_customers c join first_events e using(normalized_email)
+                where c.created_at > e.first_event_at
+            """).fetchone()[0],
         }
     write_json(artifacts_root() / "reconciliation.json", checks)
     if not all(checks.values()):
