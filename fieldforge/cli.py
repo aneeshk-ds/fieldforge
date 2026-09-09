@@ -1,19 +1,29 @@
 from __future__ import annotations
 
 import argparse
+import json
+import os
+import platform
+import resource
 import shutil
+import subprocess
+import sys
 import time
 import uuid
+from datetime import UTC, datetime
+from pathlib import Path
 
 import duckdb
 
 from fieldforge.generate import generate
 from fieldforge.pipeline import ingest_bronze, profile_sources, resolve_identities, validate_silver
 from fieldforge.settings import (
+    ROOT,
     artifacts_root,
     data_root,
     ensure_directories,
     gold_dir,
+    is_isolated,
     warehouse_path,
 )
 from fieldforge.utils import write_json
@@ -44,8 +54,8 @@ def reconcile() -> None:
         checks = {
             "all_invoice_net_cents": con.execute("select coalesce(sum(gross_amount_cents-refund_amount_cents),0) from stg_invoices").fetchone()[0] == con.execute("select coalesce(sum(net_revenue_cents),0) from fct_revenue where revenue_type='subscription'").fetchone()[0],
             "all_order_net_cents": con.execute("select coalesce(sum(order_amount_cents-refund_amount_cents),0) from stg_orders where status <> 'cancelled'").fetchone()[0] == con.execute("select coalesce(sum(net_revenue_cents),0) from fct_revenue where revenue_type='one_off'").fetchone()[0],
-            "attributed_invoice_net_cents": con.execute("""select coalesce(sum(i.gross_amount_cents-i.refund_amount_cents),0) from stg_invoices i join read_parquet('data/silver/identity_crosswalk.parquet') x on x.source_system='subscriptions' and x.source_identity=i.billing_customer_id where x.customer_sk is not null""").fetchone()[0] == con.execute("select coalesce(sum(net_revenue_cents),0) from fct_revenue where revenue_type='subscription' and attribution_status='attributed'").fetchone()[0],
-            "attributed_order_net_cents": con.execute("""select coalesce(sum(o.order_amount_cents-o.refund_amount_cents),0) from stg_orders o join read_parquet('data/silver/identity_crosswalk.parquet') x on x.source_system='orders' and x.source_identity=o.storefront_customer_id where o.status <> 'cancelled' and x.customer_sk is not null""").fetchone()[0] == con.execute("select coalesce(sum(net_revenue_cents),0) from fct_revenue where revenue_type='one_off' and attribution_status='attributed'").fetchone()[0],
+            "attributed_invoice_net_cents": con.execute("""select coalesce(sum(i.gross_amount_cents-i.refund_amount_cents),0) from stg_invoices i join stg_identity_crosswalk x on x.source_system='subscriptions' and x.source_identity=i.billing_customer_id where x.customer_sk is not null""").fetchone()[0] == con.execute("select coalesce(sum(net_revenue_cents),0) from fct_revenue where revenue_type='subscription' and attribution_status='attributed'").fetchone()[0],
+            "attributed_order_net_cents": con.execute("""select coalesce(sum(o.order_amount_cents-o.refund_amount_cents),0) from stg_orders o join stg_identity_crosswalk x on x.source_system='orders' and x.source_identity=o.storefront_customer_id where o.status <> 'cancelled' and x.customer_sk is not null""").fetchone()[0] == con.execute("select coalesce(sum(net_revenue_cents),0) from fct_revenue where revenue_type='one_off' and attribution_status='attributed'").fetchone()[0],
             "attribution_partition": con.execute("select count(*)=0 from mart_monthly_kpis where net_revenue_cents <> attributed_net_revenue_cents + unattributed_net_revenue_cents or transactions <> attributed_transactions + unattributed_transactions").fetchone()[0],
             "attributed_customer_fk": con.execute("select count(*)=0 from fct_revenue f left join dim_customer d using(customer_sk) where f.attribution_status='attributed' and d.customer_sk is null").fetchone()[0],
             "unattributed_customer_null": con.execute("select count(*)=0 from fct_revenue where attribution_status='unattributed' and customer_sk is not null").fetchone()[0],
@@ -91,12 +101,93 @@ def clean() -> None:
     print("Removed generated data and artifacts")
 
 
-def benchmark() -> None:
-    started = time.perf_counter()
-    run_pipeline(20260907, 500)
-    payload = {"stage": "pre_dbt_pipeline", "customers": 500, "elapsed_seconds": round(time.perf_counter() - started, 3)}
+def _rss_mib(peak: int) -> float:
+    bytes_used = peak if sys.platform == "darwin" else peak * 1024
+    return round(bytes_used / (1024 * 1024), 2)
+
+
+def benchmark(profile: str, seed: int, customers: int) -> None:
+    if not (
+        is_isolated()
+        and os.environ.get("FIELDFORGE_DATA_ROOT")
+        and os.environ.get("FIELDFORGE_ARTIFACTS_ROOT")
+    ):
+        raise SystemExit(
+            "Benchmark roots must be relocated with FIELDFORGE_DATA_ROOT and "
+            "FIELDFORGE_ARTIFACTS_ROOT."
+        )
+
+    cache_state = "warm" if warehouse_path().exists() else "cold"
+    previous_benchmark = artifacts_root() / "benchmark.json"
+    if previous_benchmark.exists():
+        previous = json.loads(previous_benchmark.read_text())
+        previous_stamp = previous["started_at_utc"].replace(":", "").replace("+00:00", "Z")
+        write_json(artifacts_root() / f"benchmark-{previous_stamp}.json", previous)
+    started_at = datetime.now(UTC)
+    total_started = time.perf_counter()
+    timings: dict[str, float] = {}
+
+    stage_started = time.perf_counter()
+    run_pipeline(seed, customers)
+    timings["source_to_silver_seconds"] = round(time.perf_counter() - stage_started, 3)
+
+    stage_started = time.perf_counter()
+    dbt_executable = str(Path(sys.executable).with_name("dbt"))
+    subprocess.run(
+        [dbt_executable, "build", "--project-dir", "dbt", "--profiles-dir", "dbt"],
+        cwd=ROOT,
+        check=True,
+        env=os.environ.copy(),
+    )
+    timings["dbt_build_seconds"] = round(time.perf_counter() - stage_started, 3)
+
+    stage_started = time.perf_counter()
+    export_gold()
+    timings["gold_export_seconds"] = round(time.perf_counter() - stage_started, 3)
+
+    stage_started = time.perf_counter()
+    reconcile()
+    dashboard_check()
+    timings["verification_seconds"] = round(time.perf_counter() - stage_started, 3)
+    timings["total_seconds"] = round(time.perf_counter() - total_started, 3)
+
+    manifest = json.loads((artifacts_root() / "synthetic_manifest.json").read_text())
+    dbt_manifest = json.loads((ROOT / "dbt" / "target" / "manifest.json").read_text())
+    nodes = dbt_manifest["nodes"].values()
+    payload = {
+        "profile": profile,
+        "seed": seed,
+        "customers": customers,
+        "cache_state": cache_state,
+        "started_at_utc": started_at.isoformat(),
+        "finished_at_utc": datetime.now(UTC).isoformat(),
+        "environment": {
+            "platform": platform.platform(),
+            "machine": platform.machine(),
+            "python": platform.python_version(),
+            "logical_cpu_count": os.cpu_count(),
+            "orchestrator_peak_rss_mib": _rss_mib(
+                resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+            ),
+            "completed_children_peak_rss_mib": _rss_mib(
+                resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
+            ),
+            "memory_scope": (
+                "Per-process peaks for the Python orchestrator and completed child processes; "
+                "not a concurrent system-wide peak."
+            ),
+        },
+        "row_counts": manifest["row_counts"],
+        "total_source_rows": sum(manifest["row_counts"].values()),
+        "dbt_models": sum(node["resource_type"] == "model" for node in nodes),
+        "dbt_tests": sum(node["resource_type"] == "test" for node in nodes),
+        "timings": timings,
+        "data_root": str(data_root()),
+        "artifacts_root": str(artifacts_root()),
+        "claim_boundary": "Single-host benchmark; not a production throughput or capacity claim.",
+    }
     write_json(artifacts_root() / "benchmark.json", payload)
-    print(payload)
+    print(json.dumps(payload, indent=2))
 
 
 def main() -> None:
@@ -105,8 +196,12 @@ def main() -> None:
     pipeline = sub.add_parser("pipeline")
     pipeline.add_argument("--seed", type=int, default=20260907)
     pipeline.add_argument("--customers", type=int, default=500)
-    for command in ("export-gold", "reconcile", "dashboard-check", "clean", "benchmark"):
+    for command in ("export-gold", "reconcile", "dashboard-check", "clean"):
         sub.add_parser(command)
+    benchmark_parser = sub.add_parser("benchmark")
+    benchmark_parser.add_argument("--profile", default="1x")
+    benchmark_parser.add_argument("--seed", type=int, default=20260907)
+    benchmark_parser.add_argument("--customers", type=int, default=500)
     args = parser.parse_args()
     if args.command == "pipeline":
         run_pipeline(args.seed, args.customers)
@@ -119,7 +214,7 @@ def main() -> None:
     elif args.command == "clean":
         clean()
     elif args.command == "benchmark":
-        benchmark()
+        benchmark(args.profile, args.seed, args.customers)
 
 
 if __name__ == "__main__":

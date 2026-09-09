@@ -1,5 +1,7 @@
 PYTHON := .venv/bin/python
 DBT := .venv/bin/dbt
+BENCHMARK_PROFILE ?= 10x
+BENCHMARK_CUSTOMERS ?= 5000
 export UV_CACHE_DIR := $(CURDIR)/.uv-cache
 export UV_PYTHON_INSTALL_DIR := $(CURDIR)/.uv-python
 
@@ -31,7 +33,10 @@ spark:
 	.venv/bin/spark-submit spark/standardize_orders.py
 
 benchmark:
-	$(PYTHON) -m fieldforge.cli benchmark
+	FIELDFORGE_DATA_ROOT="$(CURDIR)/data/benchmarks/$(BENCHMARK_PROFILE)" \
+	FIELDFORGE_ARTIFACTS_ROOT="$(CURDIR)/artifacts/benchmarks/$(BENCHMARK_PROFILE)" \
+	$(PYTHON) -m fieldforge.cli benchmark --profile "$(BENCHMARK_PROFILE)" \
+		--customers "$(BENCHMARK_CUSTOMERS)"
 
 clean:
 	$(PYTHON) -m fieldforge.cli clean

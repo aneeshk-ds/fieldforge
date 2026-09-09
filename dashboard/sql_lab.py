@@ -1,17 +1,27 @@
-"""A disposable SQL workspace over FieldForge's synthetic quarantine data."""
+"""A disposable SQL workspace over FieldForge's governed local data."""
+
+import json
 
 import duckdb
 import streamlit as st
 
-from fieldforge.settings import bronze_dir, gold_dir, quarantine_dir, silver_dir
+from fieldforge.settings import artifacts_root, bronze_dir, gold_dir, quarantine_dir, silver_dir
 
 SOURCE = quarantine_dir() / "orders.parquet"
 INCOMING = bronze_dir() / "orders.parquet"
+BRONZE_SOURCES = {
+    source: bronze_dir() / f"{source}.parquet"
+    for source in ("customers", "subscriptions", "invoices", "orders", "order_items", "tickets")
+}
 CUSTOMERS = silver_dir() / "customers.parquet"
 SUBSCRIPTIONS = silver_dir() / "subscriptions.parquet"
 ORDERS = silver_dir() / "orders.parquet"
 TICKETS = silver_dir() / "tickets.parquet"
 ORDER_LINE_INTEGRITY = gold_dir() / "mart_order_line_integrity.parquet"
+BENCHMARK_RESULTS = [
+    artifacts_root() / "benchmarks" / profile / "benchmark.json"
+    for profile in ("1x", "10x")
+]
 
 st.set_page_config(page_title="FieldForge SQL Lab", page_icon="🔎", layout="wide")
 st.title("FieldForge · SQL Lab")
@@ -24,6 +34,7 @@ required_sources = (
     ORDERS,
     TICKETS,
     ORDER_LINE_INTEGRITY,
+    *BRONZE_SOURCES.values(),
 )
 if not all(path.exists() for path in required_sources):
     st.error("Run make pipeline from the FieldForge folder to prepare the data.")
@@ -39,6 +50,18 @@ with duckdb.connect() as connection:
     connection.execute(
         "CREATE TABLE incoming_orders AS SELECT order_id, currency FROM read_parquet(?)",
         [str(INCOMING)],
+    )
+    connection.execute(
+        """
+        CREATE TABLE source_scale_profile AS
+        SELECT 'customers' AS source, COUNT(*) AS records FROM read_parquet(?)
+        UNION ALL SELECT 'subscriptions', COUNT(*) FROM read_parquet(?)
+        UNION ALL SELECT 'invoices', COUNT(*) FROM read_parquet(?)
+        UNION ALL SELECT 'orders', COUNT(*) FROM read_parquet(?)
+        UNION ALL SELECT 'order_items', COUNT(*) FROM read_parquet(?)
+        UNION ALL SELECT 'tickets', COUNT(*) FROM read_parquet(?)
+        """,
+        [str(path) for path in BRONZE_SOURCES.values()],
     )
     connection.execute(
         """
@@ -105,6 +128,46 @@ with duckdb.connect() as connection:
         hide_index=True,
         width="stretch",
     )
+    st.subheader("Your table: source_scale_profile")
+    source_total = connection.sql("SELECT SUM(records) FROM source_scale_profile").fetchone()[0]
+    st.write(
+        f"{source_total:,} generated source records. Grain: one row per source extract. "
+        "This is the current 500-customer baseline, before any larger benchmark run."
+    )
+    st.dataframe(
+        connection.sql("SELECT source, records FROM source_scale_profile ORDER BY source").df(),
+        hide_index=True,
+        width="stretch",
+    )
+    if all(path.exists() for path in BENCHMARK_RESULTS):
+        benchmark_rows = []
+        for path in BENCHMARK_RESULTS:
+            result = json.loads(path.read_text())
+            benchmark_rows.append(
+                {
+                    "profile": result["profile"],
+                    "cache_state": result["cache_state"],
+                    "customers": result["customers"],
+                    "source_rows": result["total_source_rows"],
+                    "source_to_silver_seconds": result["timings"][
+                        "source_to_silver_seconds"
+                    ],
+                    "dbt_build_seconds": result["timings"]["dbt_build_seconds"],
+                    "total_seconds": result["timings"]["total_seconds"],
+                    "orchestrator_peak_rss_mib": result["environment"][
+                        "orchestrator_peak_rss_mib"
+                    ],
+                    "child_peak_rss_mib": result["environment"][
+                        "completed_children_peak_rss_mib"
+                    ],
+                }
+            )
+        st.subheader("Your table: benchmark_results")
+        st.write(
+            "Two isolated, seeded benchmark runs on this Mac. Grain: one row per scale "
+            "profile. Memory columns are separate per-process peaks and must not be added."
+        )
+        st.dataframe(benchmark_rows, hide_index=True, width="stretch")
     st.subheader("Your table: customer_chronology")
     chronology_summary = connection.sql(
         """

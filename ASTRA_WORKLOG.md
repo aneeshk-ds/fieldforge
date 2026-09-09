@@ -1,5 +1,14 @@
 # ASTRA Worklog
 
+## 2026-09-09 — Reproducible 10× benchmark evidence published
+
+- **Learner decision:** After seeing the six-source 500-customer baseline in the SQL Lab, Aneesh selected the 10× profile: 5,000 customers.
+- **Implemented:** Added `make benchmark` with explicit profile/customer inputs and mandatory relocated data and artifact roots, so scale runs cannot overwrite the demo. Each run records the seed, exact source counts, stage timings, cache label, environment, dbt model/test counts, and separately scoped Python/child peak RSS; repeats archive the prior JSON observation. Relocated reconciliation now reads `stg_identity_crosswalk`, removing its former hard-coded demo path.
+- **Visible outcome:** The SQL Lab exposes the live 1× and 10× benchmark comparison. The deterministic 1× workload is 10,163 rows; 10× is 102,479 rows (10.08×). Cold totals were 39.137 s and 130.938 s (3.35×); warm-repeat totals were 51.861 s and 155.108 s (2.99×).
+- **Claim boundary:** These are two observations on one macOS 14.8.9 x86_64 laptop with four logical CPUs and Python 3.13.14. They are not production throughput, concurrency, or capacity claims. Memory values are separate per-process peaks and are not additive.
+- **Controls and verification:** Both profiles passed 18 dbt models, 101 dbt tests, all 13 reconciliation controls, and all six dashboard checks. A Python regression test now proves the benchmark refuses default demo roots. Full default-run verification and live SQL Lab QA complete this milestone before commit.
+- **Next:** Verify Docker on a Docker-capable host and PySpark parity on a Java-capable host.
+
 ## 2026-09-09 — Order-line integrity surfaced and dashboard validated
 
 - **Learner decision:** After reviewing the three actual incomplete accepted orders in the SQL Lab, Aneesh chose to emphasize the known quarantined-line case over the two unexplained cases. The unexplained cases remain visible as a secondary investigation backlog.

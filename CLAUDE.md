@@ -116,13 +116,12 @@ The target cadence is: **explain one concept → show real data → ask one smal
 
 ## Next implementation sequence
 
-Branch and CI confirmation, dimensional coverage, and test-output isolation are complete, all on branch `claudework`. See the two newest `ASTRA_WORKLOG.md` entries for evidence.
+Branch and CI confirmation, dimensional coverage, test-output isolation, and reproducible 1×/10× local benchmarks are complete, all on branch `claudework`. See the newest `ASTRA_WORKLOG.md` entries for evidence.
 
-1. Produce larger seeded scale profiles and reproducible benchmarks without overstating laptop results. The relocated-run capability above makes this possible without touching demo data.
-2. Verify Docker on a Docker-capable host and PySpark parity on a Java-capable host.
-3. Lock the complete dependency environment and execute a clean-clone verification.
-4. Finish customer handover, troubleshooting, portfolio story, screenshots, and demo rehearsal.
-5. Request explicit user approval before changing the private repository to public.
+1. Verify Docker on a Docker-capable host and PySpark parity on a Java-capable host.
+2. Lock the complete dependency environment and execute a clean-clone verification.
+3. Finish customer handover, troubleshooting, portfolio story, screenshots, and demo rehearsal.
+4. Request explicit user approval before changing the private repository to public.
 
 ## Branch convention
 

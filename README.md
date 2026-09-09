@@ -32,25 +32,29 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ## Progress — updated 9 September 2026
 
-**Current stage:** completed dimensional models are validated and surfaced in the dashboard. **Next milestone:** produce larger seeded scale profiles and reproducible benchmarks.
+**Current stage:** reproducible 1× and learner-approved 10× scale profiles are validated and visible in the SQL Lab. **Next milestone:** verify Docker and PySpark runtime parity.
 
 | Milestone | Status | Evidence / next action |
 |---|---|---|
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
 | Identity resolution and analytical models | Dimensional coverage complete | 18 dbt models; every source modelled; grains declared on every model; unattributed revenue retained |
-| Automated quality checks | Local checks passed; tests isolated | 101 dbt tests, 14 Python tests, 13 reconciliation controls, 6 dashboard query checks; tests write to a temporary root and never touch the demo run |
+| Automated quality checks | Local checks passed; tests isolated | 101 dbt tests, 15 Python tests, 13 reconciliation controls, 6 dashboard query checks; tests write to a temporary root and never touch the demo run |
 | Dashboard and SQL Lab | Operational prototype | Four dashboard views, revenue coverage, source-aware investigation, order-line integrity, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
-| Larger-scale benchmarks | Pending | Initial warm local pipeline baseline: 42.84 seconds; no scale claim yet |
+| Larger-scale benchmarks | Reproducible local evidence published | 10× processed 102,479 rows; cold 130.938 s and warm 155.108 s; single-host evidence, not a capacity claim |
 | Docker, Spark parity, hosted CI | Partial | Hosted CI is green on published `main`; Docker and Spark/Java remain unverified |
 | Public portfolio release | Pending | Complete acceptance criteria and approve public visibility |
 
 ### Latest project session
 
-Surfaced `mart_order_line_integrity` as a dedicated dashboard view after a learner decision to emphasize the known quarantined-line consequence. The primary callout traces `ORD-0000015` to one retained quarantined line and its USD 90.00 variance; the two unexplained cases remain visible as a secondary source-owner backlog. The dashboard query returns all 1,494 accepted orders at declared order grain, and a Python test pins the three incomplete orders and their evidence status. Repository-owned Streamlit calls now use the supported `width` argument, and live browser QA verified the hierarchy and values.
+Added an isolated benchmark workflow after Aneesh selected the 10× / 5,000-customer profile from the real 500-customer baseline. `make benchmark` refuses the demo roots, records stage timings, row counts, environment, dbt coverage, scoped memory evidence, and archives the prior observation. The measured 10× workload contains 102,479 rows versus 10,163 at 1×; it passed all 119 dbt nodes, 13 reconciliations, and six dashboard checks in both cold and warm observations. The SQL Lab now displays the two latest profiles, while [the benchmark protocol](docs/benchmark.md) records the exact environment, results, and claim boundary.
 
 ### Previous session
+
+Surfaced `mart_order_line_integrity` as a dedicated dashboard view after a learner decision to emphasize the known quarantined-line consequence. The primary callout traces `ORD-0000015` to one retained quarantined line and its USD 90.00 variance; the two unexplained cases remain visible as a secondary source-owner backlog. The dashboard query returns all 1,494 accepted orders at declared order grain, and a Python test pins the three incomplete orders and their evidence status. Repository-owned Streamlit calls now use the supported `width` argument, and live browser QA verified the hierarchy and values.
+
+### Earlier session
 
 Corrected the seeded customer lifecycle chronology after a learner checkpoint established that event timestamps are evidence and the later CRM first-seen value is wrong. The generator now derives each event-bearing customer's `created_at` on or before their earliest subscription, order, or support event; customers without events retain their independent seeded date. A dbt singular test and release reconciliation control both require zero violations, and the SQL Lab exposes the actual one-row-per-customer chronology preview. The SSD `make all` run passed with 101 dbt tests, 13 Python tests, 13 reconciliation controls, and five dashboard checks. Revenue, quarantine, and order-line integrity figures did not move.
 
@@ -76,7 +80,8 @@ At each completed project milestone, update this section's date, status, evidenc
 - [ ] Audit remaining KPI semantics and independent reconciliation.
 - [x] Validate dashboard values and visuals against the completed models.
 - [ ] Verify Docker, Spark parity, and clean-clone setup; keep hosted CI green.
-- [ ] Publish reproducible scale benchmarks and finish customer handover.
+- [x] Publish reproducible local scale benchmarks with explicit claim boundaries.
+- [ ] Finish customer handover.
 
 Learning follows project milestones: explain the concept, make a useful change, operate it, and verify the outcome. SQL practice supports delivery.
 
@@ -110,7 +115,7 @@ Source generation is seeded. Outputs are written to `data/` and `artifacts/`, bo
 | `make all` | Run the pipeline and all tests |
 | `make dashboard` | Start the Streamlit KPI application |
 | `make spark` | Run the selected optional PySpark equivalent |
-| `make benchmark` | Record local pipeline timings |
+| `make benchmark` | Run the isolated 10× profile and record reproducible evidence |
 | `make clean` | Remove only generated local outputs |
 
 ## Architecture
