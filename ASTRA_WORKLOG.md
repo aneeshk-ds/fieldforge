@@ -1,5 +1,13 @@
 # ASTRA Worklog
 
+## 2026-09-09 — Hands-on learning made a project release gate
+
+- **Aneesh identified:** Recent workflows introduced and completed several tools while his participation was mostly approval, prioritization, or delegated engineering decisions. He explicitly rejected that as sufficient contribution and restated that learning—not merely project completion—is the objective.
+- **Process defect:** The prior learner protocol allowed “one business decision or one SQL step,” which let the agent substitute vague decision-making for observable technical practice. The agent also advanced through benchmarking, PySpark, and dependency locking without a learner-authored query, correction, diagnosis, prediction, or configuration change in each slice.
+- **Instructions corrected:** `CLAUDE.md` now makes hands-on practice a release gate for every major tool/workflow, defines qualifying learner actions, states that approval/delegation does not count, limits progress to one new major workflow between attempts, requires attribution as **Aneesh did / Agent implemented / Verification**, and blocks milestone commits when Aneesh's only participation was approval or preference. Unsafe or environment-specific commands may remain agent-operated, but Aneesh must predict or diagnose their evidence before closure.
+- **Continuity correction:** Updated stale branch instructions so major verified work is pushed to private `claudework`; `main` remains protected without explicit approval. The project recap and README now state the learning requirement plainly.
+- **Next:** Do not begin another delivery milestone until Aneesh completes one concrete catch-up exercise grounded in a recently automated workflow.
+
 ## 2026-09-09 — Complete dependency graph locked
 
 - **Learner checkpoint:** The SQL Lab showed 10 direct dependencies versus 85 installed distributions. Aneesh delegated the engineering choice based on portfolio quality; the complete resolved graph is locked because transitive drift can break a clean environment even when direct pins do not change.

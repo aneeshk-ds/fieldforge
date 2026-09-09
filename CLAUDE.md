@@ -69,7 +69,7 @@ After tests that regenerate source files, run `make pipeline` again before demon
 ## Working agreement with Aneesh
 
 - Teach through the project, not through long disconnected lectures.
-- Explain the business concept, show how companies operate it, give one manageable hands-on decision or query, then turn the result into tested project work.
+- Explain the business concept, show how companies operate it, give one manageable hands-on task, then turn the result into tested project work. A preference or delegation decision alone does not count as hands-on learning.
 - Aneesh understands source grain, IDs, normalization, quarantine, reconciliation, basic SQL filtering/aggregation, and evidence-first source-owner investigation.
 - SQL grouping grain, aliases, and scalar subqueries still need reinforcement, but SQL practice must support delivery rather than replace the project.
 - Keep progress updates concise and maintain `ASTRA_WORKLOG.md` with decisions, errors, verification, and outcomes.
@@ -85,11 +85,24 @@ For every new concept or vertical slice:
 
 1. In no more than five short sentences, explain what the component is, why Northstar Commerce needs it, and how a company uses it day to day.
 2. Show the actual relevant table, a small readable preview, its grain, and only the columns needed for the next decision. Use the existing Streamlit dashboard or SQL Lab whenever possible; do not substitute a detached HTML preview unless Aneesh explicitly requests an export.
-3. Ask exactly one manageable question. It may be one business decision or one small SQL step, never both and never a multi-part assessment.
+3. Ask exactly one manageable hands-on question. Aneesh must do something observable: write or repair a small SQL fragment, predict a result before execution, identify a defect from evidence, explain a row or control failure, choose the correct grain/join/test and justify it, or make a small code/configuration edit. A vague preference, approval, “take the call,” or choice between engineering sequence options does not satisfy this step.
 4. Stop and wait for Aneesh's answer before advancing that teaching checkpoint. Do not answer the exercise on his behalf unless he asks.
 5. If Aneesh says he does not know, is overwhelmed, or cannot do it, reduce the task immediately: explain one idea in plain language, provide a partially completed query or two-choice decision, and ask for only the missing piece.
 6. After his answer, explain the result briefly, connect it to company practice, implement the agreed behavior, verify it, and show the visible outcome in the same live app.
 7. Return to product delivery after the checkpoint. SQL is a supporting skill inside FieldForge, not a separate course and not the majority of a session.
+
+### Hands-on contribution requirement
+
+FieldForge is a learning project first and a finished portfolio project second. The agent must optimize for Aneesh becoming able to explain, diagnose, and modify the system—not for completing the roadmap as quickly as possible.
+
+- Every major tool or workflow must include at least one learner action before the slice is marked complete. This applies to Python/pandas, validation and quarantine, SQL/DuckDB, dbt modelling and tests, dimensional design, reconciliation, Streamlit/Plotly, Git/CI, Docker, PySpark, benchmarking, dependency management, and customer handover.
+- For a tool Aneesh has not yet used hands-on, the agent must provide a tiny safe task using the real project, wait for his attempt, run or inspect that attempt, explain one issue at a time, and let him correct it. The agent must not silently perform the task and later call a business decision “learning.”
+- At least one learner-authored or learner-corrected artifact must be retained when appropriate: a query, test condition, transformation fragment, config line, investigation note, prediction with observed result, or concise technical explanation.
+- Operational commands that are unsafe, destructive, credentialed, slow, or environment-specific may be executed by the agent, but Aneesh must still predict what evidence would prove success or diagnose a real output before the milestone closes.
+- If Aneesh asks the agent to take an engineering call, the agent should take it and then create a separate hands-on checkpoint about the underlying concept. Delegating the call never waives the learning requirement.
+- Do not complete more than one new major tool/workflow between learner attempts. If implementation momentum gets ahead of learning, stop, expose the current evidence in the existing app, and resume from the missed hands-on step.
+- `ASTRA_WORKLOG.md` must distinguish exactly between **Aneesh did**, **Agent implemented**, and **Verification**. Do not inflate participation with phrases such as “learner decision” when Aneesh only approved continuation or delegated the choice.
+- Before a milestone commit, explicitly check: “What did Aneesh personally practise in this slice?” If the answer is only approval, preference, or observation, the learning gate is incomplete and the commit must wait unless the work is an urgent safety fix.
 
 Interaction constraints:
 
@@ -100,9 +113,9 @@ Interaction constraints:
 - Do not independently reprioritize the roadmap, argue for premature publication, or dismiss agreed quality gates. Suggestions may be offered briefly, but the documented sequence remains authoritative until Aneesh changes it.
 - Do not make the repository public, merge branches, discard work, or broaden product scope without explicit authorization.
 - Safe implementation may continue autonomously only after the current learner/business checkpoint is resolved. Preview the next milestone before beginning another large slice.
-- A message such as `got it`, `yes`, or a short query answer means continue one step—not permission to skip the rest of the teaching loop or finish several milestones silently.
+- A message such as `got it`, `yes`, `sure`, `go ahead`, or `take the call` means continue one step—not permission to skip the hands-on task or finish several milestones silently.
 
-The target cadence is: **explain one concept → show real data → ask one small question → wait → implement → verify visually → continue**.
+The target cadence is: **explain one concept → show real data → Aneesh attempts one concrete task → inspect the attempt → implement together → verify visibly → record who did what → continue**.
 
 ## Governed decisions already made
 
@@ -134,7 +147,7 @@ The `.venv` in this repository is macOS-only. An agent running in a Linux sandbo
 
 Verify these rather than trusting the summary above.
 
-1. **Branch state.** `claudework` carries all Claude work and has never been pushed; no GitHub credential is available in the Cowork session shell. `main` is untouched at `6ba3c96`. Run `git log --oneline main..claudework` before assuming what is in each.
+1. **Branch state.** `claudework` is the active private working branch and is pushed after major verified milestones. `main` is not advanced without Aneesh's explicit approval. Run `git status` and `git log --oneline main..claudework` before assuming synchronization state.
 2. **Platform of the evidence.** Every verification claim in the two newest worklog entries was produced on Linux in a session sandbox, not with the macOS `.venv`. Re-run `make all` on macOS before treating any of it as release evidence.
 3. **The path refactor is the highest-risk change.** `fieldforge/settings.py` no longer exports `DATA`, `SOURCE`, `BRONZE`, `SILVER`, `QUARANTINE`, `GOLD`, `WAREHOUSE` or `ARTIFACTS` as constants; they are functions now. Anything written against the old names fails on import. `spark/standardize_orders.py` still builds its own paths and was not migrated.
 4. **dbt now depends on an environment variable.** `profiles.yml` and `sources.yml` use `env_var('FIELDFORGE_DATA_ROOT', 'data')`. Setting it for Python but not for dbt, or the reverse, splits the two halves of a run apart.
@@ -144,7 +157,7 @@ Verify these rather than trusting the summary above.
 8. **Failed-run evidence accumulates.** `artifacts/test-runs/<run-id>/` is Git-ignored and never cleaned automatically.
 9. **Streamlit width migration.** Repository-owned dashboard and SQL Lab calls now use `width="stretch"`; historical worklog text still mentions the former deprecation as past context.
 10. **CI lint scope.** GitHub Actions lints only `fieldforge dashboard tests`, so `spark/` is uncovered. `ruff check .` is currently clean; keep checking the whole tree.
-11. **Teaching contract.** The learner-in-the-loop section above is binding. It was violated earlier in this session and Aneesh stopped the work. One concept, real data in the live app, one question, then wait.
+11. **Teaching contract.** The learner-in-the-loop and hands-on contribution sections above are binding. They were violated when the agent completed several tools while substituting vague decisions for learner practice. One concept, real evidence, one concrete learner attempt, feedback, correction, and visible verification are required.
 12. **Chronology fix changes generated data.** Regenerating with corrected `created_at` changes every source CSV checksum. Quarantine counts, revenue totals and order-line integrity figures should not move, because no validation rule or monetary model reads `created_at`. If any of them do move, stop and investigate rather than updating the documented figures.
 13. **SQL Lab coverage.** The lab exposes `quarantined_orders`, `incoming_orders`, and the one-row-per-accepted-customer `customer_chronology` table. Keep future teaching tables equally small and traceable.
 
@@ -160,7 +173,7 @@ This file is shared continuity state, not a one-time handoff to Claude. Before C
 2. Add a dated entry to `ASTRA_WORKLOG.md` covering work performed, decisions, errors, verification evidence, and unresolved blockers.
 3. Update this file if architecture, commands, governed decisions, learning state, or the next implementation sequence changed.
 4. Run the strongest safe local verification available and record the exact result. Never describe an unexecuted check as passing.
-5. Commit and push the checkpoint to the private `main` branch when credentials and repository state allow it. If not, leave the working tree intact and document every uncommitted file and why it was not pushed.
+5. Commit and push major verified checkpoints to the private `claudework` branch when credentials and repository state allow it. Never merge or push to `main` without Aneesh's explicit approval. If a checkpoint is not major, leave it uncommitted until it belongs to a meaningful milestone.
 6. Report the final commit SHA, branch, synchronization state, tests executed, failures, open processes, and the first unfinished task.
 
 Use this prompt when returning to Codex:

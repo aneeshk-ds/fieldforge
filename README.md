@@ -92,7 +92,7 @@ At each completed project milestone, update this section's date, status, evidenc
 - [x] Publish reproducible local scale benchmarks with explicit claim boundaries.
 - [ ] Finish customer handover.
 
-Learning follows project milestones: explain the concept, make a useful change, operate it, and verify the outcome. SQL practice supports delivery.
+Learning is a release gate, not a side activity. Each major tool or workflow requires a concrete learner attempt on real project evidence—such as writing or correcting SQL, predicting a result, diagnosing a failed control, selecting a grain/test with justification, or editing a small configuration—before the milestone closes. Approval or delegation alone does not count. The exact binding protocol lives in [CLAUDE.md](CLAUDE.md).
 
 If another coding agent must continue this exact local project, start with [CLAUDE.md](CLAUDE.md), then read this README and [ASTRA_WORKLOG.md](ASTRA_WORKLOG.md).
 
