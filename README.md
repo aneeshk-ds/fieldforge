@@ -90,7 +90,7 @@ At each completed project milestone, update this section's date, status, evidenc
 - [x] Verify PySpark parity on Java 17.
 - [ ] Verify Docker and clean-clone setup; keep hosted CI green.
 - [x] Publish reproducible local scale benchmarks with explicit claim boundaries.
-- [ ] Finish customer handover.
+- [x] Finish customer handover for the known quarantined-line case with a learner-authored operator action.
 
 Learning is a release gate, not a side activity. Each major tool or workflow requires a concrete learner attempt on real project evidence—such as writing or correcting SQL, predicting a result, diagnosing a failed control, selecting a grain/test with justification, or editing a small configuration—before the milestone closes. Approval or delegation alone does not count. The exact binding protocol lives in [CLAUDE.md](CLAUDE.md).
 

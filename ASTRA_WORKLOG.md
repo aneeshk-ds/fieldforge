@@ -1,5 +1,22 @@
 # ASTRA Worklog
 
+## 2026-09-09 — Learner-authored customer handover for the known line case
+
+- **Aneesh did:** Read the real `ORD-0000015` evidence in the SQL Lab, distinguished the order header from its rejected product row, and wrote the operator action: “ask the storefront owner to correct and resend the quarantined product line.” He then correctly calculated that USD 90.00 minus USD 90.00 leaves a zero difference. The unfamiliar field names initially blocked him; that was a teaching and interface defect, not a reasoning failure.
+- **Agent implemented:** Added Aneesh's decision to the customer handover and surfaced it beside the three incomplete orders in the existing SQL Lab. Replaced the jargon-heavy order-integrity blurb, status values, and replay instruction with plain operational language. An initial attempt renamed the displayed columns while the SQL exercise still referenced their real names; Aneesh caught that interface defect. The table now exposes the exact queryable SQL names with plain definitions beside it.
+- **Verification:** Full SSD `make all` passed: dbt PASS=119/WARN=0/ERROR=0 across 18 models and 101 data tests, four gold marts exported, all 13 reconciliation controls passed, 15 Python tests passed, and all six dashboard queries executed. Ruff and `git diff --check` passed. Streamlit AppTest rendered the SQL Lab with zero exceptions and found Exercise 6. Live-browser QA showed the three real incomplete orders, exact queryable column names, plain definitions, and Aneesh's operator decision.
+- **Next learner step:** Resume Exercise 6 from Aneesh's partial `SELECT ... FROM order_line_integrity` attempt. Do not introduce another tool or workflow until he runs the corrected query and understands its result.
+
+## 2026-09-09 — Aneesh completed the PySpark parity evidence gate
+
+- **Aneesh did:** Inspected the live SQL Lab evidence and completed the release rule `missing_order_ids = 0 AND unexpected_order_ids = 0`. His first response used rejection reasons from `quarantined_orders`, revealing that the visible “canonical” and “Spark” terminology had not been explained clearly. After a reduced two-choice prompt and a plain definition, he selected both zeroes and connected them to the engine evidence.
+- **Aneesh clarified:** The gap came from not having been taught the software and tools that FieldForge was intended to teach him. This was not a reasoning failure. The agent had exposed outputs and names without first teaching each tool's role, input, output, company use, and project example.
+- **Agent implemented:** Renamed the ambiguous runtime-parity columns to `canonical_accepted_orders` and `spark_accepted_orders` and added an in-app definition: canonical is FieldForge's trusted Python/Pandera result; PySpark is the independent implementation being compared.
+- **Instruction correction:** The binding protocol now requires a plain-language tool orientation before the first exercise, forbids testing undefined tool vocabulary, and distinguishes a successful software run from evidence that Aneesh learned the software.
+- **What this proves:** Equal row counts alone can hide swapped IDs. The two anti-difference counts must both be zero to prove that neither implementation omitted or added an order relative to the other.
+- **Verification:** Render the revised SQL Lab and confirm the clearer labels, 1,494/1,494 counts, and 0/0 ID differences are visible before moving to another workflow.
+- **Next learner step:** Start customer-handover work with one concrete exercise, not an approval-only checkpoint.
+
 ## 2026-09-09 — Hands-on learning made a project release gate
 
 - **Aneesh identified:** Recent workflows introduced and completed several tools while his participation was mostly approval, prioritization, or delegated engineering decisions. He explicitly rejected that as sufficient contribution and restated that learning—not merely project completion—is the objective.

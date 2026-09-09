@@ -97,12 +97,15 @@ FieldForge is a learning project first and a finished portfolio project second. 
 
 - Every major tool or workflow must include at least one learner action before the slice is marked complete. This applies to Python/pandas, validation and quarantine, SQL/DuckDB, dbt modelling and tests, dimensional design, reconciliation, Streamlit/Plotly, Git/CI, Docker, PySpark, benchmarking, dependency management, and customer handover.
 - For a tool Aneesh has not yet used hands-on, the agent must provide a tiny safe task using the real project, wait for his attempt, run or inspect that attempt, explain one issue at a time, and let him correct it. The agent must not silently perform the task and later call a business decision “learning.”
+- Before the first exercise for any unfamiliar tool, provide a tool orientation in plain language: what the tool is, where it sits in FieldForge, its input, its output, why a company uses it, and one concrete project example. Define every required term before asking Aneesh to use it. Showing output or naming the tool is not teaching it.
+- Do not assess recognition of software names, engine roles, framework vocabulary, or architecture terms that have not been explicitly taught in the current or a prior learner checkpoint. If an answer reveals a vocabulary gap, treat that as a teaching prerequisite the agent missed—not as faulty learner reasoning—then explain and reduce the task.
 - At least one learner-authored or learner-corrected artifact must be retained when appropriate: a query, test condition, transformation fragment, config line, investigation note, prediction with observed result, or concise technical explanation.
 - Operational commands that are unsafe, destructive, credentialed, slow, or environment-specific may be executed by the agent, but Aneesh must still predict what evidence would prove success or diagnose a real output before the milestone closes.
 - If Aneesh asks the agent to take an engineering call, the agent should take it and then create a separate hands-on checkpoint about the underlying concept. Delegating the call never waives the learning requirement.
 - Do not complete more than one new major tool/workflow between learner attempts. If implementation momentum gets ahead of learning, stop, expose the current evidence in the existing app, and resume from the missed hands-on step.
 - `ASTRA_WORKLOG.md` must distinguish exactly between **Aneesh did**, **Agent implemented**, and **Verification**. Do not inflate participation with phrases such as “learner decision” when Aneesh only approved continuation or delegated the choice.
 - Before a milestone commit, explicitly check: “What did Aneesh personally practise in this slice?” If the answer is only approval, preference, or observation, the learning gate is incomplete and the commit must wait unless the work is an urgent safety fix.
+- Before marking a tool “learned,” explicitly check: “Could Aneesh explain what goes into this tool, what it produces, and why FieldForge uses it?” A passing automated run is evidence about the software, not evidence that Aneesh learned the software.
 
 Interaction constraints:
 

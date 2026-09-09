@@ -182,16 +182,17 @@ with duckdb.connect() as connection:
         parity = json.loads(SPARK_PARITY_RESULT.read_text())
         st.subheader("Your table: runtime_parity")
         st.write(
-            "One executed engine comparison at accepted-order grain. Zero missing and "
-            "unexpected IDs means Spark selected the same orders as the canonical pipeline."
+            "One executed engine comparison at accepted-order grain. The canonical result is "
+            "FieldForge's trusted Python/Pandera output; Spark reimplements the same rules. "
+            "Zero missing and unexpected IDs means the actual order IDs match."
         )
         st.dataframe(
             [
                 {
                     "engine": f"PySpark {parity['pyspark_version']}",
                     "java": parity["java_version"],
-                    "expected_orders": parity["expected_orders"],
-                    "accepted_orders": parity["accepted_orders"],
+                    "canonical_accepted_orders": parity["expected_orders"],
+                    "spark_accepted_orders": parity["accepted_orders"],
                     "missing_order_ids": parity["missing_order_ids"],
                     "unexpected_order_ids": parity["unexpected_order_ids"],
                     "status": parity["status"],
@@ -259,23 +260,64 @@ with duckdb.connect() as connection:
         """
     ).fetchone()
     st.write(
-        f"{integrity_summary[0]:,} accepted orders · {integrity_summary[1]:,} incomplete. "
-        "Grain: one row per accepted order. Preview: every incomplete order."
+        f"This table checks whether each order's product rows add up to its recorded total. "
+        f"It contains {integrity_summary[0]:,} accepted orders; {integrity_summary[1]:,} do not "
+        "currently add up. Only those three problem orders are shown below."
     )
-    st.dataframe(
-        connection.sql(
+    st.info(
+        "What to do for ORD-0000015: ask the storefront owner to fix and resend the rejected "
+        "product row. Keep the recorded USD 90.00 order total unless the owner proves that "
+        "total is wrong."
+    )
+    integrity_preview = connection.sql(
             """
-            SELECT order_id, currency, header_amount_cents, accepted_line_amount_cents,
-                   line_variance_cents, accepted_lines, quarantined_lines_same_order,
-                   line_coverage_status
+            SELECT order_id, header_amount_cents, accepted_line_amount_cents,
+                   line_variance_cents, line_coverage_status
             FROM order_line_integrity
             WHERE line_coverage_status <> 'complete'
             ORDER BY order_id
             """
-        ).df(),
+        ).df()
+    integrity_preview["line_coverage_status"] = integrity_preview[
+        "line_coverage_status"
+    ].replace(
+        {
+            "incomplete_quarantined_line": "incomplete — rejected product row found",
+            "incomplete_unexplained_line": "incomplete — cause not yet linked",
+        }
+    )
+    st.dataframe(
+        integrity_preview,
         hide_index=True,
         width="stretch",
     )
+    st.write(
+        "SQL names used below: `header_amount_cents` is the recorded order total; "
+        "`accepted_line_amount_cents` is the total of product rows FieldForge accepted."
+    )
+    st.subheader("Exercise 6 · Check one order total")
+    st.write(
+        "Use SQL to select ORD-0000015 from order_line_integrity. Show order_id and calculate "
+        "header_amount_cents minus accepted_line_amount_cents. Name the calculated column "
+        "difference_cents."
+    )
+    order_check_query = st.text_area(
+        "Write the order-check SQL",
+        height=160,
+        placeholder="SELECT ...",
+        key="order_check_query",
+    )
+    if st.button("Run order check", type="primary"):
+        try:
+            statements = connection.extract_statements(order_check_query)
+            if len(statements) != 1 or statements[0].type != duckdb.StatementType.SELECT:
+                st.warning("Enter one SELECT query. This workspace only reads project data.")
+            else:
+                result = connection.execute(order_check_query).fetchdf()
+                st.success(f"Query ran successfully · {len(result)} result rows")
+                st.dataframe(result, hide_index=True, width="stretch")
+        except duckdb.Error as error:
+            st.error(str(error))
     st.subheader("Exercise 5 · Calculate the quarantine rate")
     st.write(
         "Return one row with one column named quarantine_rate_pct. Calculate quarantined "

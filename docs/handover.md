@@ -20,6 +20,10 @@ Run make all, retain the validation and reconciliation JSON artifacts, review ne
 4. Send the generated evidence request to the source owner and retain the original record in quarantine.
 5. Correct or replay a record only after authoritative source evidence identifies the faulty value. Re-run the pipeline and confirm source-level reconciliation before release.
 
+### Known quarantined-line case
+
+For `ORD-0000015`, ask the storefront owner to correct and resend the rejected product row. Keep the recorded USD 90.00 order total unless the source owner proves that total is wrong. After the corrected row is sent through FieldForge again, confirm that the product rows add up to USD 90.00 with no unexplained difference before release.
+
 ## Production extensions
 
 Add incremental manifests, object storage, orchestration, catalog/observability, PII tokenization, access control, SCD2 customer history, FX policy, and a human identity-review queue as needed.
