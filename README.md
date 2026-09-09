@@ -16,7 +16,7 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Analytics engineering | DuckDB, SQL, dbt Core, dbt-duckdb | Staging models, dimensions, facts, marts, lineage, tests, and currency-safe KPI logic |
 | Product experience | Streamlit, Plotly | Operational quality console, investigation workflow, governed business views, and SQL Lab |
 | Quality and delivery | pytest, Ruff, Make, GitHub Actions | Reproducible orchestration, regression checks, linting, hosted CI, and release-blocking reconciliation |
-| Portable execution | Parquet, Docker/Compose, optional PySpark | Local lakehouse storage and portability paths; Docker and Spark runtime parity are still pending verification |
+| Portable execution | Parquet, Docker/Compose, optional PySpark | PySpark order parity is verified on Java 17; Docker runtime execution remains pending |
 
 ## Skills demonstrated
 
@@ -32,7 +32,7 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ## Progress — updated 9 September 2026
 
-**Current stage:** reproducible 1× and learner-approved 10× scale profiles are validated and visible in the SQL Lab. **Next milestone:** verify Docker and PySpark runtime parity.
+**Current stage:** PySpark order parity is verified on the canonical data. **Next milestone:** execute Docker on a Docker-capable host.
 
 | Milestone | Status | Evidence / next action |
 |---|---|---|
@@ -43,14 +43,18 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Dashboard and SQL Lab | Operational prototype | Four dashboard views, revenue coverage, source-aware investigation, order-line integrity, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Reproducible local evidence published | 10× processed 102,479 rows; cold 130.938 s and warm 155.108 s; single-host evidence, not a capacity claim |
-| Docker, Spark parity, hosted CI | Partial | Hosted CI is green on published `main`; Docker and Spark/Java remain unverified |
+| Docker, Spark parity, hosted CI | Partial | PySpark matched all 1,494 accepted order IDs on Java 17; Docker runtime remains unavailable on this host |
 | Public portfolio release | Pending | Complete acceptance criteria and approve public visibility |
 
 ### Latest project session
 
-Added an isolated benchmark workflow after Aneesh selected the 10× / 5,000-customer profile from the real 500-customer baseline. `make benchmark` refuses the demo roots, records stage timings, row counts, environment, dbt coverage, scoped memory evidence, and archives the prior observation. The measured 10× workload contains 102,479 rows versus 10,163 at 1×; it passed all 119 dbt nodes, 13 reconciliations, and six dashboard checks in both cold and warm observations. The SQL Lab now displays the two latest profiles, while [the benchmark protocol](docs/benchmark.md) records the exact environment, results, and claim boundary.
+Verified the optional PySpark 4.0.0 order-standardization slice on macOS with Java 17. The job matched the canonical pipeline's 1,494 accepted orders with zero missing or unexpected IDs and now writes durable `artifacts/spark_parity.json` evidence without collecting identifiers into pandas. The Make target binds Spark to FieldForge's Python interpreter, fixing its accidental use of system Python 3.14. Docker is not installed on this host, so execution remains honestly blocked; static inspection found and fixed the image's missing `make` dependency because Compose invokes `make all`.
 
 ### Previous session
+
+Added an isolated benchmark workflow after Aneesh selected the 10× / 5,000-customer profile from the real 500-customer baseline. `make benchmark` refuses the demo roots, records stage timings, row counts, environment, dbt coverage, scoped memory evidence, and archives the prior observation. The measured 10× workload contains 102,479 rows versus 10,163 at 1×; it passed all 119 dbt nodes, 13 reconciliations, and six dashboard checks in both cold and warm observations. The SQL Lab now displays the two latest profiles, while [the benchmark protocol](docs/benchmark.md) records the exact environment, results, and claim boundary.
+
+### Earlier session
 
 Surfaced `mart_order_line_integrity` as a dedicated dashboard view after a learner decision to emphasize the known quarantined-line consequence. The primary callout traces `ORD-0000015` to one retained quarantined line and its USD 90.00 variance; the two unexplained cases remain visible as a secondary source-owner backlog. The dashboard query returns all 1,494 accepted orders at declared order grain, and a Python test pins the three incomplete orders and their evidence status. Repository-owned Streamlit calls now use the supported `width` argument, and live browser QA verified the hierarchy and values.
 
@@ -79,7 +83,8 @@ At each completed project milestone, update this section's date, status, evidenc
 - [x] Correct synthetic customer chronology and enforce it in dbt and reconciliation.
 - [ ] Audit remaining KPI semantics and independent reconciliation.
 - [x] Validate dashboard values and visuals against the completed models.
-- [ ] Verify Docker, Spark parity, and clean-clone setup; keep hosted CI green.
+- [x] Verify PySpark parity on Java 17.
+- [ ] Verify Docker and clean-clone setup; keep hosted CI green.
 - [x] Publish reproducible local scale benchmarks with explicit claim boundaries.
 - [ ] Finish customer handover.
 
@@ -114,7 +119,7 @@ Source generation is seeded. Outputs are written to `data/` and `artifacts/`, bo
 | `make test` | Python tests and dashboard query smoke check |
 | `make all` | Run the pipeline and all tests |
 | `make dashboard` | Start the Streamlit KPI application |
-| `make spark` | Run the selected optional PySpark equivalent |
+| `make spark` | Run the optional PySpark order parity check (requires the `spark` extra and Java 17) |
 | `make benchmark` | Run the isolated 10× profile and record reproducible evidence |
 | `make clean` | Remove only generated local outputs |
 

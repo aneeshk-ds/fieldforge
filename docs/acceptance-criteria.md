@@ -10,7 +10,7 @@
 - [ ] Revenue, order, subscriber, and support totals reconcile to accepted sources.
 - [ ] KPI registry, dbt mart SQL, tests, and dashboard labels agree.
 - [ ] Dashboard smoke check executes every production query.
-- [ ] Optional PySpark transformation matches the Pandas silver order projection.
+- [x] Optional PySpark transformation matches the Pandas silver order projection.
 - [ ] CI and Docker definitions exercise the supported workflow.
 - [ ] Documentation includes architecture, model, discovery, handover, troubleshooting, benchmark, resume bullets, and demo path.
 - [ ] `ASTRA_WORKLOG.md` contains current verification evidence and unresolved limitations.

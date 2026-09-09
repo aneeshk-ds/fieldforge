@@ -30,7 +30,8 @@ dashboard:
 	.venv/bin/streamlit run dashboard/app.py
 
 spark:
-	.venv/bin/spark-submit spark/standardize_orders.py
+	PYSPARK_PYTHON=$(PYTHON) PYSPARK_DRIVER_PYTHON=$(PYTHON) \
+		.venv/bin/spark-submit spark/standardize_orders.py
 
 benchmark:
 	FIELDFORGE_DATA_ROOT="$(CURDIR)/data/benchmarks/$(BENCHMARK_PROFILE)" \

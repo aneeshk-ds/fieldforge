@@ -118,7 +118,7 @@ The target cadence is: **explain one concept → show real data → ask one smal
 
 Branch and CI confirmation, dimensional coverage, test-output isolation, and reproducible 1×/10× local benchmarks are complete, all on branch `claudework`. See the newest `ASTRA_WORKLOG.md` entries for evidence.
 
-1. Verify Docker on a Docker-capable host and PySpark parity on a Java-capable host.
+1. Execute Docker on a Docker-capable host; static inspection already corrected the missing `make` dependency, but this Mac has no Docker runtime.
 2. Lock the complete dependency environment and execute a clean-clone verification.
 3. Finish customer handover, troubleshooting, portfolio story, screenshots, and demo rehearsal.
 4. Request explicit user approval before changing the private repository to public.

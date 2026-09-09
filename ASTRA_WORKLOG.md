@@ -1,5 +1,13 @@
 # ASTRA Worklog
 
+## 2026-09-09 — PySpark order parity verified; Docker runtime blocked
+
+- **Engineering sequence:** Docker was checked first because it exercises the full delivery package. The host has no `docker` CLI or Docker/OrbStack application, so no runtime claim is made. Static inspection found that Compose invokes `make all` while `python:3.13-slim` lacks `make`; the Dockerfile now installs that required executable.
+- **PySpark launch defect fixed:** Homebrew Java 17.0.20 was present but unlinked. PySpark 4.0.0 was installed from the declared `spark` extra. The first `spark-submit` launch failed because its discovery script chose system Python 3.14; the Make target now binds `PYSPARK_PYTHON` and `PYSPARK_DRIVER_PYTHON` to `.venv/bin/python`.
+- **Parity evidence:** The corrected job ran on macOS 14.8.9 x86_64 and compared the Spark-standardized bronze orders with canonical silver orders. All 1,494 accepted order IDs matched, with zero missing and zero unexpected IDs. The implementation now uses distributed anti-joins instead of `toPandas()` and writes versioned counts to `artifacts/spark_parity.json`.
+- **Verification:** The improved evidence-writing Spark job passed again and the full default `make all` gate remained green: dbt PASS=119/WARN=0/ERROR=0, four gold marts exported, all 13 reconciliations passed, 15 Python tests passed, and all six dashboard queries executed. SQL Lab exposes the resulting one-row runtime-parity evidence. Docker execution must wait for a Docker-capable host.
+- **Next:** Lock the complete dependency environment and execute a clean-clone verification while retaining Docker as an explicit external runtime gate.
+
 ## 2026-09-09 — Reproducible 10× benchmark evidence published
 
 - **Learner decision:** After seeing the six-source 500-customer baseline in the SQL Lab, Aneesh selected the 10× profile: 5,000 customers.

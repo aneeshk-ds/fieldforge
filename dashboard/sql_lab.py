@@ -22,6 +22,7 @@ BENCHMARK_RESULTS = [
     artifacts_root() / "benchmarks" / profile / "benchmark.json"
     for profile in ("1x", "10x")
 ]
+SPARK_PARITY_RESULT = artifacts_root() / "spark_parity.json"
 
 st.set_page_config(page_title="FieldForge SQL Lab", page_icon="🔎", layout="wide")
 st.title("FieldForge · SQL Lab")
@@ -168,6 +169,28 @@ with duckdb.connect() as connection:
             "profile. Memory columns are separate per-process peaks and must not be added."
         )
         st.dataframe(benchmark_rows, hide_index=True, width="stretch")
+    if SPARK_PARITY_RESULT.exists():
+        parity = json.loads(SPARK_PARITY_RESULT.read_text())
+        st.subheader("Your table: runtime_parity")
+        st.write(
+            "One executed engine comparison at accepted-order grain. Zero missing and "
+            "unexpected IDs means Spark selected the same orders as the canonical pipeline."
+        )
+        st.dataframe(
+            [
+                {
+                    "engine": f"PySpark {parity['pyspark_version']}",
+                    "java": parity["java_version"],
+                    "expected_orders": parity["expected_orders"],
+                    "accepted_orders": parity["accepted_orders"],
+                    "missing_order_ids": parity["missing_order_ids"],
+                    "unexpected_order_ids": parity["unexpected_order_ids"],
+                    "status": parity["status"],
+                }
+            ],
+            hide_index=True,
+            width="stretch",
+        )
     st.subheader("Your table: customer_chronology")
     chronology_summary = connection.sql(
         """

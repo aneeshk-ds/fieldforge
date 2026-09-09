@@ -1,9 +1,13 @@
 """Optional Spark parity slice for accepted silver orders."""
 
+from datetime import UTC, datetime
 from pathlib import Path
 
+import pyspark
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
+
+from fieldforge.utils import write_json
 
 root = Path(__file__).resolve().parents[1]
 spark = SparkSession.builder.master("local[*]").appName("fieldforge-orders").getOrCreate()
@@ -14,8 +18,28 @@ accepted = orders.filter(
     & ((F.trim("customer_email") != "") | (F.trim("storefront_customer_id") != ""))
 ).withColumn("normalized_email", F.lower(F.trim("customer_email")))
 expected = spark.read.parquet(str(root / "data/silver/orders.parquet"))
-assert accepted.count() == expected.count()
-assert set(accepted.select("order_id").toPandas().order_id) == set(expected.select("order_id").toPandas().order_id)
+accepted_ids = accepted.select("order_id")
+expected_ids = expected.select("order_id")
+accepted_count = accepted_ids.count()
+expected_count = expected_ids.count()
+missing_count = expected_ids.join(accepted_ids, "order_id", "left_anti").count()
+unexpected_count = accepted_ids.join(expected_ids, "order_id", "left_anti").count()
+assert accepted_count == expected_count
+assert missing_count == 0
+assert unexpected_count == 0
 accepted.write.mode("overwrite").parquet(str(root / "artifacts/spark_orders"))
-print(f"Spark parity passed: {accepted.count()} accepted orders")
+write_json(
+    root / "artifacts/spark_parity.json",
+    {
+        "checked_at_utc": datetime.now(UTC).isoformat(),
+        "pyspark_version": pyspark.__version__,
+        "java_version": spark.sparkContext._jvm.java.lang.System.getProperty("java.version"),
+        "accepted_orders": accepted_count,
+        "expected_orders": expected_count,
+        "missing_order_ids": missing_count,
+        "unexpected_order_ids": unexpected_count,
+        "status": "passed",
+    },
+)
+print(f"Spark parity passed: {accepted_count} accepted orders; 0 ID differences")
 spark.stop()
