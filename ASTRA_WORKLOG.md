@@ -1,5 +1,12 @@
 # ASTRA Worklog
 
+## 2026-09-09 — Complete dependency graph locked
+
+- **Learner checkpoint:** The SQL Lab showed 10 direct dependencies versus 85 installed distributions. Aneesh delegated the engineering choice based on portfolio quality; the complete resolved graph is locked because transitive drift can break a clean environment even when direct pins do not change.
+- **Implemented:** Added a universal `uv.lock` resolving 87 cross-platform packages and optional environments. `make setup` now uses `uv sync --locked --extra dev`; Docker copies the lock, installs the locked non-development environment, and exposes its virtual environment on `PATH`. The SQL Lab reports direct, installed, and locked counts from the actual project state.
+- **Clean-clone verification:** A disposable local Git clone received only the candidate patch and no inherited `.venv`, data, artifacts, or caches. `make setup` downloaded Python 3.13.14, enforced the lock, and installed 83 packages applicable to this macOS/dev environment. Ruff passed; `make all` then passed dbt 119/119, all 13 reconciliations, 15 Python tests, and six dashboard queries with the expected deterministic run ID. PyArrow printed non-fatal sandbox `sysctl` warnings while querying CPU features under `/private/tmp`; processing and every gate completed successfully.
+- **Next:** Execute Docker on a capable host, then finish customer handover and portfolio presentation.
+
 ## 2026-09-09 — PySpark order parity verified; Docker runtime blocked
 
 - **Engineering sequence:** Docker was checked first because it exercises the full delivery package. The host has no `docker` CLI or Docker/OrbStack application, so no runtime claim is made. Static inspection found that Compose invokes `make all` while `python:3.13-slim` lacks `make`; the Dockerfile now installs that required executable.

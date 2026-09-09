@@ -1,11 +1,20 @@
 """A disposable SQL workspace over FieldForge's governed local data."""
 
 import json
+import tomllib
+from importlib import metadata
 
 import duckdb
 import streamlit as st
 
-from fieldforge.settings import artifacts_root, bronze_dir, gold_dir, quarantine_dir, silver_dir
+from fieldforge.settings import (
+    ROOT,
+    artifacts_root,
+    bronze_dir,
+    gold_dir,
+    quarantine_dir,
+    silver_dir,
+)
 
 SOURCE = quarantine_dir() / "orders.parquet"
 INCOMING = bronze_dir() / "orders.parquet"
@@ -191,6 +200,28 @@ with duckdb.connect() as connection:
             hide_index=True,
             width="stretch",
         )
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
+    direct_dependencies = []
+    for requirement in project["dependencies"]:
+        package, declared_version = requirement.split("==", maxsplit=1)
+        installed_name = package.split("[", maxsplit=1)[0]
+        direct_dependencies.append(
+            {
+                "package": package,
+                "declared_version": declared_version,
+                "installed_version": metadata.version(installed_name),
+                "relationship": "direct",
+            }
+        )
+    installed_count = len(list(metadata.distributions()))
+    locked_count = len(tomllib.loads((ROOT / "uv.lock").read_text())["package"])
+    st.subheader("Your table: dependency_inventory")
+    st.write(
+        f"{len(direct_dependencies)} direct packages are declared, while {installed_count} "
+        f"distributions are installed and {locked_count} cross-platform packages are resolved "
+        "in uv.lock. Grain: one row per direct project dependency."
+    )
+    st.dataframe(direct_dependencies, hide_index=True, width="stretch")
     st.subheader("Your table: customer_chronology")
     chronology_summary = connection.sql(
         """

@@ -9,7 +9,7 @@ export UV_PYTHON_INSTALL_DIR := $(CURDIR)/.uv-python
 
 setup:
 	uv venv --python 3.13 .venv
-	uv pip install --python $(PYTHON) -e '.[dev]'
+	uv sync --locked --extra dev
 
 pipeline:
 	$(PYTHON) -m fieldforge.cli pipeline

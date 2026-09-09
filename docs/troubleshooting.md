@@ -1,5 +1,7 @@
 # Troubleshooting
 
+- Setup reports that the lock is stale: run `uv lock`, review the dependency change, and commit `pyproject.toml` and `uv.lock` together. Do not bypass `uv sync --locked` in CI or Docker.
+
 - Python rejected: use 3.11 through 3.13; make setup requests 3.13.
 - dbt cannot find Parquet: run make pipeline from the repository root.
 - Warehouse locked: stop Streamlit or another DuckDB client and rerun.
