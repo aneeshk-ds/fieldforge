@@ -72,6 +72,10 @@ h1,h2,h3 { font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-se
 .ff-event--absent .ff-event-value,.ff-event--missing .ff-event-value { color:#f6c85f; }
 .ff-evidence { border-left:3px solid #a78bfa; background:rgba(167,139,250,.07); padding:.85rem 1rem;
  border-radius:0 12px 12px 0; color:#d9dfeb; font-size:.88rem; }
+.ff-integrity-primary { border:1px solid rgba(246,200,95,.42); background:rgba(246,200,95,.08);
+ border-radius:18px; padding:1.25rem; margin:1rem 0 1.5rem; }
+.ff-integrity-primary strong { color:#f6c85f; }
+.ff-integrity-primary code { color:#fff; }
 .ff-lineage { display:grid; grid-template-columns:1fr auto 1fr auto 1fr auto 1fr; gap:.55rem; align-items:center; margin:1rem 0 2rem; }
 .ff-node { background:rgba(19,25,38,.8); border:1px solid rgba(151,166,196,.18); padding:.85rem .65rem; border-radius:12px; text-align:center; color:#cbd5e5; font-size:.77rem; }
 .ff-node strong { color:#fff; display:block; font-size:.88rem; margin-bottom:.15rem; }
@@ -341,6 +345,84 @@ def business_page() -> None:
         st.plotly_chart(style_figure(fig), width="stretch", config={"displayModeBar": False})
 
 
+def order_integrity_page() -> None:
+    if not DB.exists():
+        st.info("Gold warehouse not found. Run `make all` to build order-line integrity.")
+        return
+    with duckdb.connect(str(DB), read_only=True) as connection:
+        integrity = connection.execute(QUERIES["order_line_integrity"]).df()
+
+    incomplete = integrity[integrity["line_coverage_status"] != "complete"].copy()
+    known = incomplete[incomplete["line_coverage_status"] == "incomplete_quarantined_line"]
+    unexplained = incomplete[incomplete["line_coverage_status"] == "incomplete_unexplained_line"]
+
+    st.markdown('<h2 class="ff-section">Order-line integrity</h2>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="ff-kicker">Does each accepted order header reconcile to its accepted lines?</div>',
+        unsafe_allow_html=True,
+    )
+    columns = st.columns(3)
+    with columns[0]:
+        card("Accepted orders", f"{len(integrity):,}", "One row per accepted order", "ff-card--good")
+    with columns[1]:
+        card(
+            "Known quarantine impact",
+            f"{len(known):,}",
+            "Variance linked to retained rejection evidence",
+            "ff-card--alert",
+        )
+    with columns[2]:
+        card(
+            "Unexplained gaps",
+            f"{len(unexplained):,}",
+            "Secondary source-owner investigation backlog",
+            "ff-card--compact",
+        )
+
+    if not known.empty:
+        primary = known.iloc[0]
+        st.markdown(
+            '<div class="ff-integrity-primary"><strong>Primary action · known quarantine consequence</strong><br>'
+            f'Order <code>{html.escape(str(primary["order_id"]))}</code> is short by '
+            f'{html.escape(str(primary["currency"]))} {primary["line_variance"]:,.2f} in accepted lines. '
+            f'{int(primary["quarantined_lines_same_order"])} retained quarantined line explains the gap; '
+            'review that evidence before releasing line-level reporting.</div>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("#### Incomplete accepted orders")
+    st.dataframe(
+        incomplete[
+            [
+                "order_id",
+                "currency",
+                "header_amount",
+                "accepted_line_amount",
+                "line_variance",
+                "accepted_lines",
+                "quarantined_lines_same_order",
+                "line_coverage_status",
+            ]
+        ],
+        hide_index=True,
+        width="stretch",
+        column_config={
+            "order_id": "Order",
+            "currency": "Currency",
+            "header_amount": st.column_config.NumberColumn("Header amount", format="%.2f"),
+            "accepted_line_amount": st.column_config.NumberColumn(
+                "Accepted-line amount", format="%.2f"
+            ),
+            "line_variance": st.column_config.NumberColumn("Variance", format="%.2f"),
+            "accepted_lines": "Accepted lines",
+            "quarantined_lines_same_order": "Quarantined lines",
+            "line_coverage_status": "Coverage status",
+        },
+    )
+    st.caption(
+        "Known quarantine impact is shown first by learner decision. Unexplained gaps remain visible "
+        "and are never silently treated as complete."
+    )
 def governance_page(snapshot: QualitySnapshot) -> None:
     st.markdown('<h2 class="ff-section">Lineage & governance</h2>', unsafe_allow_html=True)
     st.markdown('<div class="ff-kicker">How raw customer data becomes a decision-ready metric</div>', unsafe_allow_html=True)
@@ -389,11 +471,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-quality_tab, business_tab, governance_tab = st.tabs(
-    ["Data quality", "Business health", "Lineage & governance"]
+quality_tab, integrity_tab, business_tab, governance_tab = st.tabs(
+    ["Data quality", "Order integrity", "Business health", "Lineage & governance"]
 )
 with quality_tab:
     data_quality_page(snapshot)
+with integrity_tab:
+    order_integrity_page()
 with business_tab:
     business_page()
 with governance_tab:

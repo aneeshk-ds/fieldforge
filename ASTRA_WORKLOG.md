@@ -1,5 +1,14 @@
 # ASTRA Worklog
 
+## 2026-09-09 — Order-line integrity surfaced and dashboard validated
+
+- **Learner decision:** After reviewing the three actual incomplete accepted orders in the SQL Lab, Aneesh chose to emphasize the known quarantined-line case over the two unexplained cases. The unexplained cases remain visible as a secondary investigation backlog.
+- **Implemented:** Added the source-backed `order_line_integrity` dashboard query and a dedicated fourth dashboard view. The view reports all 1,494 accepted orders, promotes `ORD-0000015` as the primary action with its one retained quarantined line and USD 90.00 variance, and lists `ORD-0000021` and `ORD-0000026` without pretending their gaps are explained. The SQL Lab also retains the compact three-row teaching preview.
+- **Controls:** Added a Python dashboard test that pins the one known and two unexplained order IDs, verifies their quarantine-evidence counts, and confirms full 1,494-order coverage. Dashboard smoke coverage increased from five to six queries.
+- **Visual and compatibility QA:** Streamlit AppTest rendered four tabs with zero exceptions and found the expected primary callout. Browser QA on macOS verified the order-integrity tab, three summary cards, yellow primary-action hierarchy, exact USD 90.00 value, and secondary backlog framing. All repository-owned `use_container_width` calls were migrated to `width="stretch"`.
+- **Verification on macOS from the SSD workspace:** `make all` passed: dbt PASS=119/WARN=0/ERROR=0 across 18 models and 101 tests, four gold marts exported, all 13 reconciliation controls passed, 14 Python tests passed, and all six dashboard SQL checks passed. Targeted dashboard tests passed 3/3, Ruff and `git diff --check` passed, and both Streamlit apps rendered without exceptions.
+- **Next:** Produce larger seeded scale profiles and reproducible benchmarks in relocated roots without disturbing the demo run or overstating laptop results.
+
 ## 2026-09-09 — Customer first-seen chronology corrected and guarded
 
 - **Learner checkpoint:** The SQL Lab first exposed `customer_chronology` at one row per accepted CRM customer. Aneesh identified that the later CRM `created_at`, not the dated event evidence, must be corrected under the governed canonical-first-seen rule.

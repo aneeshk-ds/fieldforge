@@ -1,3 +1,4 @@
+import duckdb
 import pandas as pd
 
 from dashboard.data_quality import (
@@ -7,7 +8,8 @@ from dashboard.data_quality import (
     load_quality_snapshot,
     load_quarantined_record,
 )
-from fieldforge.settings import data_root
+from dashboard.queries import QUERIES
+from fieldforge.settings import data_root, warehouse_path
 
 DATA = data_root()
 
@@ -45,3 +47,18 @@ def test_order_investigation_preserves_evidence_and_exposes_contract_gap():
         "state": "absent",
     }
     assert "timestamps, timezones, event IDs, and audit history" in evidence_request(record)
+
+
+def test_order_integrity_dashboard_keeps_known_and_unexplained_gaps_visible():
+    with duckdb.connect(str(warehouse_path()), read_only=True) as connection:
+        integrity = connection.execute(QUERIES["order_line_integrity"]).df()
+
+    incomplete = integrity.query("line_coverage_status != 'complete'")
+    known = incomplete.query("line_coverage_status == 'incomplete_quarantined_line'")
+    unexplained = incomplete.query("line_coverage_status == 'incomplete_unexplained_line'")
+
+    assert len(integrity) == 1494
+    assert known["order_id"].tolist() == ["ORD-0000015"]
+    assert known["quarantined_lines_same_order"].tolist() == [1]
+    assert set(unexplained["order_id"]) == {"ORD-0000021", "ORD-0000026"}
+    assert unexplained["quarantined_lines_same_order"].eq(0).all()

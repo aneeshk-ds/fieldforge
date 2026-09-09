@@ -34,7 +34,7 @@ Preserve unrelated user changes. Use the existing environment when present; othe
 - `mart_order_line_integrity` publishes orders whose accepted lines no longer reconcile to the header amount
 - Paths resolve at call time from `FIELDFORGE_DATA_ROOT` and `FIELDFORGE_ARTIFACTS_ROOT`, so a run can be relocated
 - Tests run against a temporary root and never touch the demo run; a failing run retains evidence in `artifacts/test-runs/<run-id>/`
-- Streamlit/Plotly command center plus a guided DuckDB SQL Lab
+- Streamlit/Plotly command center with a dedicated order-integrity view plus a guided DuckDB SQL Lab
 - Source-aware exception workbench with raw evidence, event timeline, and source-owner request
 - Company revenue includes valid unattributed transactions; customer metrics use attributed revenue only
 - USD, CAD, and GBP remain separate because no FX policy has been approved
@@ -118,12 +118,11 @@ The target cadence is: **explain one concept → show real data → ask one smal
 
 Branch and CI confirmation, dimensional coverage, and test-output isolation are complete, all on branch `claudework`. See the two newest `ASTRA_WORKLOG.md` entries for evidence.
 
-1. Validate dashboard values and visuals against the completed dimensional models, surface `mart_order_line_integrity` in the app, and migrate Streamlit `use_container_width` to `width` before its removal date.
-2. Produce larger seeded scale profiles and reproducible benchmarks without overstating laptop results. The relocated-run capability above makes this possible without touching demo data.
-3. Verify Docker on a Docker-capable host and PySpark parity on a Java-capable host.
-4. Lock the complete dependency environment and execute a clean-clone verification.
-5. Finish customer handover, troubleshooting, portfolio story, screenshots, and demo rehearsal.
-6. Request explicit user approval before changing the private repository to public.
+1. Produce larger seeded scale profiles and reproducible benchmarks without overstating laptop results. The relocated-run capability above makes this possible without touching demo data.
+2. Verify Docker on a Docker-capable host and PySpark parity on a Java-capable host.
+3. Lock the complete dependency environment and execute a clean-clone verification.
+4. Finish customer handover, troubleshooting, portfolio story, screenshots, and demo rehearsal.
+5. Request explicit user approval before changing the private repository to public.
 
 ## Branch convention
 
@@ -145,7 +144,7 @@ Verify these rather than trusting the summary above.
 6. **Order-line governance is deliberate, not a defect.** 8 accepted lines carry `order_link_status = 'order_not_accepted'` and 3 accepted orders do not reconcile to their line totals. Both are published on purpose. Do not resolve them by dropping rows or inferring a parent order.
 7. **Test isolation has a boundary.** Only modules requesting the `isolated_data_root` fixture are isolated. A new mutating test that forgets it will write to the demo run again.
 8. **Failed-run evidence accumulates.** `artifacts/test-runs/<run-id>/` is Git-ignored and never cleaned automatically.
-9. **Known deprecation.** Streamlit warns that `use_container_width` stops working after 2025-12-31. Not yet migrated.
+9. **Streamlit width migration.** Repository-owned dashboard and SQL Lab calls now use `width="stretch"`; historical worklog text still mentions the former deprecation as past context.
 10. **CI lint scope.** GitHub Actions lints only `fieldforge dashboard tests`, so `spark/` is uncovered. `ruff check .` is currently clean; keep checking the whole tree.
 11. **Teaching contract.** The learner-in-the-loop section above is binding. It was violated earlier in this session and Aneesh stopped the work. One concept, real data in the live app, one question, then wait.
 12. **Chronology fix changes generated data.** Regenerating with corrected `created_at` changes every source CSV checksum. Quarantine counts, revenue totals and order-line integrity figures should not move, because no validation rule or monetary model reads `created_at`. If any of them do move, stop and investigate rather than updating the documented figures.

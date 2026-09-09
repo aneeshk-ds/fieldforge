@@ -32,15 +32,15 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ## Progress — updated 9 September 2026
 
-**Current stage:** synthetic customer chronology corrected and guarded. **Next milestone:** validate the dashboard against the completed dimensional models.
+**Current stage:** completed dimensional models are validated and surfaced in the dashboard. **Next milestone:** produce larger seeded scale profiles and reproducible benchmarks.
 
 | Milestone | Status | Evidence / next action |
 |---|---|---|
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
 | Identity resolution and analytical models | Dimensional coverage complete | 18 dbt models; every source modelled; grains declared on every model; unattributed revenue retained |
-| Automated quality checks | Local checks passed; tests isolated | 101 dbt tests, 13 Python tests, 13 reconciliation controls, 5 dashboard query checks; tests write to a temporary root and never touch the demo run |
-| Dashboard and SQL Lab | Operational prototype | Three views, revenue coverage, source-aware investigation, and an interactive SQL Lab with customer chronology |
+| Automated quality checks | Local checks passed; tests isolated | 101 dbt tests, 14 Python tests, 13 reconciliation controls, 6 dashboard query checks; tests write to a temporary root and never touch the demo run |
+| Dashboard and SQL Lab | Operational prototype | Four dashboard views, revenue coverage, source-aware investigation, order-line integrity, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Pending | Initial warm local pipeline baseline: 42.84 seconds; no scale claim yet |
 | Docker, Spark parity, hosted CI | Partial | Hosted CI is green on published `main`; Docker and Spark/Java remain unverified |
@@ -48,13 +48,17 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ### Latest project session
 
-Corrected the seeded customer lifecycle chronology after a learner checkpoint established that event timestamps are evidence and the later CRM first-seen value is wrong. The generator now derives each event-bearing customer's `created_at` on or before their earliest subscription, order, or support event; customers without events retain their independent seeded date. A dbt singular test and release reconciliation control both require zero violations, and the SQL Lab exposes the actual one-row-per-customer chronology preview. The SSD `make all` run passed with 101 dbt tests, 13 Python tests, 13 reconciliation controls, and five dashboard checks. Revenue, quarantine, and order-line integrity figures did not move.
+Surfaced `mart_order_line_integrity` as a dedicated dashboard view after a learner decision to emphasize the known quarantined-line consequence. The primary callout traces `ORD-0000015` to one retained quarantined line and its USD 90.00 variance; the two unexplained cases remain visible as a secondary source-owner backlog. The dashboard query returns all 1,494 accepted orders at declared order grain, and a Python test pins the three incomplete orders and their evidence status. Repository-owned Streamlit calls now use the supported `width` argument, and live browser QA verified the hierarchy and values.
 
 ### Previous session
 
-Isolated test outputs from the demo run. `FIELDFORGE_DATA_ROOT` and `FIELDFORGE_ARTIFACTS_ROOT` now decide where a run lands, resolved when a path is used rather than at import, and `dbt/profiles.yml` and `sources.yml` read the same variable through `env_var` with a `data` default. Tests point it at a temporary directory, so `pytest` no longer rewrites source records, evidence artifacts, or the run ID the dashboard reports. Evidence from a passing test run is disposable; a failing run copies its evidence JSON and a failure report to the Git-ignored `artifacts/test-runs/<run-id>/`. A complete run against a separate root also passes, dbt included, which makes parallel and benchmark runs possible without disturbing demo data.
+Corrected the seeded customer lifecycle chronology after a learner checkpoint established that event timestamps are evidence and the later CRM first-seen value is wrong. The generator now derives each event-bearing customer's `created_at` on or before their earliest subscription, order, or support event; customers without events retain their independent seeded date. A dbt singular test and release reconciliation control both require zero violations, and the SQL Lab exposes the actual one-row-per-customer chronology preview. The SSD `make all` run passed with 101 dbt tests, 13 Python tests, 13 reconciliation controls, and five dashboard checks. Revenue, quarantine, and order-line integrity figures did not move.
 
 ### Earlier session
+
+Isolated test outputs from the demo run. `FIELDFORGE_DATA_ROOT` and `FIELDFORGE_ARTIFACTS_ROOT` now decide where a run lands, resolved when a path is used rather than at import, and `dbt/profiles.yml` and `sources.yml` read the same variable through `env_var` with a `data` default. Tests point it at a temporary directory, so `pytest` no longer rewrites source records, evidence artifacts, or the run ID the dashboard reports. Evidence from a passing test run is disposable; a failing run copies its evidence JSON and a failure report to the Git-ignored `artifacts/test-runs/<run-id>/`. A complete run against a separate root also passes, dbt included, which makes parallel and benchmark runs possible without disturbing demo data.
+
+### Dimensional modelling session
 
 Closed the dimensional gap. `order_items` was generated, validated, and quarantined but never modelled; it now flows through `stg_order_items` into `fct_order_item` at order-line grain, joined to a derived `dim_product` and a data-driven `dim_date`. Every model declares its grain, staging models read governed dbt sources instead of raw file paths, and `mart_order_line_integrity` publishes the consequence of quarantining a line: **3 of 1,494 accepted orders** no longer reconcile to their line totals, and **8 of 3,021 accepted lines** belong to a quarantined order and are retained with `order_link_status = 'order_not_accepted'` rather than dropped. Prior marts are unchanged: 5,646 revenue transactions and 31,597,300 net cents, with monthly KPI, subscription, and support outputs identical to the previous run.
 
@@ -70,7 +74,7 @@ At each completed project milestone, update this section's date, status, evidenc
 - [ ] Lock the full dependency environment.
 - [x] Correct synthetic customer chronology and enforce it in dbt and reconciliation.
 - [ ] Audit remaining KPI semantics and independent reconciliation.
-- [ ] Validate dashboard values and visuals against the completed models.
+- [x] Validate dashboard values and visuals against the completed models.
 - [ ] Verify Docker, Spark parity, and clean-clone setup; keep hosted CI green.
 - [ ] Publish reproducible scale benchmarks and finish customer handover.
 

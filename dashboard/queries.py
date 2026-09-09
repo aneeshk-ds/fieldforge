@@ -16,4 +16,14 @@ QUERIES = {
       from mart_subscription_health order by 1,2""",
     "support": """select calendar_month, category, ticket_count, avg_resolution_hours, avg_csat
       from mart_support_health order by 1,2""",
+    "order_line_integrity": """select order_id, currency,
+      header_amount_cents/100.0 header_amount,
+      accepted_line_amount_cents/100.0 accepted_line_amount,
+      line_variance_cents/100.0 line_variance,
+      accepted_lines, quarantined_lines_same_order, line_coverage_status
+      from mart_order_line_integrity
+      order by case line_coverage_status
+        when 'incomplete_quarantined_line' then 1
+        when 'incomplete_unexplained_line' then 2
+        else 3 end, order_id""",
 }

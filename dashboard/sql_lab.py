@@ -3,7 +3,7 @@
 import duckdb
 import streamlit as st
 
-from fieldforge.settings import bronze_dir, quarantine_dir, silver_dir
+from fieldforge.settings import bronze_dir, gold_dir, quarantine_dir, silver_dir
 
 SOURCE = quarantine_dir() / "orders.parquet"
 INCOMING = bronze_dir() / "orders.parquet"
@@ -11,11 +11,20 @@ CUSTOMERS = silver_dir() / "customers.parquet"
 SUBSCRIPTIONS = silver_dir() / "subscriptions.parquet"
 ORDERS = silver_dir() / "orders.parquet"
 TICKETS = silver_dir() / "tickets.parquet"
+ORDER_LINE_INTEGRITY = gold_dir() / "mart_order_line_integrity.parquet"
 
 st.set_page_config(page_title="FieldForge SQL Lab", page_icon="🔎", layout="wide")
 st.title("FieldForge · SQL Lab")
 st.caption("Northstar Commerce / Synthetic data / DuckDB SQL")
-required_sources = (SOURCE, INCOMING, CUSTOMERS, SUBSCRIPTIONS, ORDERS, TICKETS)
+required_sources = (
+    SOURCE,
+    INCOMING,
+    CUSTOMERS,
+    SUBSCRIPTIONS,
+    ORDERS,
+    TICKETS,
+    ORDER_LINE_INTEGRITY,
+)
 if not all(path.exists() for path in required_sources):
     st.error("Run make pipeline from the FieldForge folder to prepare the data.")
     st.stop()
@@ -70,6 +79,16 @@ with duckdb.connect() as connection:
         """,
         [str(SUBSCRIPTIONS), str(ORDERS), str(TICKETS), str(CUSTOMERS)],
     )
+    connection.execute(
+        """
+        CREATE TABLE order_line_integrity AS
+        SELECT order_id, currency, header_amount_cents, accepted_line_amount_cents,
+               line_variance_cents, accepted_lines, quarantined_lines_same_order,
+               line_coverage_status
+        FROM read_parquet(?)
+        """,
+        [str(ORDER_LINE_INTEGRITY)],
+    )
     connection.execute("SET enable_external_access = false")
     preview = connection.sql("SELECT * FROM quarantined_orders ORDER BY order_id").df()
     st.subheader("Your table: quarantined_orders")
@@ -109,6 +128,32 @@ with duckdb.connect() as connection:
             WHERE first_event_at IS NOT NULL
             ORDER BY days_late DESC, crm_customer_id
             LIMIT 8
+            """
+        ).df(),
+        hide_index=True,
+        width="stretch",
+    )
+    st.subheader("Your table: order_line_integrity")
+    integrity_summary = connection.sql(
+        """
+        SELECT COUNT(*) AS accepted_orders,
+               COUNT(*) FILTER (WHERE line_coverage_status <> 'complete') AS incomplete_orders
+        FROM order_line_integrity
+        """
+    ).fetchone()
+    st.write(
+        f"{integrity_summary[0]:,} accepted orders · {integrity_summary[1]:,} incomplete. "
+        "Grain: one row per accepted order. Preview: every incomplete order."
+    )
+    st.dataframe(
+        connection.sql(
+            """
+            SELECT order_id, currency, header_amount_cents, accepted_line_amount_cents,
+                   line_variance_cents, accepted_lines, quarantined_lines_same_order,
+                   line_coverage_status
+            FROM order_line_integrity
+            WHERE line_coverage_status <> 'complete'
+            ORDER BY order_id
             """
         ).df(),
         hide_index=True,
