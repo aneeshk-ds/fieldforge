@@ -93,7 +93,7 @@ At each completed project milestone, update this section's date, status, evidenc
 - [x] Validate dashboard values and visuals against the completed models.
 - [x] Verify PySpark parity on Java 17.
 - [x] Verify Docker and clean-clone setup.
-- [ ] Keep hosted CI green for the latest milestone.
+- [x] Keep hosted CI green for the latest milestone.
 - [x] Publish reproducible local scale benchmarks with explicit claim boundaries.
 - [x] Finish customer handover for the known quarantined-line case with a learner-authored operator action.
 
