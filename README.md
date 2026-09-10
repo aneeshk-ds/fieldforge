@@ -16,7 +16,7 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Analytics engineering | DuckDB, SQL, dbt Core, dbt-duckdb | Staging models, dimensions, facts, marts, lineage, tests, and currency-safe KPI logic |
 | Product experience | Streamlit, Plotly | Operational quality console, investigation workflow, governed business views, and SQL Lab |
 | Quality and delivery | pytest, Ruff, uv, Make, GitHub Actions | Fully locked dependencies, reproducible orchestration, regression checks, hosted CI, and release-blocking reconciliation |
-| Portable execution | Parquet, Docker/Compose, optional PySpark | PySpark order parity is verified on Java 17; Docker runtime execution remains pending |
+| Portable execution | Parquet, Docker/Compose, optional PySpark | PySpark order parity is verified on Java 17; Docker image build and the full pipeline are verified in a Linux container |
 
 ## Skills demonstrated
 
@@ -30,9 +30,9 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Analytical SQL | Joins, window functions, conditional aggregation, grain tests, and traceable dashboard queries |
 | Product and consulting delivery | Customer brief, decisions, acceptance criteria, operational UI, demo path, troubleshooting, and handover documentation |
 
-## Progress — updated 9 September 2026
+## Progress — updated 10 September 2026
 
-**Current stage:** PySpark order parity is verified on the canonical data. **Next milestone:** execute Docker on a Docker-capable host.
+**Current stage:** PySpark parity and Docker execution are verified on the canonical data. **Next milestone:** finish broader troubleshooting, portfolio presentation, screenshots, and demo rehearsal.
 
 | Milestone | Status | Evidence / next action |
 |---|---|---|
@@ -43,14 +43,18 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Dashboard and SQL Lab | Operational prototype | Four dashboard views, revenue coverage, source-aware investigation, order-line integrity, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Reproducible local evidence published | 10× processed 102,479 rows; cold 130.938 s and warm 155.108 s; single-host evidence, not a capacity claim |
-| Docker, Spark parity, hosted CI | Partial | PySpark matched all 1,494 accepted order IDs on Java 17; Docker runtime remains unavailable on this host |
+| Docker, Spark parity, hosted CI | Docker and Spark verified; hosted CI remains | PySpark matched all 1,494 accepted order IDs on Java 17; Docker built both Compose images and `make all` passed in a Linux/x86_64 container |
 | Public portfolio release | Pending | Complete acceptance criteria and approve public visibility |
 
 ### Latest project session
 
-Locked the complete dependency graph with uv after a learner checkpoint distinguished FieldForge's 10 declared direct dependencies from the 85 distributions installed in the working environment. The cross-platform lock resolves 87 packages, including optional environments, and both `make setup` and the Docker image now enforce it with `--locked`. A disposable clean-copy verification proves setup and the full pipeline do not depend on the existing `.venv`, generated data, artifacts, or caches.
+Installed Docker Desktop with its Linux disk image on the external SSD, keeping the capacity-heavy container store separate from the Mac's constrained internal drive. Aneesh corrected the dependency command to `uv sync --locked --extra dev` after the first container run proved that excluding development tools also excluded `pytest`, which `make all` requires. Both Compose images then built successfully, and the Linux/x86_64 `fieldforge` container passed all 119 dbt nodes, four gold exports, 13 reconciliation controls, 15 Python tests, and six dashboard SQL checks.
 
 ### Previous session
+
+Locked the complete dependency graph with uv after a learner checkpoint distinguished FieldForge's 10 declared direct dependencies from the 85 distributions installed in the working environment. The cross-platform lock resolves 87 packages, including optional environments, and both `make setup` and the Docker image now enforce it with `--locked`. A disposable clean-copy verification proves setup and the full pipeline do not depend on the existing `.venv`, generated data, artifacts, or caches.
+
+### Earlier session
 
 Verified the optional PySpark 4.0.0 order-standardization slice on macOS with Java 17. The job matched the canonical pipeline's 1,494 accepted orders with zero missing or unexpected IDs and now writes durable `artifacts/spark_parity.json` evidence without collecting identifiers into pandas. The Make target binds Spark to FieldForge's Python interpreter, fixing its accidental use of system Python 3.14. Docker is not installed on this host, so execution remains honestly blocked; static inspection found and fixed the image's missing `make` dependency because Compose invokes `make all`.
 
@@ -88,7 +92,8 @@ At each completed project milestone, update this section's date, status, evidenc
 - [ ] Audit remaining KPI semantics and independent reconciliation.
 - [x] Validate dashboard values and visuals against the completed models.
 - [x] Verify PySpark parity on Java 17.
-- [ ] Verify Docker and clean-clone setup; keep hosted CI green.
+- [x] Verify Docker and clean-clone setup.
+- [ ] Keep hosted CI green for the latest milestone.
 - [x] Publish reproducible local scale benchmarks with explicit claim boundaries.
 - [x] Finish customer handover for the known quarantined-line case with a learner-authored operator action.
 
@@ -112,13 +117,13 @@ SQL practice workspace after running the pipeline:
 .venv/bin/streamlit run dashboard/sql_lab.py --server.port 8502
 ```
 
-Source generation is seeded. Outputs are written to `data/` and `artifacts/`, both ignored by Git. Docker/Compose files are experimental and still require workflow verification.
+Source generation is seeded. Outputs are written to `data/` and `artifacts/`, both ignored by Git. Docker/Compose builds and the full container pipeline are verified on Docker Desktop 4.90.0 with Engine 29.7.2 using Linux/x86_64 containers.
 
 ## Commands
 
 | Command | Purpose |
 |---|---|
-| `make setup` | Create `.venv` and install pinned direct dependencies (full lock pending) |
+| `make setup` | Create `.venv` and install the locked project plus development dependencies |
 | `make pipeline` | Generate → profile → bronze → silver → gold → reconcile |
 | `make test` | Python tests and dashboard query smoke check |
 | `make all` | Run the pipeline and all tests |

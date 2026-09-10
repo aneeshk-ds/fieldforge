@@ -6,7 +6,7 @@ RUN apt-get update \
 RUN pip install --no-cache-dir uv==0.8.14
 COPY pyproject.toml uv.lock README.md ./
 COPY fieldforge fieldforge
-RUN uv sync --locked --no-dev
+RUN uv sync --locked --extra dev
 ENV PATH="/app/.venv/bin:$PATH"
 COPY . .
 EXPOSE 8501

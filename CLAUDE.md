@@ -134,8 +134,8 @@ The target cadence is: **explain one concept → show real data → Aneesh attem
 
 Branch and CI confirmation, dimensional coverage, test-output isolation, and reproducible 1×/10× local benchmarks are complete, all on branch `claudework`. See the newest `ASTRA_WORKLOG.md` entries for evidence.
 
-1. Execute Docker on a Docker-capable host; static inspection already corrected the missing `make` dependency, but this Mac has no Docker runtime.
-2. Finish customer handover, troubleshooting, portfolio story, screenshots, and demo rehearsal.
+1. Finish broader troubleshooting, portfolio story, screenshots, and demo rehearsal. Docker is now verified on this Mac with its disk image stored on the external SSD.
+2. Confirm hosted CI remains green for the Docker milestone commit.
 3. Request explicit user approval before changing the private repository to public.
 
 ## Branch convention
@@ -151,7 +151,7 @@ The `.venv` in this repository is macOS-only. An agent running in a Linux sandbo
 Verify these rather than trusting the summary above.
 
 1. **Branch state.** `claudework` is the active private working branch and is pushed after major verified milestones. `main` is not advanced without Aneesh's explicit approval. Run `git status` and `git log --oneline main..claudework` before assuming synchronization state.
-2. **Platform of the evidence.** Every verification claim in the two newest worklog entries was produced on Linux in a session sandbox, not with the macOS `.venv`. Re-run `make all` on macOS before treating any of it as release evidence.
+2. **Platform of the evidence.** Native verification uses the macOS `.venv`; Docker verification uses a Linux/x86_64 container under Docker Desktop 4.90.0 with Engine 29.7.2. Keep platform claims explicit.
 3. **The path refactor is the highest-risk change.** `fieldforge/settings.py` no longer exports `DATA`, `SOURCE`, `BRONZE`, `SILVER`, `QUARANTINE`, `GOLD`, `WAREHOUSE` or `ARTIFACTS` as constants; they are functions now. Anything written against the old names fails on import. `spark/standardize_orders.py` still builds its own paths and was not migrated.
 4. **dbt now depends on an environment variable.** `profiles.yml` and `sources.yml` use `env_var('FIELDFORGE_DATA_ROOT', 'data')`. Setting it for Python but not for dbt, or the reverse, splits the two halves of a run apart.
 5. **`dashboard/data_quality.py` changed signature.** `load_quality_snapshot` and `load_quarantined_record` take the data directory now, not the repository root.
