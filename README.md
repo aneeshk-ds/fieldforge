@@ -30,16 +30,16 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Analytical SQL | Joins, window functions, conditional aggregation, grain tests, and traceable dashboard queries |
 | Product and consulting delivery | Customer brief, decisions, acceptance criteria, operational UI, demo path, troubleshooting, and handover documentation |
 
-## Progress — updated 10 September 2026
+## Progress — updated 11 September 2026
 
-**Current stage:** PySpark parity and Docker execution are verified on the canonical data. **Next milestone:** finish broader troubleshooting, portfolio presentation, screenshots, and demo rehearsal.
+**Current stage:** PySpark parity and Docker execution are verified; the remaining KPI-semantics audit is underway. **Next milestone:** complete independent KPI reconciliations, then finish broader troubleshooting, portfolio presentation, screenshots, and demo rehearsal.
 
 | Milestone | Status | Evidence / next action |
 |---|---|---|
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
 | Identity resolution and analytical models | Dimensional coverage complete | 18 dbt models; every source modelled; grains declared on every model; unattributed revenue retained |
-| Automated quality checks | Local checks passed; tests isolated and dependencies locked | 101 dbt tests, 15 Python tests, 13 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
+| Automated quality checks | Local checks passed; tests isolated and dependencies locked | 102 dbt tests, 15 Python tests, 14 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
 | Dashboard and SQL Lab | Operational prototype | Four dashboard views, revenue coverage, source-aware investigation, order-line integrity, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Reproducible local evidence published | 10× processed 102,479 rows; cold 130.938 s and warm 155.108 s; single-host evidence, not a capacity claim |
@@ -48,9 +48,13 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ### Latest project session
 
-Installed Docker Desktop with its Linux disk image on the external SSD, keeping the capacity-heavy container store separate from the Mac's constrained internal drive. Aneesh corrected the dependency command to `uv sync --locked --extra dev` after the first container run proved that excluding development tools also excluded `pytest`, which `make all` requires. Both Compose images then built successfully, and the Linux/x86_64 `fieldforge` container passed all 119 dbt nodes, four gold exports, 13 reconciliation controls, 15 Python tests, and six dashboard SQL checks.
+Audited the active-subscriber month-end boundary using real subscription `SUB-000254`. Aneesh determined that a subscription cancelled on the month-end date remains active for that snapshot and corrected the SQL comparison from `>` to `>=`. Premium March 2026 therefore reconciles at 88 rather than 87. The registry, dbt mart, new dbt reconciliation test, and release reconciliation control now agree; the broader KPI audit remains open.
 
 ### Previous session
+
+Installed Docker Desktop with its Linux disk image on the external SSD, keeping the capacity-heavy container store separate from the Mac's constrained internal drive. Aneesh corrected the dependency command to `uv sync --locked --extra dev` after the first container run proved that excluding development tools also excluded `pytest`, which `make all` requires. Both Compose images then built successfully, and the Linux/x86_64 `fieldforge` container passed all 119 dbt nodes, four gold exports, 13 reconciliation controls, 15 Python tests, and six dashboard SQL checks.
+
+### Earlier session
 
 Locked the complete dependency graph with uv after a learner checkpoint distinguished FieldForge's 10 declared direct dependencies from the 85 distributions installed in the working environment. The cross-platform lock resolves 87 packages, including optional environments, and both `make setup` and the Docker image now enforce it with `--locked`. A disposable clean-copy verification proves setup and the full pipeline do not depend on the existing `.venv`, generated data, artifacts, or caches.
 

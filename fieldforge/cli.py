@@ -64,6 +64,22 @@ def reconcile() -> None:
             "order_item_product_fk": con.execute("select count(*)=0 from fct_order_item f left join dim_product p using(product_sk) where p.product_sk is null").fetchone()[0],
             "order_line_variance_explained": con.execute("select (select count(*) from mart_order_line_integrity where line_coverage_status='incomplete_unexplained_line') <= (select count(*) from stg_quarantined_order_items where _rule_codes like '%ORDER_ITEM_ORPHAN%')").fetchone()[0],
             "revenue_date_dimension_fk": con.execute("select count(*)=0 from fct_revenue f left join dim_date d on d.date_key = f.recognized_date where d.date_key is null").fetchone()[0],
+            "active_subscriber_snapshots": con.execute("""
+                with expected as (
+                    select m.calendar_month, s.plan_code,
+                        count(*) filter (
+                            where s.start_date <= last_day(m.calendar_month)
+                            and (s.cancelled_at is null or s.cancelled_at >= last_day(m.calendar_month))
+                        ) active_subscribers
+                    from (select distinct calendar_month from dim_date) m
+                    cross join stg_subscriptions s
+                    group by 1, 2
+                )
+                select count(*)=0
+                from expected e
+                full outer join mart_subscription_health a using(calendar_month, plan_code)
+                where e.active_subscribers is distinct from a.active_subscribers
+            """).fetchone()[0],
             "customer_chronology": con.execute("""
                 with customer_events as (
                     select normalized_email, cast(start_date as timestamp) event_at from stg_subscriptions

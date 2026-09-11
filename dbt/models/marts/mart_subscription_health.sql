@@ -4,7 +4,7 @@ with months as (
   select distinct calendar_month from {{ ref('dim_date') }}
 ), base as (
   select m.calendar_month, s.plan_code,
-    count(*) filter (where s.start_date <= last_day(m.calendar_month) and (s.cancelled_at is null or s.cancelled_at > last_day(m.calendar_month))) active_subscribers,
+    count(*) filter (where s.start_date <= last_day(m.calendar_month) and (s.cancelled_at is null or s.cancelled_at >= last_day(m.calendar_month))) active_subscribers,
     count(*) filter (where date_trunc('month', s.cancelled_at) = m.calendar_month) churned_subscribers
   from months m cross join {{ ref('stg_subscriptions') }} s group by 1,2
 )

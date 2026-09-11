@@ -36,7 +36,7 @@ kpis:
     label: Active subscribers at month end
     owner: Growth Analytics
     grain: calendar_month, plan_code
-    definition: A subscription started on or before month end and not cancelled before month end.
+    definition: A subscription started on or before month end and was not cancelled before that date; cancellation on month end remains included in that month's snapshot.
     model: mart_subscription_health
     column: active_subscribers
   logo_churn_rate:
