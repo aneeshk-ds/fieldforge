@@ -339,10 +339,13 @@ def business_page() -> None:
             x="calendar_month",
             y="ticket_count",
             color="category",
-            labels={"calendar_month": "Month", "ticket_count": "Tickets"},
+            labels={"calendar_month": "Opening month", "ticket_count": "Accepted tickets opened", "category": "Category"},
             color_discrete_sequence=["#4de2d3", "#a78bfa", "#f6c85f", "#ff7e8a"],
         )
+        fig.update_yaxes(tickformat=",d", rangemode="tozero")
+        fig.update_traces(hovertemplate="Opening month: %{x|%b %Y}<br>Accepted tickets opened: %{y:,.0f}<extra>%{fullData.name}</extra>")
         st.plotly_chart(style_figure(fig), width="stretch", config={"displayModeBar": False})
+        st.caption("Counted in the month opened, including unresolved tickets. Quarantined tickets are excluded; empty month/category groups are omitted.")
 
 
 def order_integrity_page() -> None:

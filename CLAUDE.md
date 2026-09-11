@@ -29,7 +29,7 @@ Preserve unrelated user changes. Use the existing environment when present; othe
 - Explicit rule-coded quarantine with no silent record loss
 - Deterministic exact-email identity crosswalk with unmatched identities retained
 - dbt sources, dimensions, revenue and order-line facts, KPI marts, tests, reconciliation, and evidence artifacts
-- 18 dbt models with grain declared on every model, 101 dbt tests, and 13 reconciliation controls
+- 18 dbt models with grain declared on every model, 103 dbt tests, and 15 reconciliation controls
 - Order lines whose parent order was quarantined are retained with `order_link_status = 'order_not_accepted'`
 - `mart_order_line_integrity` publishes orders whose accepted lines no longer reconcile to the header amount
 - Paths resolve at call time from `FIELDFORGE_DATA_ROOT` and `FIELDFORGE_ARTIFACTS_ROOT`, so a run can be relocated
@@ -134,9 +134,9 @@ The target cadence is: **explain one concept → show real data → Aneesh attem
 
 Branch and CI confirmation, dimensional coverage, test-output isolation, and reproducible 1×/10× local benchmarks are complete, all on branch `claudework`. See the newest `ASTRA_WORKLOG.md` entries for evidence.
 
-1. Finish broader troubleshooting, portfolio story, screenshots, and demo rehearsal. Docker is now verified on this Mac with its disk image stored on the external SSD.
-2. Confirm hosted CI remains green for the Docker milestone commit.
-3. Request explicit user approval before changing the private repository to public.
+1. Finish the KPI-semantics and independent-reconciliation audit, one KPI and learner attempt at a time. Accepted support ticket count is verified; next is average resolution hours. Track remaining coverage in `docs/kpi-audit.md`; completed subscriber/churn learner work does not imply full-series churn reconciliation is complete.
+2. Close required data-quality gaps, then verify troubleshooting and acceptance evidence before dashboard polish, portfolio screenshots, or demo rehearsal. Docker is already verified with its disk image on the external SSD; current KPI changes have native verification unless a newer container run is explicitly recorded.
+3. Keep hosted CI green for meaningful milestones and preserve exact learner attribution. Request explicit user approval before any public-visibility or main-branch action.
 
 ## Branch convention
 

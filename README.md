@@ -39,14 +39,18 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
 | Identity resolution and analytical models | Dimensional coverage complete | 18 dbt models; every source modelled; grains declared on every model; unattributed revenue retained |
-| Automated quality checks | Local checks passed; tests isolated and dependencies locked | 102 dbt tests, 15 Python tests, 14 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
+| Automated quality checks | Local checks passed; tests isolated and dependencies locked | 103 dbt tests, 23 Python tests, 15 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
 | Dashboard and SQL Lab | Operational prototype | Four dashboard views, revenue coverage, source-aware investigation, order-line integrity, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Reproducible local evidence published | 10× processed 102,479 rows; cold 130.938 s and warm 155.108 s; single-host evidence, not a capacity claim |
-| Docker, Spark parity, hosted CI | Docker and Spark verified; hosted CI remains | PySpark matched all 1,494 accepted order IDs on Java 17; Docker built both Compose images and `make all` passed in a Linux/x86_64 container |
+| Docker, Spark parity, hosted CI | Docker and Spark verified; milestone CI tracked in worklog | PySpark matched all 1,494 accepted order IDs on Java 17; Docker built both Compose images and `make all` passed in a Linux/x86_64 container |
 | Public portfolio release | Pending | Complete acceptance criteria and approve public visibility |
 
 ### Latest project session
+
+Audited accepted support tickets opened by month and category. Aneesh correctly assigned real ticket `TKT-000459` to September 2025 despite its October resolution. The existing count was correct: 12 accepted account tickets opened in September. Added the missing KPI definition, an accepted-source dbt reconciliation test, an independent Python release control, and explicit opening-month/count labels and caveats. Native SSD `make all` passed 121 dbt nodes, 15 reconciliation controls, 23 Python tests, and six dashboard queries. The scoped live chart check passed. Next: average resolution hours, one learner checkpoint at a time; the [working KPI audit](docs/kpi-audit.md) tracks outstanding coverage and findings.
+
+### Previous session
 
 Audited the active-subscriber month-end boundary using real subscription `SUB-000254`. Aneesh determined that a subscription cancelled on the month-end date remains active for that snapshot and corrected the SQL comparison from `>` to `>=`. Premium March 2026 therefore reconciles at 88 rather than 87. The registry, dbt mart, new dbt reconciliation test, and release reconciliation control now agree; the broader KPI audit remains open.
 

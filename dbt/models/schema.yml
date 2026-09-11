@@ -221,7 +221,7 @@ models:
       - name: active_subscribers
         tests: [not_null]
   - name: mart_support_health
-    description: "Grain: one row per calendar_month and support category."
+    description: "Grain: one row per ticket-opening calendar_month and support category. ticket_count includes all accepted tickets, including unresolved tickets; empty groups are absent."
     columns:
       - name: calendar_month
         tests: [not_null]

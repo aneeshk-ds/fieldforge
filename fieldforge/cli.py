@@ -17,6 +17,7 @@ import duckdb
 
 from fieldforge.generate import generate
 from fieldforge.pipeline import ingest_bronze, profile_sources, resolve_identities, validate_silver
+from fieldforge.reconciliation import support_ticket_counts_match
 from fieldforge.settings import (
     ROOT,
     artifacts_root,
@@ -24,6 +25,7 @@ from fieldforge.settings import (
     ensure_directories,
     gold_dir,
     is_isolated,
+    silver_dir,
     warehouse_path,
 )
 from fieldforge.utils import write_json
@@ -52,6 +54,7 @@ def export_gold() -> None:
 def reconcile() -> None:
     with duckdb.connect(str(warehouse_path()), read_only=True) as con:
         checks = {
+            "support_tickets_opened": support_ticket_counts_match(con, silver_dir() / "tickets.parquet"),
             "all_invoice_net_cents": con.execute("select coalesce(sum(gross_amount_cents-refund_amount_cents),0) from stg_invoices").fetchone()[0] == con.execute("select coalesce(sum(net_revenue_cents),0) from fct_revenue where revenue_type='subscription'").fetchone()[0],
             "all_order_net_cents": con.execute("select coalesce(sum(order_amount_cents-refund_amount_cents),0) from stg_orders where status <> 'cancelled'").fetchone()[0] == con.execute("select coalesce(sum(net_revenue_cents),0) from fct_revenue where revenue_type='one_off'").fetchone()[0],
             "attributed_invoice_net_cents": con.execute("""select coalesce(sum(i.gross_amount_cents-i.refund_amount_cents),0) from stg_invoices i join stg_identity_crosswalk x on x.source_system='subscriptions' and x.source_identity=i.billing_customer_id where x.customer_sk is not null""").fetchone()[0] == con.execute("select coalesce(sum(net_revenue_cents),0) from fct_revenue where revenue_type='subscription' and attribution_status='attributed'").fetchone()[0],
