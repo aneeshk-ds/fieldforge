@@ -14,7 +14,7 @@ QUERIES = {
       from mart_monthly_kpis group by 1 order by 1""",
     "subscriber_trend": """select calendar_month, plan_code, active_subscribers, logo_churn_rate
       from mart_subscription_health order by 1,2""",
-    "support": """select calendar_month, category, ticket_count, resolved_ticket_count, avg_resolution_hours, avg_csat
+    "support": """select calendar_month, category, ticket_count, resolved_ticket_count, avg_resolution_hours, rated_ticket_count, avg_csat
       from mart_support_health order by 1,2""",
     "order_line_integrity": """select order_id, currency,
       header_amount_cents/100.0 header_amount,

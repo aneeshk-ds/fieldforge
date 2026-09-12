@@ -23,6 +23,15 @@ Updated 12 September 2026. This is a partial, evidence-based working assessment,
 - **Learner attribution:** Aneesh first treated the unknown duration as zero and divided by two; he then selected one completed ticket but initially described an instant resolution as excluded. After clarification he stated, “we cannot yet calculate its completed duration.” Agent calculated and queried the resulting 40-hour average for real `TKT-000459` and `TKT-000288`. Do not attribute the final arithmetic, SQL, or implementation to Aneesh.
 - **Verification:** Native SSD `make all` passed PASS=123/WARN=0/ERROR=0 (18 models, 105 data tests), four gold exports, 16 release controls, 31 Python tests and six dashboard SQL checks. The rebuilt Linux/x86_64 container passed the same full gate plus Ruff, with isolated generated data and retained JSON evidence in `artifacts/docker-resolution-verification/`. The build excludes the host `.uv-python` runtime after a real container lint failure exposed it. Ruff and whitespace checks passed. Full September/account group is separately 596 hours / 11 completed = 54.181818 hours; the two-ticket exercise is not the full-month result.
 
+## Average satisfaction rating — verified slice
+
+- **Source and population:** `generate.py` creates integer ratings 1–5 for resolved tickets. That generation pattern is not an eligibility rule: the KPI includes every recorded rating on an accepted ticket, independent of resolution and identity matching. Validation now requires a finite whole-number source rating within 1–5 or missing feedback; fractional, out-of-range and unreadable values are quarantined with the raw source value and provenance. This closes the reproduced `5.9` → accepted → 6 defect without silently rounding it.
+- **Meaning, grain and denominator:** `config/kpis.yml` registers `avg_csat` as the mean rating out of 5 at opening calendar month/category. `rated_ticket_count` counts recorded ratings. Missing ratings are excluded; all-unrated groups have count zero and null mean. Weight group means by rated count when aggregating. This measures responding tickets, not all customers or a satisfied-customer percentage; late feedback revises its original opening cohort and naive timestamps retain supplied-calendar semantics.
+- **Transformation and reconciliation:** The existing mart average remains correct; a rated-ticket denominator and schema descriptions were added. The new dbt singular test reads unrounded accepted ratings directly and checks source validity, every group's denominator/mean and null states. The separate Python control uses Decimal and source calendar dates, rejecting invalid source ratings, duplicate/missing groups, count/mean errors and non-finite outputs. Existing support-grain testing continues to enforce uniqueness.
+- **Query and display:** The production support query carries the denominator. Existing support-bar hover displays Rated tickets and Avg satisfaction with two decimals followed by `/ 5`, or Not available. Caption explains missing feedback and respondent-only meaning. Native and Docker AppTest inspected the actual Plotly specs and matched all 48 group values to SQL with no app exceptions; scoped browser verification is recorded in the worklog.
+- **Learner and observed data:** Aneesh supplied 3.5 for real ratings 2 and 5 and correctly required investigation of the constructed out-of-range 5.9 input. Agent authored the implementation and tests. The full September/account group is 42 / 11 = 3.818182, separate from the teaching example. The current accepted population contains 460 ratings and 36 missing responses across 496 tickets.
+- **Verification:** 26 new satisfaction cases, including actual staging/model SQL and end-to-end raw quarantine retention; combined satisfaction/resolution focus 34/34. Full native and rebuilt Docker gates passed 125 dbt nodes (107 tests), 17 controls, 57 Python tests and six dashboard queries. Original source CSVs and all 48 pre-existing support rows remained unchanged. Docker evidence is isolated under `artifacts/docker-csat-verification/`.
+
 ## Remaining KPI coverage
 
 | KPI family | Evidence and remaining work |
@@ -31,7 +40,7 @@ Updated 12 September 2026. This is a partial, evidence-based working assessment,
 | Logo churn | Aneesh's March Premium arithmetic is verified in the worklog. `fieldforge/cli.py` still has no independent full-series churn control. `dashboard/queries.py` retrieves churn, but `business_page` does not display it. Decide intended presentation only through a learner checkpoint. |
 | Support ticket count | Verified above for accepted opening-month demand. |
 | Average resolution hours | Verified above, including null/zero eligibility, elapsed precision, denominator and current tooltip. |
-| Average satisfaction | Next. Mart calculates `avg_csat`; no registry entry or independent release control yet. Do not infer validity from a passing ticket-count control. |
+| Average satisfaction | Verified above, including source eligibility, rating count, null handling, independent reconciliation and display. |
 | Revenue and attribution | Historical controls exist in `fieldforge/cli.py`; finish source-to-mart monthly/type/currency and displayed aggregation review. Whole-company cents equality alone cannot certify every currency group. |
 | Order coverage, variance, accepted lines | Historical tests and controls exist; complete the requested registry-to-display checklist without altering deliberate unresolved-line governance. |
 
@@ -50,7 +59,7 @@ Updated 12 September 2026. This is a partial, evidence-based working assessment,
 
 | Area | Current evidence and review limit |
 |---|---|
-| Data and KPI correctness | Ticket-count and resolution-time slices verified; other KPI coverage remains above. |
+| Data and KPI correctness | Ticket-count, resolution-time and satisfaction slices verified; other KPI coverage remains above. |
 | Architecture and engineering | Accepted Parquet, dbt marts and direct dashboard queries are traceable in the inspected files. No evidence here justifies replacing the architecture. |
 | Testing and operational resilience | New control catches group-level corruption; native and rebuilt Docker gates pass. Concurrent rebuild lock observed; recovery handling remains open. |
 | Dashboard usability and decision value | Support wording now distinguishes accepted arrivals from resolutions/backlog. Broader dashboard decision-value review is pending. |

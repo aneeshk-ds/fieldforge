@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from datetime import UTC, datetime
+from decimal import Decimal, InvalidOperation
 
 import pandas as pd
 import pyarrow as pa
@@ -44,6 +45,17 @@ def ingest_bronze(run_id: str) -> None:
         df.to_parquet(bronze_dir() / f"{name}.parquet", index=False)
 
 
+def _valid_csat(value: str | None) -> bool:
+    """Allow missing feedback or a whole-number rating from 1 through 5."""
+    if value in (None, ""):
+        return True
+    try:
+        rating = Decimal(str(value))
+    except InvalidOperation:
+        return False
+    return rating.is_finite() and 1 <= rating <= 5 and rating == rating.to_integral_value()
+
+
 def _reasons(name: str, row: pd.Series, context: dict) -> list[tuple[str, str]]:
     result = []
     def add(condition: bool, code: str, reason: str) -> None:
@@ -69,7 +81,7 @@ def _reasons(name: str, row: pd.Series, context: dict) -> list[tuple[str, str]]:
         add(row.order_id not in context["order_ids"], "ORDER_ITEM_ORPHAN", "order_id does not exist")
     elif name == "tickets":
         add(bool(row.resolved_at) and pd.to_datetime(row.resolved_at) < pd.to_datetime(row.opened_at), "TICKET_DATES_INVALID", "resolved_at precedes opened_at")
-        add(bool(row.csat) and not 1 <= int(float(row.csat)) <= 5, "TICKET_CSAT_INVALID", "csat must be from 1 through 5")
+        add(not _valid_csat(row.csat), "TICKET_CSAT_INVALID", "csat must be a whole-number rating from 1 through 5")
     return result
 
 

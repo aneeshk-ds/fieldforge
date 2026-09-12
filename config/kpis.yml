@@ -64,6 +64,15 @@ kpis:
     column: avg_resolution_hours
     denominator_column: resolved_ticket_count
     caveat: Null when no tickets in the group have a recorded resolution. Measures completed cases, not backlog age or resolution-month throughput. Later resolutions can revise an earlier opening-month average. Uses supplied timezone-free timestamps and continuous elapsed hours, not business hours. Do not average group averages without weighting by resolved_ticket_count.
+  avg_csat:
+    label: Average satisfaction rating (out of 5)
+    owner: Support Operations
+    grain: calendar_month, category
+    definition: Sum of recorded satisfaction ratings divided by rated_ticket_count for accepted tickets, grouped by opening month and category. Each source rating is a whole number from 1 through 5. Missing ratings are excluded; a recorded rating does not require a recorded resolution.
+    model: mart_support_health
+    column: avg_csat
+    denominator_column: rated_ticket_count
+    caveat: A mean rating out of 5, not a percentage of satisfied customers. Null when no ratings are recorded. Describes responding tickets only, not every customer or every accepted ticket. Quarantined tickets are excluded; no customer-identity join is applied. Uses the supplied timezone-free opening calendar date; later feedback can revise an earlier cohort. Weight group means by rated_ticket_count when aggregating. The synthetic generator currently supplies ratings only for resolved tickets; this is not an eligibility requirement.
   order_line_coverage:
     label: Order line coverage status
     owner: Data Operations

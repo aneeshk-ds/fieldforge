@@ -234,6 +234,11 @@ models:
         tests: [not_null]
       - name: avg_resolution_hours
         description: "Continuous elapsed hours averaged over resolved_ticket_count; null when that count is zero."
+      - name: rated_ticket_count
+        description: "Accepted tickets with a recorded satisfaction rating in this opening-month/category group; independent of resolution status."
+        tests: [not_null]
+      - name: avg_csat
+        description: "Mean recorded rating out of 5, not a satisfaction percentage; null when rated_ticket_count is zero."
   - name: mart_order_line_integrity
     description: "Grain: one row per accepted order. States whether accepted lines reconcile to the order header amount and whether any difference is explained by a quarantined line."
     columns:

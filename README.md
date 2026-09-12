@@ -39,7 +39,7 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
 | Identity resolution and analytical models | Dimensional coverage complete | 18 dbt models; every source modelled; grains declared on every model; unattributed revenue retained |
-| Automated quality checks | Local checks passed; tests isolated and dependencies locked | 105 dbt tests, 31 Python tests, 16 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
+| Automated quality checks | Local checks passed; tests isolated and dependencies locked | 107 dbt tests, 57 Python tests, 17 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
 | Dashboard and SQL Lab | Operational prototype | Four dashboard views, revenue coverage, source-aware investigation, order-line integrity, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Reproducible local evidence published | 10× processed 102,479 rows; cold 130.938 s and warm 155.108 s; single-host evidence, not a capacity claim |
@@ -47,6 +47,10 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Public portfolio release | Pending | Complete acceptance criteria and approve public visibility |
 
 ### Latest project session
+
+Audited average satisfaction after Aneesh correctly calculated 3.5 from ratings 2 and 5 and identified an out-of-range 5.9 input as requiring investigation. Fixed validation to quarantine invalid ratings without rounding; registered the mean out of 5, exposed its rated-ticket denominator, added independent checks, and made rating count/mean visible in the existing support tooltip. Native and rebuilt Docker gates passed 125 dbt nodes, 17 controls, 57 Python tests and six dashboard queries. AppTest checked all 48 tooltip groups on both platforms; original source data and previous support values are unchanged. Next: finish the independent logo-churn reconciliation and remaining [KPI audit](docs/kpi-audit.md), preserving the learning checkpoints.
+
+### Previous session
 
 Audited average resolution time through Aneesh's correction that an unresolved ticket has an unknown completed duration, not zero. The two-ticket teaching example therefore averages 40 hours over one completed ticket. Registered the opening-month/category definition, exposed the completed-ticket denominator, replaced hour-boundary counting with continuous elapsed hours, and added independent reconciliation plus zero/unknown/fractional-time tests. All 48 existing support groups retain their previous values; the new denominator totals 460 resolved tickets out of 496 accepted. Native SSD `make all` passed 123 dbt nodes, 16 controls, 31 Python tests and six dashboard queries. Scoped native browser verification confirmed the completed-count and hours tooltip. Rebuilt Docker images also passed the full gate and Ruff on Linux/x86_64 (Python 3.13.15); the Docker dashboard health, support rendering and warehouse values were checked. The build now excludes the host `.uv-python` installation. Next: average satisfaction rating, then the remaining [KPI audit](docs/kpi-audit.md); no portfolio polish yet.
 
