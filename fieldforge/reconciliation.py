@@ -1,7 +1,8 @@
 """Independent checks against accepted source records, separate from dbt SQL."""
 
+from calendar import monthrange
 from collections import Counter, defaultdict
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from math import isclose, isfinite
 from pathlib import Path
@@ -85,5 +86,64 @@ def support_satisfaction_matches(con: duckdb.DuckDBPyConnection, tickets_path: P
         elif mean is None or not isfinite(mean) or not isclose(
             mean, float(sum(values) / len(values)), rel_tol=1e-12, abs_tol=1e-9
         ):
+            return False
+    return True
+
+
+def logo_churn_matches(con: duckdb.DuckDBPyConnection, silver: Path) -> bool:
+    """Rebuild the complete month/plan series from accepted Parquet, without dbt inputs.
+
+    The observed window includes invoice payments, order placements, ticket openings,
+    subscription starts and (for its upper bound) cancellations, as governed by dim_date.
+    Count subscriptions, not distinct customers; month-end cancellations remain active.
+    """
+    starts = []
+    ends = []
+    subscriptions = []
+    for source, fields in (
+        ("invoices", ["paid_at"]),
+        ("orders", ["ordered_at"]),
+        ("tickets", ["opened_at"]),
+        ("subscriptions", ["start_date", "cancelled_at", "plan_code"]),
+    ):
+        for row in pq.read_table(silver / f"{source}.parquet", columns=fields).to_pylist():
+            event = date.fromisoformat(str(row[fields[0]])[:10])
+            starts.append(event)
+            ends.append(event)
+            if source == "subscriptions":
+                cancelled = row["cancelled_at"]
+                cancelled = None if cancelled in (None, "") else date.fromisoformat(str(cancelled)[:10])
+                if cancelled is not None:
+                    ends.append(cancelled)
+                subscriptions.append((row["plan_code"], event, cancelled))
+    expected = {}
+    if starts:
+        month = min(starts).replace(day=1)
+        final_month = max(ends).replace(day=1)
+        plans = {plan for plan, _, _ in subscriptions}
+        previous = {}
+        while month <= final_month:
+            month_end = month.replace(day=monthrange(month.year, month.month)[1])
+            for plan in plans:
+                records = [(start, cancel) for code, start, cancel in subscriptions if code == plan]
+                active = sum(start <= month_end and (cancel is None or cancel >= month_end) for start, cancel in records)
+                churned = sum(cancel is not None and cancel.replace(day=1) == month for _, cancel in records)
+                denominator = previous.get(plan, 0)
+                rate = churned / denominator if denominator > 0 else None
+                expected[(month, plan)] = (active, churned, rate)
+                previous[plan] = active
+            month = date(month.year + (month.month == 12), month.month % 12 + 1, 1)
+    rows = con.execute("select calendar_month, plan_code, active_subscribers, churned_subscribers, logo_churn_rate from mart_subscription_health").fetchall()
+    actual = {(month, plan): (active, churned, rate) for month, plan, active, churned, rate in rows}
+    if len(actual) != len(rows) or actual.keys() != expected.keys():
+        return False
+    for key, (active, churned, rate) in expected.items():
+        actual_active, actual_churned, actual_rate = actual[key]
+        if (actual_active, actual_churned) != (active, churned):
+            return False
+        if rate is None:
+            if actual_rate is not None:
+                return False
+        elif actual_rate is None or not isfinite(actual_rate) or not isclose(actual_rate, rate, rel_tol=1e-12, abs_tol=1e-12):
             return False
     return True

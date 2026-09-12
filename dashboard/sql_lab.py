@@ -183,7 +183,7 @@ with duckdb.connect() as connection:
         st.subheader("Your table: runtime_parity")
         st.write(
             "One executed engine comparison at accepted-order grain. The canonical result is "
-            "FieldForge's trusted Python/Pandera output; Spark reimplements the same rules. "
+            "FieldForge's trusted Python/pandas output; Spark reimplements the same rules. "
             "Zero missing and unexpected IDs means the actual order IDs match."
         )
         st.dataframe(

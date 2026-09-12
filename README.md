@@ -10,13 +10,19 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ## Tools and technology
 
-| Area | Tools | How FieldForge uses them |
+| Area | Tools actually used | Inspectable implementation |
 |---|---|---|
-| Data engineering | Python, pandas, PyArrow, Pandera | Seeded source generation, contracts, profiling, bronze/silver processing, quarantine, and evidence artifacts |
-| Analytics engineering | DuckDB, SQL, dbt Core, dbt-duckdb | Staging models, dimensions, facts, marts, lineage, tests, and currency-safe KPI logic |
-| Product experience | Streamlit, Plotly | Operational quality console, investigation workflow, governed business views, and SQL Lab |
-| Quality and delivery | pytest, Ruff, uv, Make, GitHub Actions | Fully locked dependencies, reproducible orchestration, regression checks, hosted CI, and release-blocking reconciliation |
-| Portable execution | Parquet, Docker/Compose, optional PySpark | PySpark order parity is verified on Java 17; Docker image build and the full pipeline are verified in a Linux container |
+| Synthetic data | Python, NumPy, Faker, pandas | [Seeded six-source generator](fieldforge/generate.py) |
+| Ingestion and quality | pandas, PyArrow, Parquet; custom Python validation | [Profiling, provenance, quarantine and identity rules](fieldforge/pipeline.py) |
+| Analytics | SQL, DuckDB, dbt Core, dbt-duckdb | [Declared-grain models and tests](dbt/), [independent Python reconciliation](fieldforge/reconciliation.py) |
+| User interface | Streamlit, Plotly | [Operational dashboard](dashboard/app.py), [interactive SQL Lab](dashboard/sql_lab.py) |
+| Optional Spark slice | **Apache Spark / PySpark 4.0.0, Java 17** | [Executed local order-ID parity check](spark/standardize_orders.py): 1,494 accepted orders, zero missing or unexpected IDs |
+| Tests and automation | pytest, Streamlit AppTest, Ruff, uv, Make | [Tests](tests/), [locked environment](uv.lock), [commands](Makefile) |
+| Containers | Docker, Docker Compose, Buildx | [Dockerfile](Dockerfile), [Compose services](compose.yml); native macOS and Linux container gates recorded in the worklog |
+| Versioning and CI | Git, GitHub, GitHub Actions | [Hosted quality/evidence workflow](.github/workflows/ci.yml), private milestone history |
+| Contracts and evidence | YAML, CSV, JSON, Markdown, Mermaid | [KPI registry](config/kpis.yml), [source contracts](config/), [architecture](docs/architecture.md), generated evidence JSON |
+
+See the [tools and evidence map](docs/tools-and-evidence.md) for inputs, outputs, reproduction commands and limits. Pandera and PyYAML are declared dependencies but are **not invoked by application code**; validation is implemented in Python/pandas. Automated verification does not imply every tool's learner checkpoint or production readiness is complete.
 
 ## Skills demonstrated
 
@@ -39,7 +45,7 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
 | Identity resolution and analytical models | Dimensional coverage complete | 18 dbt models; every source modelled; grains declared on every model; unattributed revenue retained |
-| Automated quality checks | Local checks passed; tests isolated and dependencies locked | 107 dbt tests, 57 Python tests, 17 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
+| Automated quality checks | Local checks passed; tests isolated and dependencies locked | 108 dbt tests, 74 Python tests, 18 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
 | Dashboard and SQL Lab | Operational prototype | Four dashboard views, revenue coverage, source-aware investigation, order-line integrity, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Reproducible local evidence published | 10× processed 102,479 rows; cold 130.938 s and warm 155.108 s; single-host evidence, not a capacity claim |
@@ -47,6 +53,10 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Public portfolio release | Pending | Complete acceptance criteria and approve public visibility |
 
 ### Latest project session
+
+Completed the independent full-series logo-churn control using accepted Parquet and Python calendar arithmetic, building on Aneesh's already-completed 4 / 84 = 4.76% exercise. All 60 month/plan groups reconcile; source files and previous subscription values are unchanged. Added 17 corruption/boundary tests and a dbt source comparison. Native and rebuilt Docker gates passed 126 dbt nodes, 18 controls, 74 Python tests and six dashboard queries. The [tools and evidence map](docs/tools-and-evidence.md) now makes Spark/Java and every implemented tool inspectable, correcting unused Pandera claims. This completes the reconciliation/documentation chunk; churn presentation remains a learner checkpoint, followed by revenue/order KPI review and operational acceptance.
+
+### Previous session
 
 Audited average satisfaction after Aneesh correctly calculated 3.5 from ratings 2 and 5 and identified an out-of-range 5.9 input as requiring investigation. Fixed validation to quarantine invalid ratings without rounding; registered the mean out of 5, exposed its rated-ticket denominator, added independent checks, and made rating count/mean visible in the existing support tooltip. Native and rebuilt Docker gates passed 125 dbt nodes, 17 controls, 57 Python tests and six dashboard queries. AppTest checked all 48 tooltip groups on both platforms; original source data and previous support values are unchanged. Next: finish the independent logo-churn reconciliation and remaining [KPI audit](docs/kpi-audit.md), preserving the learning checkpoints.
 

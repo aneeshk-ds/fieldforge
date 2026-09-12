@@ -46,7 +46,7 @@ kpis:
     definition: Subscriptions cancelling in month divided by subscriptions active at prior month end.
     model: mart_subscription_health
     column: logo_churn_rate
-    caveat: Null when the prior-month active denominator is zero.
+    caveat: Null in the first reporting month or when prior-month active subscriptions are zero. Counts accepted subscriptions, not distinct customers; includes all cancellations in the month, including subscriptions starting that month. This is not a starting-cohort retention rate and can exceed 100%. Uses inclusive month-end snapshots and the accepted-event reporting window in dim_date. Do not average plan or month rates without their denominators.
   support_tickets_opened:
     label: Accepted tickets opened
     owner: Support Operations

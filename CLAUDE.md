@@ -29,7 +29,7 @@ Preserve unrelated user changes. Use the existing environment when present; othe
 - Explicit rule-coded quarantine with no silent record loss
 - Deterministic exact-email identity crosswalk with unmatched identities retained
 - dbt sources, dimensions, revenue and order-line facts, KPI marts, tests, reconciliation, and evidence artifacts
-- 18 dbt models with grain declared on every model, 107 dbt tests, and 17 reconciliation controls
+- 18 dbt models with grain declared on every model, 108 dbt tests, and 18 reconciliation controls
 - Order lines whose parent order was quarantined are retained with `order_link_status = 'order_not_accepted'`
 - `mart_order_line_integrity` publishes orders whose accepted lines no longer reconcile to the header amount
 - Paths resolve at call time from `FIELDFORGE_DATA_ROOT` and `FIELDFORGE_ARTIFACTS_ROOT`, so a run can be relocated
@@ -134,8 +134,8 @@ The target cadence is: **explain one concept → show real data → Aneesh attem
 
 Branch and CI confirmation, dimensional coverage, test-output isolation, and reproducible 1×/10× local benchmarks are complete, all on branch `claudework`. See the newest `ASTRA_WORKLOG.md` entries for evidence.
 
-1. Finish the KPI-semantics and independent-reconciliation audit, one KPI and learner attempt at a time. Accepted support ticket count, average resolution hours and average satisfaction rating are verified; next close the unfinished independent full-series logo-churn control. Do not repeat the completed 4.76% churn arithmetic checkpoint. Track remaining coverage in `docs/kpi-audit.md`; completed subscriber/churn learner work does not imply full-series churn reconciliation is complete.
-2. Close required data-quality gaps, then verify troubleshooting and acceptance evidence before dashboard polish, portfolio screenshots, or demo rehearsal. Docker is verified with its disk image on the external SSD; the current support changes passed both native and rebuilt-container verification. When Docker is available, include the relevant image build, container pipeline/tests and dashboard checks for packaged changes, as Aneesh explicitly requested; do not substitute native-only evidence.
+1. Finish the KPI-semantics and independent-reconciliation audit, one KPI and learner attempt at a time. Accepted support ticket count, average resolution hours and average satisfaction rating are verified; the independent full-series logo-churn control is now verified across all 60 month/plan groups. Do not repeat the completed 4.76% churn arithmetic checkpoint. Next take the churn presentation learner checkpoint, then remaining revenue/order KPI review. Track coverage in `docs/kpi-audit.md`; reconciliation completion does not imply presentation or release acceptance.
+2. Close required data-quality gaps, then verify troubleshooting and acceptance evidence before dashboard polish, portfolio screenshots, or demo rehearsal. Docker is verified with its disk image on the external SSD; the current support and churn-control changes passed both native and rebuilt-container verification. When Docker is available, include the relevant image build, container pipeline/tests and dashboard checks for packaged changes, as Aneesh explicitly requested; do not substitute native-only evidence.
 3. Keep hosted CI green for meaningful milestones and preserve exact learner attribution. Request explicit user approval before any public-visibility or main-branch action.
 
 ## Branch convention
@@ -163,6 +163,10 @@ Verify these rather than trusting the summary above.
 11. **Teaching contract.** The learner-in-the-loop and hands-on contribution sections above are binding. They were violated when the agent completed several tools while substituting vague decisions for learner practice. One concept, real evidence, one concrete learner attempt, feedback, correction, and visible verification are required.
 12. **Chronology fix changes generated data.** Regenerating with corrected `created_at` changes every source CSV checksum. Quarantine counts, revenue totals and order-line integrity figures should not move, because no validation rule or monetary model reads `created_at`. If any of them do move, stop and investigate rather than updating the documented figures.
 13. **SQL Lab coverage.** The lab exposes `quarantined_orders`, `incoming_orders`, and the one-row-per-accepted-customer `customer_chronology` table. Keep future teaching tables equally small and traceable.
+
+## Tool-claim accuracy
+
+See `docs/tools-and-evidence.md` for the implementation inventory and evidence boundaries. Pandera and PyYAML are declared but unused by application code; validation is custom Python/pandas. Historical Python/Pandera wording must not be repeated as a current runtime claim. Spark is a verified local accepted-order-ID parity slice on Java 17, not full-pipeline or distributed-production verification.
 
 ## Handoff discipline
 
