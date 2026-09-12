@@ -12,7 +12,7 @@ select
   coalesce(sum(net_revenue_cents) filter (where attribution_status = 'unattributed'), 0) as unattributed_net_revenue_cents,
   count(*) filter (where attribution_status = 'attributed') as attributed_transactions,
   count(*) filter (where attribution_status = 'unattributed') as unattributed_transactions,
-  100.0 * sum(net_revenue_cents) filter (where attribution_status = 'attributed')
+  100.0 * coalesce(sum(net_revenue_cents) filter (where attribution_status = 'attributed'), 0)
     / nullif(sum(net_revenue_cents), 0) as revenue_attribution_rate,
   count(distinct customer_sk) as purchasing_customers
 from {{ ref('fct_revenue') }}

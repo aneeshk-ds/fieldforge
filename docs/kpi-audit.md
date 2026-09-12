@@ -41,6 +41,15 @@ Updated 13 September 2026. This is a partial, evidence-based working assessment,
 - **Verification:** All 60 current month/plan rows reconcile and retain their pre-change values; all six source CSV hashes remain unchanged. Native macOS SSD and rebuilt Linux/x86_64 Docker gates passed 126 dbt nodes (18 models, 108 tests), four exports, 18 controls, 74 Python tests and six dashboard queries. Ruff passed on both. Scoped AppTest checks rendered the corrected Python/pandas tool explanation in SQL Lab and the dashboard without exceptions on both platforms.
 - **Presentation verification:** After a real-data learner preview, Aneesh selected `logo_churn_percent` and `Logo churn (%)`. The business page now keeps active subscribers as a count chart and presents churn separately as a percentage, with cancelled subscriptions and prior month-end active subscriptions on hover. Its caption discloses null eligibility, subscription counting, same-month starts/cancellations, non-cohort semantics and the possibility of rates above 100%. AppTest pins the unit, three plan traces and denominator evidence; native and rebuilt-container full gates passed. This closes churn presentation only, not the overall KPI audit.
 
+## Revenue and attribution — independent reconciliation verified
+
+- **Governed population and grain:** Accepted invoices are subscription revenue; accepted non-cancelled orders are one-off revenue. The mart grain is calendar month, revenue type and transaction currency. USD, CAD and GBP remain separate without an approved FX model. Valid unresolved identities remain in company revenue with null customer keys and are classified as unattributed.
+- **Learner evidence:** In the SQL Lab's March 2026 USD one-off row, Aneesh supplied the missing unattributed amount `158.75`, reconciling `5,320.00 attributed + 158.75 unattributed = 5,478.75 company net`. The subscription row remained separately visible. This is arithmetic and grain interpretation, not implementation authorship.
+- **Independent control:** `monthly_revenue_matches` reads accepted invoice, order and identity-crosswalk Parquet through PyArrow. It rebuilds all 96 expected month/type/currency keys and every published measure without reading dbt staging, `fct_revenue`, or mart values to create the expectation. Duplicate source identities or revenue IDs and duplicate/missing/extra mart groups fail release.
+- **dbt, boundaries and tests:** `assert_monthly_revenue_reconciles.sql` independently compares accepted sources with the mart. Schema tests pin supported types/currencies and non-null measures. Constructed regression rows prove that a positive group with no attributed revenue reports 0%, while a zero net denominator reports null. Mutation cases catch amount or transaction redistribution even when the company total is unchanged, as well as rate, customer-count, key and row corruption.
+- **Display aggregation:** The business revenue trend sums types only within calendar month and currency. Its attribution view recomputes the weighted rate from attributed and company net cents rather than averaging group percentages. A dashboard query test pins both behaviors; no new business-chart presentation was introduced in this reconciliation slice.
+- **Verification:** Native macOS SSD and rebuilt Linux/x86_64 Docker gates passed 136 dbt nodes (18 models, 118 tests), four exports, 19 controls, 92 Python tests, six dashboard queries and Ruff. All six source CSV hashes are unchanged. This closes revenue/attribution reconciliation and current aggregation review, not the overall KPI or release audit.
+
 ## Remaining KPI coverage
 
 | KPI family | Evidence and remaining work |
@@ -50,7 +59,7 @@ Updated 13 September 2026. This is a partial, evidence-based working assessment,
 | Support ticket count | Verified above for accepted opening-month demand. |
 | Average resolution hours | Verified above, including null/zero eligibility, elapsed precision, denominator and current tooltip. |
 | Average satisfaction | Verified above, including source eligibility, rating count, null handling, independent reconciliation and display. |
-| Revenue and attribution | Historical controls exist in `fieldforge/cli.py`; finish source-to-mart monthly/type/currency and displayed aggregation review. Whole-company cents equality alone cannot certify every currency group. |
+| Revenue and attribution | Verified above at month/type/currency grain, including source-independent reconstruction and currency-safe weighted display aggregation. |
 | Order coverage, variance, accepted lines | Historical tests and controls exist; complete the requested registry-to-display checklist without altering deliberate unresolved-line governance. |
 
 ## Prioritized working findings
@@ -68,7 +77,7 @@ Updated 13 September 2026. This is a partial, evidence-based working assessment,
 
 | Area | Current evidence and review limit |
 |---|---|
-| Data and KPI correctness | Support slices plus full-series subscription/churn reconciliation and presentation are verified; revenue/order coverage remains above. |
+| Data and KPI correctness | Support, subscription/churn and monthly revenue/attribution slices are verified; order registry-to-display coverage remains above. |
 | Architecture and engineering | Accepted Parquet, dbt marts and direct dashboard queries are traceable in the inspected files. No evidence here justifies replacing the architecture. |
 | Testing and operational resilience | New control catches group-level corruption; native and rebuilt Docker gates pass. Concurrent rebuild lock observed; recovery handling remains open. |
 | Dashboard usability and decision value | Support wording now distinguishes accepted arrivals from resolutions/backlog. Broader dashboard decision-value review is pending. |

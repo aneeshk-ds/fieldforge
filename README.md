@@ -38,14 +38,14 @@ See the [tools and evidence map](docs/tools-and-evidence.md) for inputs, outputs
 
 ## Progress — updated 13 September 2026
 
-**Current stage:** PySpark parity and Docker execution are verified; the KPI-semantics audit is underway and governed logo churn is now visible. **Next milestone:** reconcile monthly revenue by type and currency plus attribution, then complete the order KPI registry-to-display audit before broader troubleshooting and acceptance work.
+**Current stage:** PySpark parity and Docker execution are verified; governed churn and monthly revenue/attribution reconciliation are complete. **Next milestone:** complete the order KPI registry-to-display audit before broader troubleshooting and acceptance work.
 
 | Milestone | Status | Evidence / next action |
 |---|---|---|
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
 | Identity resolution and analytical models | Dimensional coverage complete | 18 dbt models; every source modelled; grains declared on every model; unattributed revenue retained |
-| Automated quality checks | Native and rebuilt-container checks passed; tests isolated and dependencies locked | 108 dbt tests, 76 Python tests, 18 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
+| Automated quality checks | Native and rebuilt-container checks passed; tests isolated and dependencies locked | 118 dbt tests, 92 Python tests, 19 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
 | Dashboard and SQL Lab | Operational prototype | Four dashboard views, a dedicated governed churn chart, revenue coverage, source-aware investigation, order-line integrity, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Reproducible local evidence published | 10× processed 102,479 rows; cold 130.938 s and warm 155.108 s; single-host evidence, not a capacity claim |
@@ -54,7 +54,7 @@ See the [tools and evidence map](docs/tools-and-evidence.md) for inputs, outputs
 
 ### Latest project session
 
-**Aneesh did:** After a real Premium preview and a reduced count-versus-rate choice, selected `logo_churn_percent` with the label `Logo churn (%)`; the earlier churn arithmetic exercise was not repeated. **Agent implemented:** Added a separate percentage chart, preserved active subscribers as its own count chart, exposed cancellations and prior-month active subscriptions on hover, documented the governed edge cases, and added a SQL Lab preview plus AppTest coverage. **Verification:** Native macOS and rebuilt Linux/x86_64 gates passed 126 dbt nodes, 18 controls, 76 Python tests, four exports, six dashboard queries and Ruff. Next: monthly revenue by type/currency and attribution, followed by the order KPI registry-to-display audit.
+**Aneesh did:** Reconciled the March 2026 USD one-off row by supplying the missing unattributed amount, `158.75`, so `5,320.00 + 158.75 = 5,478.75`. **Agent implemented:** Added the compact real-data SQL Lab preview; a source-independent Python/PyArrow control for every month/type/currency group; a direct-source dbt comparison; boundary and corruption tests; complete mart measure tests; and the 0%-versus-null attribution-rate boundary. Existing dashboard aggregations are pinned to currency-separated sums and weighted attribution. **Verification:** Native macOS and rebuilt Linux/x86_64 gates passed 136 dbt nodes, 19 controls, 92 Python tests, four exports, six dashboard queries and Ruff. All 96 revenue groups reconcile and all six source hashes are unchanged. Next: order KPI registry-to-display audit.
 
 ### Previous session
 

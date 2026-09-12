@@ -199,12 +199,37 @@ models:
       - name: calendar_month
         tests: [not_null]
       - name: revenue_type
-        tests: [not_null]
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [subscription, one_off]
       - name: currency
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [USD, CAD, GBP]
+      - name: transactions
+        tests: [not_null]
+      - name: gross_revenue_cents
+        tests: [not_null]
+      - name: refund_amount_cents
+        tests: [not_null]
+      - name: net_revenue_cents
         tests: [not_null]
       - name: attributed_net_revenue_cents
         tests: [not_null]
       - name: unattributed_net_revenue_cents
+        tests: [not_null]
+      - name: attributed_transactions
+        tests: [not_null]
+      - name: unattributed_transactions
+        tests: [not_null]
+      - name: revenue_attribution_rate
+        description: "Attributed net revenue divided by company net revenue for the same group; 0 when company revenue exists but none is attributed, and null only when net revenue is zero."
+      - name: purchasing_customers
+        description: "Distinct resolved customer keys in the group; unresolved identities are retained in revenue but are not guessed."
         tests: [not_null]
   - name: mart_subscription_health
     description: "Grain: one row per calendar_month and plan_code. The month spine comes from dim_date."

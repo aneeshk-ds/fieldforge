@@ -19,6 +19,7 @@ from fieldforge.generate import generate
 from fieldforge.pipeline import ingest_bronze, profile_sources, resolve_identities, validate_silver
 from fieldforge.reconciliation import (
     logo_churn_matches,
+    monthly_revenue_matches,
     support_resolution_matches,
     support_satisfaction_matches,
     support_ticket_counts_match,
@@ -60,6 +61,7 @@ def reconcile() -> None:
     with duckdb.connect(str(warehouse_path()), read_only=True) as con:
         checks = {
             "logo_churn_full_series": logo_churn_matches(con, silver_dir()),
+            "monthly_revenue_full_series": monthly_revenue_matches(con, silver_dir()),
             "support_tickets_opened": support_ticket_counts_match(con, silver_dir() / "tickets.parquet"),
             "support_resolution_hours": support_resolution_matches(con, silver_dir() / "tickets.parquet"),
             "support_satisfaction": support_satisfaction_matches(con, silver_dir() / "tickets.parquet"),

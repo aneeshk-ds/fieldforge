@@ -28,6 +28,7 @@ ORDERS = silver_dir() / "orders.parquet"
 TICKETS = silver_dir() / "tickets.parquet"
 ORDER_LINE_INTEGRITY = gold_dir() / "mart_order_line_integrity.parquet"
 SUBSCRIPTION_HEALTH = gold_dir() / "mart_subscription_health.parquet"
+MONTHLY_KPIS = gold_dir() / "mart_monthly_kpis.parquet"
 BENCHMARK_RESULTS = [
     artifacts_root() / "benchmarks" / profile / "benchmark.json"
     for profile in ("1x", "10x")
@@ -46,6 +47,7 @@ required_sources = (
     TICKETS,
     ORDER_LINE_INTEGRITY,
     SUBSCRIPTION_HEALTH,
+    MONTHLY_KPIS,
     *BRONZE_SOURCES.values(),
 )
 if not all(path.exists() for path in required_sources):
@@ -132,6 +134,16 @@ with duckdb.connect() as connection:
         FROM read_parquet(?)
         """,
         [str(SUBSCRIPTION_HEALTH)],
+    )
+    connection.execute(
+        """
+        CREATE TABLE monthly_revenue AS
+        SELECT calendar_month, revenue_type, currency, transactions,
+               net_revenue_cents, attributed_net_revenue_cents,
+               unattributed_net_revenue_cents, revenue_attribution_rate
+        FROM read_parquet(?)
+        """,
+        [str(MONTHLY_KPIS)],
     )
     connection.execute("SET enable_external_access = false")
     preview = connection.sql("SELECT * FROM quarantined_orders ORDER BY order_id").df()
@@ -317,6 +329,30 @@ with duckdb.connect() as connection:
             WHERE plan_code = 'PREMIUM'
               AND calendar_month BETWEEN DATE '2026-02-01' AND DATE '2026-04-01'
             ORDER BY calendar_month
+            """
+        ).df(),
+        hide_index=True,
+        width="stretch",
+    )
+    st.subheader("Your table: monthly_revenue")
+    st.write(
+        "Grain: one row per calendar month, revenue type and transaction currency. "
+        "These March USD rows keep subscription and one-off revenue separate."
+    )
+    st.dataframe(
+        connection.sql(
+            """
+            SELECT revenue_type, currency,
+                   ROUND(net_revenue_cents / 100.0, 2) AS company_net,
+                   ROUND(attributed_net_revenue_cents / 100.0, 2)
+                       AS attributed,
+                   ROUND(unattributed_net_revenue_cents / 100.0, 2)
+                       AS unattributed,
+                   ROUND(revenue_attribution_rate, 2) AS attribution_pct
+            FROM monthly_revenue
+            WHERE calendar_month = DATE '2026-03-01'
+              AND currency = 'USD'
+            ORDER BY revenue_type
             """
         ).df(),
         hide_index=True,

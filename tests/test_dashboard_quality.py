@@ -81,6 +81,30 @@ def test_subscription_dashboard_query_exposes_churn_and_denominator():
     assert premium_march["logo_churn_rate"] == 4 / 84
 
 
+def test_revenue_dashboard_aggregates_types_within_each_currency():
+    with duckdb.connect(str(warehouse_path()), read_only=True) as connection:
+        trend = connection.execute(QUERIES["revenue_trend"]).df()
+        attribution = connection.execute(QUERIES["revenue_attribution"]).df()
+        expected_trend = connection.execute(
+            """select calendar_month, currency, sum(net_revenue_cents)/100.0 net_revenue
+               from mart_monthly_kpis group by 1,2 order by 1,2"""
+        ).df()
+        expected_attribution = connection.execute(
+            """select currency,
+                      100.0 * sum(attributed_net_revenue_cents)
+                        / nullif(sum(net_revenue_cents), 0) attribution_rate
+               from mart_monthly_kpis group by 1 order by 1"""
+        ).df()
+
+    pd.testing.assert_frame_equal(trend, expected_trend)
+    pd.testing.assert_series_equal(
+        attribution["currency"], expected_attribution["currency"]
+    )
+    pd.testing.assert_series_equal(
+        attribution["attribution_rate"], expected_attribution["attribution_rate"]
+    )
+
+
 def test_business_dashboard_renders_logo_churn_as_a_percentage():
     app = AppTest.from_file("dashboard/app.py", default_timeout=30).run()
 

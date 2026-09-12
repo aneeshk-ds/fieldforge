@@ -29,7 +29,7 @@ Preserve unrelated user changes. Use the existing environment when present; othe
 - Explicit rule-coded quarantine with no silent record loss
 - Deterministic exact-email identity crosswalk with unmatched identities retained
 - dbt sources, dimensions, revenue and order-line facts, KPI marts, tests, reconciliation, and evidence artifacts
-- 18 dbt models with grain declared on every model, 108 dbt tests, and 18 reconciliation controls
+- 18 dbt models with grain declared on every model, 118 dbt tests, and 19 reconciliation controls
 - Order lines whose parent order was quarantined are retained with `order_link_status = 'order_not_accepted'`
 - `mart_order_line_integrity` publishes orders whose accepted lines no longer reconcile to the header amount
 - Paths resolve at call time from `FIELDFORGE_DATA_ROOT` and `FIELDFORGE_ARTIFACTS_ROOT`, so a run can be relocated
@@ -134,8 +134,8 @@ The target cadence is: **explain one concept → show real data → Aneesh attem
 
 Branch and CI confirmation, dimensional coverage, test-output isolation, and reproducible 1×/10× local benchmarks are complete, all on branch `claudework`. See the newest `ASTRA_WORKLOG.md` entries for evidence.
 
-1. Finish the KPI-semantics and independent-reconciliation audit, one KPI and learner attempt at a time. Accepted support ticket count, average resolution hours, average satisfaction rating, and full-series logo churn reconciliation/presentation are verified. Do not repeat the completed 4.76% churn arithmetic or percentage-presentation checkpoints. Next reconcile monthly revenue by type and currency plus attribution, then complete the order KPI registry-to-display review. Track coverage in `docs/kpi-audit.md`; reconciliation completion does not imply full release acceptance.
-2. Close required data-quality gaps, then verify troubleshooting and acceptance evidence before dashboard polish, portfolio screenshots, or demo rehearsal. Docker is verified with its disk image on the external SSD; the current support and churn-presentation changes passed both native and rebuilt-container verification. When Docker is available, include the relevant image build, container pipeline/tests and dashboard checks for packaged changes, as Aneesh explicitly requested; do not substitute native-only evidence.
+1. Finish the KPI-semantics and independent-reconciliation audit, one KPI and learner attempt at a time. Accepted support metrics, full-series logo churn reconciliation/presentation, and monthly/type/currency revenue plus attribution reconciliation are verified. Do not repeat the completed churn or `158.75` revenue exercises. Next complete the order KPI registry-to-display review. Track coverage in `docs/kpi-audit.md`; reconciliation completion does not imply full release acceptance.
+2. Close required data-quality gaps, then verify troubleshooting and acceptance evidence before dashboard polish, portfolio screenshots, or demo rehearsal. Docker is verified with its disk image on the external SSD; the current revenue changes passed both native and rebuilt-container verification. When Docker is available, include the relevant image build, container pipeline/tests and dashboard checks for packaged changes, as Aneesh explicitly requested; do not substitute native-only evidence.
 3. Keep hosted CI green for meaningful milestones and preserve exact learner attribution. Request explicit user approval before any public-visibility or main-branch action.
 
 ## Branch convention

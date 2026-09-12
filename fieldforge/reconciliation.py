@@ -147,3 +147,140 @@ def logo_churn_matches(con: duckdb.DuckDBPyConnection, silver: Path) -> bool:
         elif actual_rate is None or not isfinite(actual_rate) or not isclose(actual_rate, rate, rel_tol=1e-12, abs_tol=1e-12):
             return False
     return True
+
+
+def monthly_revenue_matches(con: duckdb.DuckDBPyConnection, silver: Path) -> bool:
+    """Rebuild every month/type/currency group from accepted Parquet only."""
+
+    def integer(value):
+        try:
+            parsed = Decimal(str(value))
+        except InvalidOperation:
+            return None
+        if not parsed.is_finite() or parsed != parsed.to_integral_value():
+            return None
+        return int(parsed)
+
+    crosswalk = {}
+    for row in pq.read_table(
+        silver / "identity_crosswalk.parquet",
+        columns=["source_system", "source_identity", "customer_sk"],
+    ).to_pylist():
+        key = (row["source_system"], row["source_identity"])
+        if key in crosswalk:
+            return False
+        crosswalk[key] = row["customer_sk"]
+
+    expected = {}
+    revenue_ids = set()
+    sources = (
+        (
+            "invoices",
+            "subscription",
+            "invoice_id",
+            "billing_customer_id",
+            "paid_at",
+            "gross_amount_cents",
+            "subscriptions",
+        ),
+        (
+            "orders",
+            "one_off",
+            "order_id",
+            "storefront_customer_id",
+            "ordered_at",
+            "order_amount_cents",
+            "orders",
+        ),
+    )
+    for source, revenue_type, id_field, identity_field, date_field, gross_field, system in sources:
+        fields = [
+            id_field,
+            identity_field,
+            date_field,
+            gross_field,
+            "refund_amount_cents",
+            "currency",
+        ]
+        if source == "orders":
+            fields.append("status")
+        for row in pq.read_table(silver / f"{source}.parquet", columns=fields).to_pylist():
+            if source == "orders" and row["status"] == "cancelled":
+                continue
+            revenue_id = row[id_field]
+            if revenue_id in revenue_ids:
+                return False
+            revenue_ids.add(revenue_id)
+            try:
+                month = date.fromisoformat(str(row[date_field])[:10]).replace(day=1)
+            except ValueError:
+                return False
+            gross = integer(row[gross_field])
+            refund = integer(row["refund_amount_cents"])
+            if gross is None or refund is None:
+                return False
+            customer = crosswalk.get((system, row[identity_field]))
+            attributed = customer not in (None, "")
+            key = (month, revenue_type, row["currency"])
+            values = expected.setdefault(
+                key,
+                {
+                    "transactions": 0,
+                    "gross": 0,
+                    "refund": 0,
+                    "net": 0,
+                    "attributed_net": 0,
+                    "unattributed_net": 0,
+                    "attributed_transactions": 0,
+                    "unattributed_transactions": 0,
+                    "customers": set(),
+                },
+            )
+            net = gross - refund
+            values["transactions"] += 1
+            values["gross"] += gross
+            values["refund"] += refund
+            values["net"] += net
+            bucket = "attributed" if attributed else "unattributed"
+            values[f"{bucket}_net"] += net
+            values[f"{bucket}_transactions"] += 1
+            if attributed:
+                values["customers"].add(customer)
+
+    rows = con.execute(
+        """select calendar_month, revenue_type, currency, transactions,
+                  gross_revenue_cents, refund_amount_cents, net_revenue_cents,
+                  attributed_net_revenue_cents, unattributed_net_revenue_cents,
+                  attributed_transactions, unattributed_transactions,
+                  revenue_attribution_rate, purchasing_customers
+           from mart_monthly_kpis"""
+    ).fetchall()
+    actual = {(row[0], row[1], row[2]): row[3:] for row in rows}
+    if len(actual) != len(rows) or actual.keys() != expected.keys():
+        return False
+    for key, values in expected.items():
+        row = actual[key]
+        expected_exact = (
+            values["transactions"],
+            values["gross"],
+            values["refund"],
+            values["net"],
+            values["attributed_net"],
+            values["unattributed_net"],
+            values["attributed_transactions"],
+            values["unattributed_transactions"],
+        )
+        if row[:8] != expected_exact or row[9] != len(values["customers"]):
+            return False
+        expected_rate = (
+            None if values["net"] == 0 else 100.0 * values["attributed_net"] / values["net"]
+        )
+        actual_rate = row[8]
+        if expected_rate is None:
+            if actual_rate is not None:
+                return False
+        elif actual_rate is None or not isfinite(actual_rate) or not isclose(
+            actual_rate, expected_rate, rel_tol=1e-12, abs_tol=1e-9
+        ):
+            return False
+    return True
