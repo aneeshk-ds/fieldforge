@@ -1,5 +1,12 @@
 # ASTRA Worklog
 
+## 2026-09-13 — Governed logo churn presented in the business dashboard
+
+- **Aneesh did:** After initially saying he had no idea which field and unit the churn chart should use, reviewed a real Premium February–April preview and a plain-language count-versus-rate distinction. With the choice reduced to two options, he selected B: `logo_churn_percent` with the y-axis label `Logo churn (%)`. This is a learner-authored presentation decision, not code, SQL or test authorship; the completed 4.76% arithmetic exercise was not repeated.
+- **Agent implemented:** Added the accepted gold subscription-health preview to SQL Lab, including Premium active counts, cancellations and percentage churn. Extended the dashboard query with cancellation counts and the prior-month denominator, then added a separate three-plan Plotly percentage chart while preserving the existing active-subscriber count chart. The hover exposes numerator and denominator, and the caption states null eligibility, subscription rather than distinct-customer counting, same-month starts/cancellations, non-cohort semantics and the possibility of rates above 100%. Added query-value and rendered-chart AppTest coverage.
+- **Verification:** Focused dashboard tests passed 5/5. Full native macOS SSD and rebuilt Docker Linux/x86_64 gates each passed 126 dbt nodes (18 models, 108 tests), four gold exports, 18 reconciliation controls, 76 Python tests and six dashboard SQL checks; Ruff passed on both. AppTest executed within both full gates and verified the percentage axis, all three plan traces, and numerator/denominator hover text without exceptions. Premium March remains 88 active subscriptions, four cancellations, 84 prior-month active and 4.76190476% churn.
+- **Scope and next:** Work remains private on `claudework`; no public release or `main` action occurred. Next reconcile monthly revenue by type and currency plus attribution, then complete the order KPI registry-to-display audit and the remaining operational/acceptance gaps before portfolio polish.
+
 ## 2026-09-12 — Full-series churn reconciliation and inspectable tool evidence
 
 - **Aneesh did:** Previously corrected the real Premium churn calculation to `4 / 84 × 100 = 4.76%` and authored the inclusive `>=` month-end boundary. This chunk closes the missing control for that already-practised concept; the exercise was not repeated. His latest continuation and request to highlight tools are authorization, not new code or tool-learning evidence.

@@ -27,6 +27,7 @@ SUBSCRIPTIONS = silver_dir() / "subscriptions.parquet"
 ORDERS = silver_dir() / "orders.parquet"
 TICKETS = silver_dir() / "tickets.parquet"
 ORDER_LINE_INTEGRITY = gold_dir() / "mart_order_line_integrity.parquet"
+SUBSCRIPTION_HEALTH = gold_dir() / "mart_subscription_health.parquet"
 BENCHMARK_RESULTS = [
     artifacts_root() / "benchmarks" / profile / "benchmark.json"
     for profile in ("1x", "10x")
@@ -44,6 +45,7 @@ required_sources = (
     ORDERS,
     TICKETS,
     ORDER_LINE_INTEGRITY,
+    SUBSCRIPTION_HEALTH,
     *BRONZE_SOURCES.values(),
 )
 if not all(path.exists() for path in required_sources):
@@ -121,6 +123,15 @@ with duckdb.connect() as connection:
         FROM read_parquet(?)
         """,
         [str(ORDER_LINE_INTEGRITY)],
+    )
+    connection.execute(
+        """
+        CREATE TABLE subscription_health AS
+        SELECT calendar_month, plan_code, active_subscribers,
+               churned_subscribers, logo_churn_rate
+        FROM read_parquet(?)
+        """,
+        [str(SUBSCRIPTION_HEALTH)],
     )
     connection.execute("SET enable_external_access = false")
     preview = connection.sql("SELECT * FROM quarantined_orders ORDER BY order_id").df()
@@ -288,6 +299,26 @@ with duckdb.connect() as connection:
     )
     st.dataframe(
         integrity_preview,
+        hide_index=True,
+        width="stretch",
+    )
+    st.subheader("Your table: subscription_health")
+    st.write(
+        "Grain: one row per calendar month and plan. These Premium rows show the current "
+        "month-end subscriber count and the separate churn measure already returned to the app."
+    )
+    st.dataframe(
+        connection.sql(
+            """
+            SELECT calendar_month, plan_code, active_subscribers,
+                   churned_subscribers,
+                   ROUND(100 * logo_churn_rate, 2) AS logo_churn_percent
+            FROM subscription_health
+            WHERE plan_code = 'PREMIUM'
+              AND calendar_month BETWEEN DATE '2026-02-01' AND DATE '2026-04-01'
+            ORDER BY calendar_month
+            """
+        ).df(),
         hide_index=True,
         width="stretch",
     )

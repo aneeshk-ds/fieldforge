@@ -12,7 +12,10 @@ QUERIES = {
       sum(unattributed_net_revenue_cents)/100.0 unattributed_net_revenue,
       100.0*sum(attributed_net_revenue_cents)/nullif(sum(net_revenue_cents),0) attribution_rate
       from mart_monthly_kpis group by 1 order by 1""",
-    "subscriber_trend": """select calendar_month, plan_code, active_subscribers, logo_churn_rate
+    "subscriber_trend": """select calendar_month, plan_code, active_subscribers,
+      churned_subscribers,
+      lag(active_subscribers) over (partition by plan_code order by calendar_month) prior_month_active,
+      logo_churn_rate
       from mart_subscription_health order by 1,2""",
     "support": """select calendar_month, category, ticket_count, resolved_ticket_count, avg_resolution_hours, rated_ticket_count, avg_csat
       from mart_support_health order by 1,2""",

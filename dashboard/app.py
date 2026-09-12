@@ -353,6 +353,31 @@ def business_page() -> None:
         st.plotly_chart(style_figure(fig), width="stretch", config={"displayModeBar": False})
         st.caption("Counted in the month opened, including unresolved tickets. Quarantined tickets are excluded; empty month/category groups are omitted. Hover for average elapsed resolution time and its completed-ticket count. Unresolved tickets have no completed duration; zero-hour resolutions count. Later resolutions can update an earlier month’s average.")
         st.caption("Satisfaction averages recorded ratings out of 5, with the rated-ticket count shown on hover. Missing ratings are excluded; no ratings means Not available. This describes responding tickets, not the percentage of satisfied customers. Later feedback can update an earlier opening month.")
+    st.markdown("#### Subscription churn")
+    churn = subs.assign(logo_churn_percent=100 * subs["logo_churn_rate"])
+    fig = px.line(
+        churn,
+        x="calendar_month",
+        y="logo_churn_percent",
+        color="plan_code",
+        markers=True,
+        custom_data=["churned_subscribers", "prior_month_active"],
+        labels={"calendar_month": "Month", "logo_churn_percent": "Logo churn (%)"},
+        color_discrete_sequence=["#4de2d3", "#a78bfa", "#f6c85f"],
+    )
+    fig.update_yaxes(ticksuffix="%", rangemode="tozero")
+    fig.update_traces(
+        hovertemplate="Month: %{x|%b %Y}<br>Logo churn: %{y:.2f}%<br>"
+        "Subscriptions cancelled: %{customdata[0]:,.0f}<br>"
+        "Prior month-end active: %{customdata[1]:,.0f}<extra>%{fullData.name}</extra>"
+    )
+    st.plotly_chart(style_figure(fig), width="stretch", config={"displayModeBar": False})
+    st.caption(
+        "Subscriptions cancelled in the month ÷ subscriptions active at the prior month end. "
+        "First-month and zero-denominator rates are not available. This counts subscriptions, "
+        "not distinct customers; same-month starts and cancellations are included, so the rate "
+        "is not starting-cohort retention and can exceed 100%."
+    )
 
 
 def order_integrity_page() -> None:

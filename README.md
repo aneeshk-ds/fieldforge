@@ -36,23 +36,27 @@ See the [tools and evidence map](docs/tools-and-evidence.md) for inputs, outputs
 | Analytical SQL | Joins, window functions, conditional aggregation, grain tests, and traceable dashboard queries |
 | Product and consulting delivery | Customer brief, decisions, acceptance criteria, operational UI, demo path, troubleshooting, and handover documentation |
 
-## Progress — updated 12 September 2026
+## Progress — updated 13 September 2026
 
-**Current stage:** PySpark parity and Docker execution are verified; the remaining KPI-semantics audit is underway. **Next milestone:** complete independent KPI reconciliations, then finish broader troubleshooting, portfolio presentation, screenshots, and demo rehearsal.
+**Current stage:** PySpark parity and Docker execution are verified; the KPI-semantics audit is underway and governed logo churn is now visible. **Next milestone:** reconcile monthly revenue by type and currency plus attribution, then complete the order KPI registry-to-display audit before broader troubleshooting and acceptance work.
 
 | Milestone | Status | Evidence / next action |
 |---|---|---|
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
 | Identity resolution and analytical models | Dimensional coverage complete | 18 dbt models; every source modelled; grains declared on every model; unattributed revenue retained |
-| Automated quality checks | Local checks passed; tests isolated and dependencies locked | 108 dbt tests, 74 Python tests, 18 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
-| Dashboard and SQL Lab | Operational prototype | Four dashboard views, revenue coverage, source-aware investigation, order-line integrity, and an interactive SQL Lab |
+| Automated quality checks | Native and rebuilt-container checks passed; tests isolated and dependencies locked | 108 dbt tests, 76 Python tests, 18 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
+| Dashboard and SQL Lab | Operational prototype | Four dashboard views, a dedicated governed churn chart, revenue coverage, source-aware investigation, order-line integrity, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Reproducible local evidence published | 10× processed 102,479 rows; cold 130.938 s and warm 155.108 s; single-host evidence, not a capacity claim |
 | Docker, Spark parity, hosted CI | Docker and Spark verified; milestone CI tracked in worklog | PySpark matched all 1,494 accepted order IDs on Java 17; Docker built both Compose images and `make all` passed in a Linux/x86_64 container |
 | Public portfolio release | Pending | Complete acceptance criteria and approve public visibility |
 
 ### Latest project session
+
+**Aneesh did:** After a real Premium preview and a reduced count-versus-rate choice, selected `logo_churn_percent` with the label `Logo churn (%)`; the earlier churn arithmetic exercise was not repeated. **Agent implemented:** Added a separate percentage chart, preserved active subscribers as its own count chart, exposed cancellations and prior-month active subscriptions on hover, documented the governed edge cases, and added a SQL Lab preview plus AppTest coverage. **Verification:** Native macOS and rebuilt Linux/x86_64 gates passed 126 dbt nodes, 18 controls, 76 Python tests, four exports, six dashboard queries and Ruff. Next: monthly revenue by type/currency and attribution, followed by the order KPI registry-to-display audit.
+
+### Previous session
 
 Completed the independent full-series logo-churn control using accepted Parquet and Python calendar arithmetic, building on Aneesh's already-completed 4 / 84 = 4.76% exercise. All 60 month/plan groups reconcile; source files and previous subscription values are unchanged. Added 17 corruption/boundary tests and a dbt source comparison. Native and rebuilt Docker gates passed 126 dbt nodes, 18 controls, 74 Python tests and six dashboard queries. The [tools and evidence map](docs/tools-and-evidence.md) now makes Spark/Java and every implemented tool inspectable, correcting unused Pandera claims. This completes the reconciliation/documentation chunk; churn presentation remains a learner checkpoint, followed by revenue/order KPI review and operational acceptance.
 

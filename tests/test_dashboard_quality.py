@@ -1,5 +1,8 @@
+import json
+
 import duckdb
 import pandas as pd
+from streamlit.testing.v1 import AppTest
 
 from dashboard.data_quality import (
     SOURCES,
@@ -62,3 +65,43 @@ def test_order_integrity_dashboard_keeps_known_and_unexplained_gaps_visible():
     assert known["quarantined_lines_same_order"].tolist() == [1]
     assert set(unexplained["order_id"]) == {"ORD-0000021", "ORD-0000026"}
     assert unexplained["quarantined_lines_same_order"].eq(0).all()
+
+
+def test_subscription_dashboard_query_exposes_churn_and_denominator():
+    with duckdb.connect(str(warehouse_path()), read_only=True) as connection:
+        subscriptions = connection.execute(QUERIES["subscriber_trend"]).df()
+
+    premium_march = subscriptions.query(
+        "plan_code == 'PREMIUM' and calendar_month == @march",
+        local_dict={"march": pd.Timestamp("2026-03-01")},
+    ).iloc[0]
+    assert premium_march["active_subscribers"] == 88
+    assert premium_march["churned_subscribers"] == 4
+    assert premium_march["prior_month_active"] == 84
+    assert premium_march["logo_churn_rate"] == 4 / 84
+
+
+def test_business_dashboard_renders_logo_churn_as_a_percentage():
+    app = AppTest.from_file("dashboard/app.py", default_timeout=30).run()
+
+    assert not app.exception
+    churn_specs = []
+    for chart in app.get("plotly_chart"):
+        spec = json.loads(chart.proto.spec)
+        y_axis = spec.get("layout", {}).get("yaxis", {})
+        if y_axis.get("title", {}).get("text") == "Logo churn (%)":
+            churn_specs.append(spec)
+
+    assert len(churn_specs) == 1
+    churn_spec = churn_specs[0]
+    assert churn_spec["layout"]["yaxis"]["ticksuffix"] == "%"
+    assert {trace["name"] for trace in churn_spec["data"]} == {
+        "ESSENTIALS",
+        "PLUS",
+        "PREMIUM",
+    }
+    assert all(
+        "Subscriptions cancelled" in trace["hovertemplate"]
+        and "Prior month-end active" in trace["hovertemplate"]
+        for trace in churn_spec["data"]
+    )

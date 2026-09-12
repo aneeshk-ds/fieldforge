@@ -1,6 +1,6 @@
 # KPI audit and working gap assessment
 
-Updated 12 September 2026. This is a partial, evidence-based working assessment, not release acceptance. Proceed one KPI and one learner checkpoint at a time; do not begin portfolio screenshots or polish while the audit remains open.
+Updated 13 September 2026. This is a partial, evidence-based working assessment, not release acceptance. Proceed one KPI and one learner checkpoint at a time; do not begin portfolio screenshots or polish while the audit remains open.
 
 ## Accepted support tickets opened — verified slice
 
@@ -39,14 +39,14 @@ Updated 12 September 2026. This is a partial, evidence-based working assessment,
 - **Independent control:** `logo_churn_matches` reads accepted subscriptions, invoice payments, order placements and ticket openings through PyArrow. Python calendar arithmetic rebuilds the observed reporting window, active counts, cancellations and prior-month ratios. It does not read staging models, `dim_date`, or mart values to construct expected results. Every expected and actual key must match; duplicate, extra and missing groups fail release.
 - **dbt and tests:** `assert_logo_churn_reconciles.sql` provides an additional direct-silver comparison within dbt. Seventeen Python tests execute the real mart SQL and cover null/zero/finite rates, changed counts, redistribution with unchanged total, missing/extra/duplicate groups, leap-day inclusion, year rollover, empty sources and a shared date-spine defect that the SQL check alone cannot detect.
 - **Verification:** All 60 current month/plan rows reconcile and retain their pre-change values; all six source CSV hashes remain unchanged. Native macOS SSD and rebuilt Linux/x86_64 Docker gates passed 126 dbt nodes (18 models, 108 tests), four exports, 18 controls, 74 Python tests and six dashboard queries. Ruff passed on both. Scoped AppTest checks rendered the corrected Python/pandas tool explanation in SQL Lab and the dashboard without exceptions on both platforms.
-- **Remaining presentation:** The business page's subscriber chart still displays active subscribers; its query retrieves the churn rate. A new churn presentation remains a learner checkpoint. This entry closes independent reconciliation only and does not claim full dashboard or KPI-audit acceptance.
+- **Presentation verification:** After a real-data learner preview, Aneesh selected `logo_churn_percent` and `Logo churn (%)`. The business page now keeps active subscribers as a count chart and presents churn separately as a percentage, with cancelled subscriptions and prior month-end active subscriptions on hover. Its caption discloses null eligibility, subscription counting, same-month starts/cancellations, non-cohort semantics and the possibility of rates above 100%. AppTest pins the unit, three plan traces and denominator evidence; native and rebuilt-container full gates passed. This closes churn presentation only, not the overall KPI audit.
 
 ## Remaining KPI coverage
 
 | KPI family | Evidence and remaining work |
 |---|---|
 | Active subscribers | Month-end learner checkpoint and source comparison completed at `58d2ec7`; do not repeat the exercise. Continue any remaining edge-case/display assessment within the overall audit. |
-| Logo churn | Full-series independent reconciliation and boundary checks verified above. Churn presentation remains a learner checkpoint; no new presentation was silently selected. |
+| Logo churn | Full-series independent reconciliation, boundary checks and a learner-selected percentage presentation are verified above. |
 | Support ticket count | Verified above for accepted opening-month demand. |
 | Average resolution hours | Verified above, including null/zero eligibility, elapsed precision, denominator and current tooltip. |
 | Average satisfaction | Verified above, including source eligibility, rating count, null handling, independent reconciliation and display. |
@@ -68,7 +68,7 @@ Updated 12 September 2026. This is a partial, evidence-based working assessment,
 
 | Area | Current evidence and review limit |
 |---|---|
-| Data and KPI correctness | Support slices and full-series subscription/churn reconciliation verified; churn presentation and revenue/order coverage remain above. |
+| Data and KPI correctness | Support slices plus full-series subscription/churn reconciliation and presentation are verified; revenue/order coverage remains above. |
 | Architecture and engineering | Accepted Parquet, dbt marts and direct dashboard queries are traceable in the inspected files. No evidence here justifies replacing the architecture. |
 | Testing and operational resilience | New control catches group-level corruption; native and rebuilt Docker gates pass. Concurrent rebuild lock observed; recovery handling remains open. |
 | Dashboard usability and decision value | Support wording now distinguishes accepted arrivals from resolutions/backlog. Broader dashboard decision-value review is pending. |
