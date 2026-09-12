@@ -334,8 +334,12 @@ def business_page() -> None:
         )
         st.plotly_chart(style_figure(fig), width="stretch", config={"displayModeBar": False})
     with right:
+        support = support.assign(resolution_time_label=support["avg_resolution_hours"].map(
+            lambda value: "Not available" if pd.isna(value) else f"{value:,.2f} h"
+        ))
         fig = px.bar(
             support,
+            custom_data=["resolved_ticket_count", "resolution_time_label"],
             x="calendar_month",
             y="ticket_count",
             color="category",
@@ -343,9 +347,9 @@ def business_page() -> None:
             color_discrete_sequence=["#4de2d3", "#a78bfa", "#f6c85f", "#ff7e8a"],
         )
         fig.update_yaxes(tickformat=",d", rangemode="tozero")
-        fig.update_traces(hovertemplate="Opening month: %{x|%b %Y}<br>Accepted tickets opened: %{y:,.0f}<extra>%{fullData.name}</extra>")
+        fig.update_traces(hovertemplate="Opening month: %{x|%b %Y}<br>Accepted tickets opened: %{y:,.0f}<br>Completed tickets: %{customdata[0]:,.0f}<br>Avg resolution (completed only): %{customdata[1]}<extra>%{fullData.name}</extra>")
         st.plotly_chart(style_figure(fig), width="stretch", config={"displayModeBar": False})
-        st.caption("Counted in the month opened, including unresolved tickets. Quarantined tickets are excluded; empty month/category groups are omitted.")
+        st.caption("Counted in the month opened, including unresolved tickets. Quarantined tickets are excluded; empty month/category groups are omitted. Hover for average elapsed resolution time and its completed-ticket count. Unresolved tickets have no completed duration; zero-hour resolutions count. Later resolutions can update an earlier month’s average.")
 
 
 def order_integrity_page() -> None:

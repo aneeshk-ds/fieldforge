@@ -1,6 +1,7 @@
 .git
 .venv
 .uv-cache
+.uv-python
 data
 artifacts
 dbt/target

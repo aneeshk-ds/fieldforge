@@ -55,6 +55,15 @@ kpis:
     model: mart_support_health
     column: ticket_count
     caveat: Excludes quarantined tickets; this is accepted incoming demand, not resolved tickets or end-of-month backlog. Months and categories with no accepted tickets have no row. Source timestamps have no timezone; month assignment uses the supplied calendar date without conversion.
+  avg_resolution_hours:
+    label: Average resolution time (hours)
+    owner: Support Operations
+    grain: calendar_month, category
+    definition: Sum of elapsed hours from opening to recorded resolution divided by resolved_ticket_count, for accepted tickets grouped by opening month and category. Includes zero-duration resolutions and resolutions in later months; excludes tickets without a recorded resolution.
+    model: mart_support_health
+    column: avg_resolution_hours
+    denominator_column: resolved_ticket_count
+    caveat: Null when no tickets in the group have a recorded resolution. Measures completed cases, not backlog age or resolution-month throughput. Later resolutions can revise an earlier opening-month average. Uses supplied timezone-free timestamps and continuous elapsed hours, not business hours. Do not average group averages without weighting by resolved_ticket_count.
   order_line_coverage:
     label: Order line coverage status
     owner: Data Operations

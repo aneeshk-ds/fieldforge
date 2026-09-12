@@ -1,7 +1,8 @@
 """Independent checks against accepted source records, separate from dbt SQL."""
 
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import datetime
+from math import isclose, isfinite
 from pathlib import Path
 
 import duckdb
@@ -20,3 +21,35 @@ def support_ticket_counts_match(con: duckdb.DuckDBPyConnection, tickets_path: Pa
     ).fetchall()
     actual = {(month, category): count for month, category, count in rows}
     return len(actual) == len(rows) and dict(expected) == actual
+
+
+def support_resolution_matches(con: duckdb.DuckDBPyConnection, tickets_path: Path) -> bool:
+    """Recompute opening-cohort completed counts and means with Python timedeltas."""
+    durations = defaultdict(list)
+    for ticket in pq.read_table(tickets_path, columns=["opened_at", "resolved_at", "category"]).to_pylist():
+        opened = datetime.fromisoformat(str(ticket["opened_at"]))
+        values = durations[(opened.date().replace(day=1), ticket["category"])]
+        if ticket["resolved_at"] not in (None, ""):
+            resolved = datetime.fromisoformat(str(ticket["resolved_at"]))
+            hours = (resolved - opened).total_seconds() / 3600
+            if hours < 0:
+                return False
+            values.append(hours)
+    rows = con.execute(
+        "select calendar_month, category, resolved_ticket_count, avg_resolution_hours from mart_support_health"
+    ).fetchall()
+    actual = {(month, category): (count, mean) for month, category, count, mean in rows}
+    if len(actual) != len(rows) or actual.keys() != durations.keys():
+        return False
+    for key, values in durations.items():
+        count, mean = actual[key]
+        if count != len(values):
+            return False
+        if not values:
+            if mean is not None:
+                return False
+        elif mean is None or not isfinite(mean) or not isclose(
+            mean, sum(values) / len(values), rel_tol=1e-12, abs_tol=1e-9
+        ):
+            return False
+    return True

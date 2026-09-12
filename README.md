@@ -30,7 +30,7 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Analytical SQL | Joins, window functions, conditional aggregation, grain tests, and traceable dashboard queries |
 | Product and consulting delivery | Customer brief, decisions, acceptance criteria, operational UI, demo path, troubleshooting, and handover documentation |
 
-## Progress — updated 11 September 2026
+## Progress — updated 12 September 2026
 
 **Current stage:** PySpark parity and Docker execution are verified; the remaining KPI-semantics audit is underway. **Next milestone:** complete independent KPI reconciliations, then finish broader troubleshooting, portfolio presentation, screenshots, and demo rehearsal.
 
@@ -39,7 +39,7 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
 | Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
 | Identity resolution and analytical models | Dimensional coverage complete | 18 dbt models; every source modelled; grains declared on every model; unattributed revenue retained |
-| Automated quality checks | Local checks passed; tests isolated and dependencies locked | 103 dbt tests, 23 Python tests, 15 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
+| Automated quality checks | Local checks passed; tests isolated and dependencies locked | 105 dbt tests, 31 Python tests, 16 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
 | Dashboard and SQL Lab | Operational prototype | Four dashboard views, revenue coverage, source-aware investigation, order-line integrity, and an interactive SQL Lab |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Reproducible local evidence published | 10× processed 102,479 rows; cold 130.938 s and warm 155.108 s; single-host evidence, not a capacity claim |
@@ -48,7 +48,11 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 
 ### Latest project session
 
-Audited accepted support tickets opened by month and category. Aneesh correctly assigned real ticket `TKT-000459` to September 2025 despite its October resolution. The existing count was correct: 12 accepted account tickets opened in September. Added the missing KPI definition, an accepted-source dbt reconciliation test, an independent Python release control, and explicit opening-month/count labels and caveats. Native SSD `make all` passed 121 dbt nodes, 15 reconciliation controls, 23 Python tests, and six dashboard queries. The scoped live chart check passed. Next: average resolution hours, one learner checkpoint at a time; the [working KPI audit](docs/kpi-audit.md) tracks outstanding coverage and findings.
+Audited average resolution time through Aneesh's correction that an unresolved ticket has an unknown completed duration, not zero. The two-ticket teaching example therefore averages 40 hours over one completed ticket. Registered the opening-month/category definition, exposed the completed-ticket denominator, replaced hour-boundary counting with continuous elapsed hours, and added independent reconciliation plus zero/unknown/fractional-time tests. All 48 existing support groups retain their previous values; the new denominator totals 460 resolved tickets out of 496 accepted. Native SSD `make all` passed 123 dbt nodes, 16 controls, 31 Python tests and six dashboard queries. Scoped native browser verification confirmed the completed-count and hours tooltip. Rebuilt Docker images also passed the full gate and Ruff on Linux/x86_64 (Python 3.13.15); the Docker dashboard health, support rendering and warehouse values were checked. The build now excludes the host `.uv-python` installation. Next: average satisfaction rating, then the remaining [KPI audit](docs/kpi-audit.md); no portfolio polish yet.
+
+### Previous session
+
+Audited accepted support tickets opened by month and category. Aneesh correctly assigned real ticket `TKT-000459` to September 2025 despite its October resolution. The existing count was correct: 12 accepted account tickets opened in September. Added the missing KPI definition, an accepted-source dbt reconciliation test, an independent Python release control, and explicit opening-month/count labels and caveats. Native SSD `make all` passed 121 dbt nodes, 15 reconciliation controls, 23 Python tests, and six dashboard queries. The scoped live chart check passed, and hosted CI passed for implementation commit `d740263` (run 34614611134, confirmed 12 September). Next: average resolution hours, one learner checkpoint at a time; the [working KPI audit](docs/kpi-audit.md) tracks outstanding coverage and findings.
 
 ### Previous session
 

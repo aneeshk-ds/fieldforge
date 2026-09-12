@@ -229,6 +229,11 @@ models:
         tests: [not_null]
       - name: ticket_count
         tests: [not_null]
+      - name: resolved_ticket_count
+        description: "Accepted tickets in this opening-month/category group with a recorded resolution, including zero elapsed time."
+        tests: [not_null]
+      - name: avg_resolution_hours
+        description: "Continuous elapsed hours averaged over resolved_ticket_count; null when that count is zero."
   - name: mart_order_line_integrity
     description: "Grain: one row per accepted order. States whether accepted lines reconcile to the order header amount and whether any difference is explained by a quarantined line."
     columns:
