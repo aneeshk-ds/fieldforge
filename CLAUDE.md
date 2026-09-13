@@ -165,6 +165,7 @@ Verify these rather than trusting the summary above.
 11. **Teaching contract.** Software completion under Aneesh's current explicit override does not create learner credit. When learning resumes, use `docs/interview-practice-plan.md`: one concept, real evidence, one learner-authored attempt, feedback, correction, diagnosis, defense, retained recheck, and exact attribution.
 12. **Chronology fix changes generated data.** Regenerating with corrected `created_at` changes every source CSV checksum. Quarantine counts, revenue totals and order-line integrity figures should not move, because no validation rule or monetary model reads `created_at`. If any of them do move, stop and investigate rather than updating the documented figures.
 13. **SQL Lab coverage.** The lab exposes `quarantined_orders`, `incoming_orders`, and the one-row-per-accepted-customer `customer_chronology` table. Keep future teaching tables equally small and traceable.
+14. **Completion bar scope.** The dashboard derives private software/portfolio completion from checkbox rows in `docs/acceptance-criteria.md`; it is currently 14/14 (100%). Learner grading remains a separate 0/38 and must never be folded into or inferred from that bar.
 
 ## Tool-claim accuracy
 

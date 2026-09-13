@@ -59,7 +59,7 @@ Updated 13 September 2026. The registry-to-source-to-model-to-test-to-display au
 - **Display:** The order-integrity view now shows 1,494 accepted orders, 3,021 accepted order lines, the 3,013 linked subset, the eight retained-without-accepted-parent lines, one known quarantine impact, and two unexplained gaps. Table labels use the registry names and explicitly identify the per-order linked count. The production smoke gate now executes seven queries.
 - **Aneesh did:** After initially treating 3,013 as the accepted-line answer and the remaining eight as quarantined lines, Aneesh corrected the total to 3,021. This records the final business-population correction only; it is not evidence of SQL, dbt, Python, or dashboard-tool mastery.
 - **Agent implemented:** Registry caveats, direct-source dbt and Python controls, corruption tests, full-population dashboard summary, exact display labels, and the rebuild-lock recovery message.
-- **Verification:** Native macOS and rebuilt Linux/x86_64 gates passed 140 dbt nodes (18 models, 122 tests), four gold exports, 20 reconciliation controls, 107 Python tests, seven dashboard queries, and Ruff. All source hashes remained unchanged.
+- **Verification:** Native macOS and rebuilt Linux/x86_64 gates passed 140 dbt nodes (18 models, 122 tests), four gold exports, 20 reconciliation controls, 109 Python tests, seven dashboard queries, and Ruff. All source hashes remained unchanged.
 
 ## Remaining KPI coverage
 

@@ -11,10 +11,34 @@ from dashboard.data_quality import (
     load_quality_snapshot,
     load_quarantined_record,
 )
+from dashboard.project_progress import acceptance_progress
 from dashboard.queries import QUERIES
 from fieldforge.settings import data_root, warehouse_path
 
 DATA = data_root()
+
+
+def test_acceptance_progress_is_derived_from_the_release_checklist(tmp_path):
+    checklist = tmp_path / "acceptance.md"
+    checklist.write_text(
+        "# Gate\n\n- [x] Complete\n- [ ] Pending\n- [X] Also complete\n",
+        encoding="utf-8",
+    )
+
+    assert acceptance_progress(checklist) == (2, 3)
+
+
+def test_dashboard_renders_separate_software_and_learning_progress():
+    app = AppTest.from_file("dashboard/app.py", default_timeout=30).run()
+
+    assert not app.exception
+    markup = "\n".join(element.value for element in app.markdown)
+    assert "Private software &amp; portfolio acceptance" in markup
+    assert "14/14 · 100%" in markup
+    assert "Learning is tracked separately: 0/38 tools graded" in markup
+    progress = app.get("progress")
+    assert len(progress) == 1
+    assert progress[0].value == 100
 
 
 def test_dashboard_quality_snapshot_traces_to_reconciled_pipeline_outputs():

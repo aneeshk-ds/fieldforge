@@ -17,6 +17,7 @@ from dashboard.data_quality import (
     load_quality_snapshot,
     load_quarantined_record,
 )
+from dashboard.project_progress import acceptance_progress
 from dashboard.queries import QUERIES
 from dashboard.warehouse import WarehouseBusyError, load_query_frames
 from fieldforge.settings import data_root, warehouse_path
@@ -24,6 +25,7 @@ from fieldforge.settings import data_root, warehouse_path
 ROOT = Path(__file__).resolve().parents[1]
 DATA = data_root()
 DB = warehouse_path()
+ACCEPTANCE_CHECKLIST = ROOT / "docs" / "acceptance-criteria.md"
 WAREHOUSE_BUSY_MESSAGE = (
     "Warehouse rebuild in progress. Wait for the pipeline gate to finish, then refresh this page. "
     "No Docker Desktop restart or data cleanup is required."
@@ -51,6 +53,9 @@ h1,h2,h3 { font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-se
 .ff-title span { color:#4de2d3; }
 .ff-deck { color:#8793a8; font-size:1.05rem; max-width:760px; margin-bottom:1.4rem; }
 .ff-status { display:flex; align-items:center; gap:.55rem; color:#c9d2e4; font-size:.82rem; margin-bottom:1.5rem; }
+.ff-progress-label { display:flex; justify-content:space-between; gap:1rem; color:#dce5f5; font-size:.82rem; margin:.1rem 0 .35rem; }
+.ff-progress-label strong { color:#4de2d3; }
+.ff-progress-note { color:#8793a8; font-size:.76rem; margin:.35rem 0 1.25rem; }
 .ff-dot { width:.55rem; height:.55rem; border-radius:50%; background:#4de2d3; box-shadow:0 0 16px #4de2d3; }
 .ff-card { min-height:138px; border:1px solid rgba(151,166,196,.16); border-radius:18px; padding:1.25rem;
  background:linear-gradient(145deg,rgba(20,25,38,.88),rgba(12,16,25,.72)); box-shadow:0 22px 50px rgba(0,0,0,.2); }
@@ -552,6 +557,20 @@ except FileNotFoundError as error:
 status = "CONTROL TOTALS RECONCILED" if snapshot.reconciled else "CONTROL FAILURE"
 st.markdown(
     f'<div class="ff-status"><span class="ff-dot"></span>{status} · RUN {html.escape(snapshot.run_id[:8])}</div>',
+    unsafe_allow_html=True,
+)
+
+accepted_criteria, total_criteria = acceptance_progress(ACCEPTANCE_CHECKLIST)
+completion_percent = round(100 * accepted_criteria / total_criteria)
+st.markdown(
+    '<div class="ff-progress-label"><span>Private software &amp; portfolio acceptance</span>'
+    f'<strong>{accepted_criteria}/{total_criteria} · {completion_percent}%</strong></div>',
+    unsafe_allow_html=True,
+)
+st.progress(completion_percent, text="Verified acceptance progress")
+st.markdown(
+    '<div class="ff-progress-note">Learning is tracked separately: 0/38 tools graded. '
+    'This bar does not claim learner mastery, public release, or a merge to main.</div>',
     unsafe_allow_html=True,
 )
 
