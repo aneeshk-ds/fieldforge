@@ -273,6 +273,15 @@ models:
         tests: [not_null]
       - name: accepted_line_amount_cents
         tests: [not_null]
+      - name: line_variance_cents
+        description: "Order header amount less accepted linked-line amount, in the order currency's minor unit."
+        tests: [not_null]
+      - name: accepted_lines
+        description: "Accepted lines linked to this accepted order header; excludes accepted lines whose parent order was quarantined."
+        tests: [not_null]
+      - name: quarantined_lines_same_order
+        description: "Rejected lines retaining this accepted order_id and therefore available as order-scoped evidence."
+        tests: [not_null]
       - name: line_coverage_status
         tests:
           - not_null

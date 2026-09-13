@@ -19,6 +19,13 @@ QUERIES = {
       from mart_subscription_health order by 1,2""",
     "support": """select calendar_month, category, ticket_count, resolved_ticket_count, avg_resolution_hours, rated_ticket_count, avg_csat
       from mart_support_health order by 1,2""",
+    "order_line_summary": """select
+      (select count(*) from mart_order_line_integrity) accepted_orders,
+      (select count(*) from fct_order_item) accepted_order_lines,
+      (select count(*) from fct_order_item where order_link_status='linked') linked_order_lines,
+      (select count(*) from fct_order_item where order_link_status='order_not_accepted') parent_order_not_accepted_lines,
+      (select count(*) from mart_order_line_integrity where line_coverage_status='incomplete_quarantined_line') known_quarantine_impacts,
+      (select count(*) from mart_order_line_integrity where line_coverage_status='incomplete_unexplained_line') unexplained_gaps""",
     "order_line_integrity": """select order_id, currency,
       header_amount_cents/100.0 header_amount,
       accepted_line_amount_cents/100.0 accepted_line_amount,

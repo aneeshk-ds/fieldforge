@@ -167,9 +167,9 @@
       <div class="grid">
         <article class="card third"><span class="number">10,163</span><strong>default source rows</strong><p class="muted">Customers, subscriptions, invoices, orders, order lines, and support tickets.</p></article>
         <article class="card third"><span class="number">29</span><strong>bad records quarantined</strong><p class="muted">Nothing silently disappeared; every rejected record carries a reason.</p></article>
-        <article class="card third"><span class="number">119/119</span><strong>dbt nodes passing</strong><p class="muted">18 models and 101 data tests, plus Python and reconciliation gates.</p></article>
+        <article class="card third"><span class="number">140/140</span><strong>dbt nodes passing</strong><p class="muted">18 models and 122 data tests, plus 107 Python tests and 20 reconciliation controls.</p></article>
         <article class="card"><h3>Trusted data layer</h3><p>Bronze preserves incoming evidence. Silver contains validated records. Gold contains customer, revenue, product, date, subscription, support, and order-integrity models.</p></article>
-        <article class="card"><h3>Operational experience</h3><p>The dashboard shows KPIs and quality problems. SQL Lab exposes small real tables so decisions and lessons use the project’s actual data.</p></article>
+        <article class="card"><h3>Operational experience</h3><p>The dashboard shows source-backed KPIs and quality problems. SQL Lab is retained only as an optional surface for later learner-authored practice.</p></article>
         <article class="card"><h3>Reproducible delivery</h3><p>The same seeded inputs produce the same outputs. A full dependency lock and clean-clone test prove another engineer can rebuild it.</p></article>
         <article class="card"><h3>Scale and runtime evidence</h3><p>The 10× profile processed 102,479 rows. PySpark matched all 1,494 accepted orders with zero missing or unexpected IDs.</p></article>
       </div>
@@ -205,7 +205,7 @@
             <li>Implemented Python, SQL, dbt, Spark, tests, and UI changes.</li>
             <li>Ran benchmarks and clean-environment verification.</li>
             <li>Maintained documentation, commits, and branch safety.</li>
-            <li>Should have created more hands-on checkpoints for you.</li>
+            <li>Separated software verification from learner proficiency claims.</li>
           </ul>
         </article>
       </div>
@@ -218,14 +218,14 @@
           <thead><tr><th>Tool</th><th>Job in FieldForge</th><th>Skill it demonstrates</th></tr></thead>
           <tbody>
             <tr><td>Python, pandas, PyArrow</td><td>Generate, profile, validate, and store source data.</td><td>Data engineering</td></tr>
-            <tr><td>Pandera</td><td>Express validation contracts and separate accepted from rejected rows.</td><td>Data quality</td></tr>
+            <tr><td>Custom Python/pandas rules</td><td>Apply validation contracts and separate accepted from rejected rows; Pandera and PyYAML are declared but not invoked.</td><td>Data quality with explicit claim boundaries</td></tr>
             <tr><td>DuckDB + SQL</td><td>Query local Parquet and power analytical results.</td><td>Analytical SQL</td></tr>
             <tr><td>dbt Core</td><td>Build dimensions, facts, marts, lineage, and data tests.</td><td>Analytics engineering</td></tr>
             <tr><td>Streamlit + Plotly</td><td>Turn governed models into an operational dashboard and SQL Lab.</td><td>Data product development</td></tr>
             <tr><td>pytest + Ruff</td><td>Catch regressions and enforce code quality.</td><td>Software engineering</td></tr>
             <tr><td>PySpark + Java</td><td>Prove the order-selection logic matches the canonical pipeline.</td><td>Distributed-processing parity</td></tr>
             <tr><td>uv + uv.lock</td><td>Recreate the complete dependency environment reliably.</td><td>Reproducible delivery</td></tr>
-            <tr><td>Docker + Compose</td><td>Define portable execution; runtime verification is still blocked on this Mac.</td><td>Packaging, still pending execution proof</td></tr>
+            <tr><td>Docker + Compose + Buildx</td><td>Build and execute the complete locked workflow in a Linux/x86_64 container with isolated data.</td><td>Verified portable packaging</td></tr>
             <tr><td>Git + GitHub Actions</td><td>Track milestones and run hosted quality gates.</td><td>Version control and CI</td></tr>
           </tbody>
         </table>
@@ -233,25 +233,25 @@
     </section>
 
     <section>
-      <h2>What you can honestly say in an interview</h2>
+      <h2>What the project evidence currently supports</h2>
       <div class="card full">
-        <p>“I developed FieldForge as a governed customer-data onboarding project. I defined key business rules around quarantine, chronology, and evidence; reviewed real exceptions; chose how unresolved issues should be presented; and worked with an AI engineering partner to implement and verify the pipeline. The system processes six sources through bronze, silver, and dbt gold models, exposes traceable KPIs, passes automated reconciliation, reproduces from a lockfile, and has measured 10× and PySpark parity evidence.”</p>
+        <p>“I directed FieldForge as a governed customer-data onboarding project and worked with an AI engineering partner to implement and verify it. I made business-rule decisions around quarantine, chronology, unresolved identity, and currency handling. The system processes six synthetic sources through bronze, silver, and dbt gold models, exposes traceable KPIs, passes independent reconciliation, reproduces from a lockfile, and has measured 10×, Docker, and PySpark evidence.” Tool-by-tool personal proficiency remains unclaimed until the practice plan is completed.</p>
       </div>
     </section>
 
     <section>
       <h2>The honest learning gap</h2>
       <div class="note">
-        You have recently made good engineering decisions, but you have not done enough hands-on SQL or debugging. That is not a failure; it is a coaching imbalance we identified. The project instructions now make hands-on participation a release gate: every major tool or workflow requires you to inspect data, predict an outcome, write or correct a query, diagnose a control, justify a model choice, or edit a small real artifact before the milestone can close. Approval or delegation alone does not count.
+        The earlier checkpoints did not teach or grade the project tools. Arithmetic, observation, approval, and presentation choices do not count as proficiency. The versioned interview-practice plan therefore marks all 38 tools and formats ungraded until each has a learner-authored use, diagnosis, design defense, and later retention check. Learning is deliberately paused until Aneesh asks to resume it.
       </div>
     </section>
 
     <section>
       <h2>What remains</h2>
       <div class="grid">
-        <article class="card third"><h3>Docker execution</h3><p class="muted">Run the existing image and Compose workflow on a host with Docker.</p></article>
-        <article class="card third"><h3>Customer handover</h3><p class="muted">Finish operating instructions, demo rehearsal, and portfolio story.</p></article>
-        <article class="card third"><h3>Your practice</h3><p class="muted">Resume short SQL, debugging, and design-reasoning checkpoints inside the project.</p></article>
+        <article class="card third"><h3>Tool practice</h3><p class="muted">Resume the 38-item interview-grade matrix one learner-authored exercise at a time.</p></article>
+        <article class="card third"><h3>Public release</h3><p class="muted">Requires Aneesh’s explicit authorization; the private branch remains the delivery boundary.</p></article>
+        <article class="card third"><h3>Production extensions</h3><p class="muted">PII controls, orchestration, observability, object storage, and approved FX policy remain outside this local prototype.</p></article>
       </div>
     </section>
 

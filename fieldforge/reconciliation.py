@@ -284,3 +284,107 @@ def monthly_revenue_matches(con: duckdb.DuckDBPyConnection, silver: Path) -> boo
         ):
             return False
     return True
+
+
+def order_kpis_match(
+    con: duckdb.DuckDBPyConnection, silver: Path, quarantine: Path
+) -> bool:
+    """Rebuild accepted-line population and every order-integrity row from Parquet."""
+
+    def integer(value):
+        try:
+            parsed = Decimal(str(value))
+        except InvalidOperation:
+            return None
+        if not parsed.is_finite() or parsed != parsed.to_integral_value():
+            return None
+        return int(parsed)
+
+    orders = {}
+    for row in pq.read_table(
+        silver / "orders.parquet",
+        columns=["order_id", "ordered_at", "status", "order_amount_cents", "currency"],
+    ).to_pylist():
+        order_id = row["order_id"]
+        amount = integer(row["order_amount_cents"])
+        if order_id in orders or amount is None:
+            return False
+        try:
+            order_date = date.fromisoformat(str(row["ordered_at"])[:10])
+        except ValueError:
+            return False
+        orders[order_id] = (order_date, row["currency"], row["status"], amount)
+
+    source_lines = {}
+    line_totals = defaultdict(int)
+    line_counts = Counter()
+    for row in pq.read_table(
+        silver / "order_items.parquet",
+        columns=["order_id", "line_number", "quantity", "unit_price_cents"],
+    ).to_pylist():
+        line_number = integer(row["line_number"])
+        quantity = integer(row["quantity"])
+        unit_price = integer(row["unit_price_cents"])
+        if None in (line_number, quantity, unit_price):
+            return False
+        key = (row["order_id"], line_number)
+        if key in source_lines:
+            return False
+        extended = quantity * unit_price
+        link_status = "linked" if row["order_id"] in orders else "order_not_accepted"
+        source_lines[key] = (extended, link_status)
+        if link_status == "linked":
+            line_totals[row["order_id"]] += extended
+            line_counts[row["order_id"]] += 1
+
+    fact_rows = con.execute(
+        "select order_id, line_number, extended_amount_cents, order_link_status "
+        "from fct_order_item"
+    ).fetchall()
+    fact_lines = {
+        (order_id, line_number): (amount, link_status)
+        for order_id, line_number, amount, link_status in fact_rows
+    }
+    if len(fact_lines) != len(fact_rows) or fact_lines != source_lines:
+        return False
+
+    quarantined_counts = Counter(
+        row["order_id"]
+        for row in pq.read_table(
+            quarantine / "order_items.parquet", columns=["order_id"]
+        ).to_pylist()
+    )
+    expected = {}
+    for order_id, (order_date, currency, status, header_amount) in orders.items():
+        accepted_amount = line_totals[order_id]
+        variance = header_amount - accepted_amount
+        quarantined_lines = quarantined_counts[order_id]
+        if variance < 0:
+            return False
+        if variance == 0:
+            coverage = "complete"
+        elif quarantined_lines:
+            coverage = "incomplete_quarantined_line"
+        else:
+            coverage = "incomplete_unexplained_line"
+        expected[order_id] = (
+            order_date,
+            currency,
+            status,
+            header_amount,
+            accepted_amount,
+            variance,
+            line_counts[order_id],
+            quarantined_lines,
+            coverage,
+        )
+
+    mart_rows = con.execute(
+        """select order_id, order_date, currency, order_status,
+                  header_amount_cents, accepted_line_amount_cents,
+                  line_variance_cents, accepted_lines,
+                  quarantined_lines_same_order, line_coverage_status
+           from mart_order_line_integrity"""
+    ).fetchall()
+    actual = {row[0]: row[1:] for row in mart_rows}
+    return len(actual) == len(mart_rows) and actual == expected

@@ -80,7 +80,7 @@ kpis:
     definition: Classification of each accepted order as complete, incomplete with a quarantined line on the same order, or incomplete without order-scoped quarantine evidence.
     model: mart_order_line_integrity
     column: line_coverage_status
-    caveat: An incomplete order is reported, never repaired. A rejected line that lost its parent order id cannot be attributed back to that order.
+    caveat: An incomplete order is reported, never repaired. A rejected line that lost its parent order id cannot be attributed back to that order. This order-grain status covers accepted order headers only; accepted lines whose parent order was quarantined remain in fct_order_item but cannot appear as their own mart row.
   order_line_variance:
     label: Order line variance
     owner: Data Operations
@@ -88,12 +88,12 @@ kpis:
     definition: Order header amount less the sum of accepted order line extended amounts, in the order currency.
     model: mart_order_line_integrity
     column: line_variance_cents
-    caveat: Never negative, because accepted lines can be missing but are never invented. Do not aggregate across currencies.
+    caveat: Zero means the accepted lines reconcile to the header. Never negative, because accepted lines can be missing but are never invented. Display in the order currency and do not aggregate across currencies.
   accepted_order_lines:
     label: Accepted order lines
     owner: Data Operations
     grain: order_id, line_number
-    definition: Count of accepted order lines in fct_order_item, including lines whose parent order was quarantined.
+    definition: Count of unique accepted order-line rows in fct_order_item at order_id and line_number grain, including lines whose parent order was quarantined.
     model: fct_order_item
     column: order_item_sk
-    caveat: Lines with order_link_status 'order_not_accepted' have no order date, status, currency, or customer key.
+    caveat: The dashboard total includes every accepted line. Its linked subset covers accepted order headers; lines with order_link_status 'order_not_accepted' remain in the total but have no order date, status, currency, or customer key.

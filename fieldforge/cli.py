@@ -20,6 +20,7 @@ from fieldforge.pipeline import ingest_bronze, profile_sources, resolve_identiti
 from fieldforge.reconciliation import (
     logo_churn_matches,
     monthly_revenue_matches,
+    order_kpis_match,
     support_resolution_matches,
     support_satisfaction_matches,
     support_ticket_counts_match,
@@ -31,6 +32,7 @@ from fieldforge.settings import (
     ensure_directories,
     gold_dir,
     is_isolated,
+    quarantine_dir,
     silver_dir,
     warehouse_path,
 )
@@ -62,6 +64,9 @@ def reconcile() -> None:
         checks = {
             "logo_churn_full_series": logo_churn_matches(con, silver_dir()),
             "monthly_revenue_full_series": monthly_revenue_matches(con, silver_dir()),
+            "order_kpis_full_series": order_kpis_match(
+                con, silver_dir(), quarantine_dir()
+            ),
             "support_tickets_opened": support_ticket_counts_match(con, silver_dir() / "tickets.parquet"),
             "support_resolution_hours": support_resolution_matches(con, silver_dir() / "tickets.parquet"),
             "support_satisfaction": support_satisfaction_matches(con, silver_dir() / "tickets.parquet"),

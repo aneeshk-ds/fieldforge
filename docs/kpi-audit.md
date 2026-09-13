@@ -1,6 +1,6 @@
 # KPI audit and working gap assessment
 
-Updated 13 September 2026. This is a partial, evidence-based working assessment, not release acceptance. Proceed one KPI and one learner checkpoint at a time; do not begin portfolio screenshots or polish while the audit remains open.
+Updated 13 September 2026. The registry-to-source-to-model-to-test-to-display audit is complete for the current private prototype. Interview-grade tool practice is tracked separately and remains ungraded in `docs/interview-practice-plan.md`.
 
 ## Accepted support tickets opened — verified slice
 
@@ -50,6 +50,17 @@ Updated 13 September 2026. This is a partial, evidence-based working assessment,
 - **Display aggregation:** The business revenue trend sums types only within calendar month and currency. Its attribution view recomputes the weighted rate from attributed and company net cents rather than averaging group percentages. A dashboard query test pins both behaviors; no new business-chart presentation was introduced in this reconciliation slice.
 - **Verification:** Native macOS SSD and rebuilt Linux/x86_64 Docker gates passed 136 dbt nodes (18 models, 118 tests), four exports, 19 controls, 92 Python tests, six dashboard queries and Ruff. All six source CSV hashes are unchanged. This closes revenue/attribution reconciliation and current aggregation review, not the overall KPI or release audit.
 
+## Order coverage, variance, and accepted lines — independently reconciled
+
+- **Source population and grain:** The current run contains 3,025 incoming order-item rows: 3,021 accepted at `(order_id, line_number)` grain and four quarantined. `fct_order_item` retains all 3,021 accepted rows. Of those, 3,013 link to an accepted order header and eight remain accepted with `order_link_status = 'order_not_accepted'` because their six parent headers were quarantined.
+- **Registry and model meaning:** `accepted_order_lines` is the complete accepted row population, not only the subset with an accepted parent. `order_line_coverage` and `order_line_variance` remain order-grain measures over 1,494 accepted headers. Variance is header amount less accepted linked-line amount in that order's currency; it is never aggregated across currencies or silently repaired.
+- **Observed integrity states:** 1,491 accepted orders are complete. `ORD-0000015` has one retained rejected line and a USD 90.00 explained variance. `ORD-0000021` and `ORD-0000026` remain unexplained because their orphaned rejected rows no longer retain the original parent ID. The eight accepted lines with quarantined parents are visible in the accepted-line total but cannot truthfully become order-grain mart rows.
+- **Independent controls:** `order_kpis_match` rebuilds the accepted fact population and every order-integrity row directly from silver/quarantine Parquet with PyArrow and Python arithmetic. It rejects source/output duplicate grains, line amount or link-status changes, and mart key/measure/status corruption. `assert_order_kpis_reconcile.sql` independently repeats the source comparison in dbt. Eleven focused Python cases exercise correct output and deliberate corruption.
+- **Display:** The order-integrity view now shows 1,494 accepted orders, 3,021 accepted order lines, the 3,013 linked subset, the eight retained-without-accepted-parent lines, one known quarantine impact, and two unexplained gaps. Table labels use the registry names and explicitly identify the per-order linked count. The production smoke gate now executes seven queries.
+- **Aneesh did:** After initially treating 3,013 as the accepted-line answer and the remaining eight as quarantined lines, Aneesh corrected the total to 3,021. This records the final business-population correction only; it is not evidence of SQL, dbt, Python, or dashboard-tool mastery.
+- **Agent implemented:** Registry caveats, direct-source dbt and Python controls, corruption tests, full-population dashboard summary, exact display labels, and the rebuild-lock recovery message.
+- **Verification:** Native macOS and rebuilt Linux/x86_64 gates passed 140 dbt nodes (18 models, 122 tests), four gold exports, 20 reconciliation controls, 107 Python tests, seven dashboard queries, and Ruff. All source hashes remained unchanged.
+
 ## Remaining KPI coverage
 
 | KPI family | Evidence and remaining work |
@@ -60,29 +71,25 @@ Updated 13 September 2026. This is a partial, evidence-based working assessment,
 | Average resolution hours | Verified above, including null/zero eligibility, elapsed precision, denominator and current tooltip. |
 | Average satisfaction | Verified above, including source eligibility, rating count, null handling, independent reconciliation and display. |
 | Revenue and attribution | Verified above at month/type/currency grain, including source-independent reconstruction and currency-safe weighted display aggregation. |
-| Order coverage, variance, accepted lines | Historical tests and controls exist; complete the requested registry-to-display checklist without altering deliberate unresolved-line governance. |
+| Order coverage, variance, accepted lines | Full accepted-line population, order-grain variance/status, independent controls, corruption cases, and dashboard labels are verified above. |
 
 ## Prioritized working findings
 
 | Priority | Finding and evidence | Value, effort and trade-off |
 |---|---|---|
-| Required before portfolio completion | Remaining KPI coverage above; `docs/acceptance-criteria.md` still leaves KPI agreement and all source totals open. | Prevent unsupported trust claims. Moderate, bounded KPI-by-KPI work; retain architecture. |
-| Required before portfolio completion | Concurrent native dashboard read during `make all` produced a DuckDB file-lock exception in `order_integrity_page`; reload after dbt completed recovered. | Reproducible run/refresh guidance and proportionate handling belong in the later operational slice. Small-to-moderate effort; no claim of concurrent serving during rebuild. |
-| Required before portfolio completion | `docs/acceptance-criteria.md` says unticked means no current evidence, while worklog contains executed checks for several unticked criteria. | Reconcile dated acceptance evidence after KPI work. Small documentation effort; never tick boxes from existence of code alone. |
 | Valuable enhancement | Source timestamps have no timezone; the ticket registry now discloses supplied-calendar semantics. `generate.py` creates naive timestamps. | A timezone contract would improve a real handover. Requires an explicit business policy; do not invent one for the synthetic prototype. |
-| Optional polish | `docs/project-recap.html` contains historical 119/119 node counts. | Refresh presentation once the audit is finished. Small effort, no current correctness benefit. |
 | Out of scope | Paid services, production PII, streaming and distributed production scale are excluded by `docs/product-specification.md`. | Preserve zero-cost local scope; expansion requires explicit authorization. |
 
 ## Nine-area assessment coverage
 
 | Area | Current evidence and review limit |
 |---|---|
-| Data and KPI correctness | Support, subscription/churn and monthly revenue/attribution slices are verified; order registry-to-display coverage remains above. |
+| Data and KPI correctness | Support, subscription/churn, monthly revenue/attribution, and order coverage/variance/accepted-line slices are independently reconciled. |
 | Architecture and engineering | Accepted Parquet, dbt marts and direct dashboard queries are traceable in the inspected files. No evidence here justifies replacing the architecture. |
-| Testing and operational resilience | New control catches group-level corruption; native and rebuilt Docker gates pass. Concurrent rebuild lock observed; recovery handling remains open. |
-| Dashboard usability and decision value | Support wording now distinguishes accepted arrivals from resolutions/backlog. Broader dashboard decision-value review is pending. |
-| Customer implementation narrative | `docs/customer-brief.md` and handover/worklog exist; narrative acceptance has not been re-audited in this slice. |
-| Documentation and reproducibility | Updated README/continuity for this milestone; acceptance-table consistency remains open. Rebuilt Docker verification passed; no new clean-clone verification claimed. |
-| Portfolio differentiation | Existing traceability and failure-detection evidence are concrete. Resume/presentation claim review remains pending; synthetic local evidence only. |
-| Demo readiness | Support chart renders after pipeline completion. Full rehearsal is deferred until KPI audit completion. |
-| Honest limitations and claims | Accepted-only demand, sparse groups, naive timestamps, scoped native/container verification and unverified KPI families are explicit. Public release and main actions remain unauthorized. |
+| Testing and operational resilience | Native and rebuilt Docker gates pass; mutation tests detect corrupted order output. Dashboard readers classify the DuckDB rebuild lock as transient and instruct operators to wait/refresh. |
+| Dashboard usability and decision value | Quality, revenue, subscription, support, order-integrity, and governance views retain metric grain, denominator, currency, and exception context. |
+| Customer implementation narrative | Customer brief, operating handover, troubleshooting, resume bullets, and demo path remain versioned and scoped to the synthetic prototype. |
+| Documentation and reproducibility | README, continuity, acceptance, tool inventory, and worklog are aligned to the current gate; the final clean-clone receipt is recorded separately. |
+| Portfolio differentiation | Traceable source-to-display controls, intentional unattributed data, retained quarantine evidence, and mutation-tested reconciliation are concrete; no production-scale claim is made. |
+| Demo readiness | The four-view command center and updated ten-minute path cover quality triage, governed business KPIs, order integrity, lineage, and evidence. |
+| Honest limitations and claims | Accepted-only populations, sparse groups, naive timestamps, local/synthetic scope, and currency separation are explicit. Public release and `main` actions remain unauthorized. |

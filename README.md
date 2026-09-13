@@ -1,6 +1,6 @@
 # FieldForge
 
-> Work in progress: this is a learning and implementation checkpoint, not a verified release. See ASTRA_WORKLOG.md for remaining work and the resume point.
+> Verified private portfolio prototype. Public release and any merge to `main` remain unauthorized. Interview-grade learner practice is tracked separately and has not been claimed.
 
 FieldForge is a zero-cost customer data onboarding platform built around a fictional subscription-commerce implementation for **Northstar Commerce**. It turns messy CRM, billing, order, and support extracts into a governed local lakehouse, reconciled KPIs, and a traceable Streamlit dashboard.
 
@@ -22,9 +22,9 @@ The repository demonstrates the work expected of a Data Engineer, Analytics Engi
 | Versioning and CI | Git, GitHub, GitHub Actions | [Hosted quality/evidence workflow](.github/workflows/ci.yml), private milestone history |
 | Contracts and evidence | YAML, CSV, JSON, Markdown, Mermaid | [KPI registry](config/kpis.yml), [source contracts](config/), [architecture](docs/architecture.md), generated evidence JSON |
 
-See the [tools and evidence map](docs/tools-and-evidence.md) for inputs, outputs, reproduction commands and limits. Pandera and PyYAML are declared dependencies but are **not invoked by application code**; validation is implemented in Python/pandas. Automated verification does not imply every tool's learner checkpoint or production readiness is complete.
+See the [tools and evidence map](docs/tools-and-evidence.md) for inputs, outputs, reproduction commands and limits, and the [complete interview-practice plan](docs/interview-practice-plan.md) for the 38 explicitly ungraded tool/format capabilities. Pandera and PyYAML are declared dependencies but are **not invoked by application code**; validation is implemented in Python/pandas. Automated verification is evidence about the software, not evidence that Aneesh personally mastered a tool.
 
-## Skills demonstrated
+## System capabilities demonstrated
 
 | Skill | Evidence in the project |
 |---|---|
@@ -38,23 +38,24 @@ See the [tools and evidence map](docs/tools-and-evidence.md) for inputs, outputs
 
 ## Progress — updated 13 September 2026
 
-**Current stage:** PySpark parity and Docker execution are verified; governed churn and monthly revenue/attribution reconciliation are complete. **Next milestone:** complete the order KPI registry-to-display audit before broader troubleshooting and acceptance work.
+**Current stage:** The private implementation, KPI audit, operational hardening, native/container/Spark gates, and portfolio documentation are complete. **Remaining authority-dependent work:** no public release or merge to `main`. **Deferred learner work:** resume the interview-grade practice plan one tool at a time when Aneesh requests it.
 
 | Milestone | Status | Evidence / next action |
 |---|---|---|
-| Customer brief, specification, architecture | Drafted | Versioned documents in docs/ |
-| Synthetic sources, profiling, bronze/silver/quarantine | Implemented; initial local checks passed | 10,163 generated rows across six sources; 29 quarantined |
+| Customer brief, specification, architecture | Complete for private prototype | Versioned documents in docs/ |
+| Synthetic sources, profiling, bronze/silver/quarantine | Verified | 10,163 generated rows across six sources; 29 quarantined with no silent loss |
 | Identity resolution and analytical models | Dimensional coverage complete | 18 dbt models; every source modelled; grains declared on every model; unattributed revenue retained |
-| Automated quality checks | Native and rebuilt-container checks passed; tests isolated and dependencies locked | 118 dbt tests, 92 Python tests, 19 reconciliation controls, 6 dashboard query checks; `uv.lock` resolves the complete environment |
-| Dashboard and SQL Lab | Operational prototype | Four dashboard views, a dedicated governed churn chart, revenue coverage, source-aware investigation, order-line integrity, and an interactive SQL Lab |
+| Automated quality checks | Native and rebuilt-container checks passed; tests isolated and dependencies locked | 122 dbt tests, 107 Python tests, 20 reconciliation controls, 7 dashboard query checks; `uv.lock` resolves the complete environment |
+| Dashboard and SQL Lab | Verified command center; lab paused | Four source-backed views with governed churn, revenue coverage, source-aware investigation, and complete order-line population; SQL Lab is optional for later genuine practice |
 | Data Quality Overview and visual design | Implemented; locally verified | Source controls, rejection diagnostics, record drill-down, and governance traceability |
 | Larger-scale benchmarks | Reproducible local evidence published | 10× processed 102,479 rows; cold 130.938 s and warm 155.108 s; single-host evidence, not a capacity claim |
-| Docker, Spark parity, hosted CI | Docker and Spark verified; milestone CI tracked in worklog | PySpark matched all 1,494 accepted order IDs on Java 17; Docker built both Compose images and `make all` passed in a Linux/x86_64 container |
-| Public portfolio release | Pending | Complete acceptance criteria and approve public visibility |
+| Docker, Spark parity, hosted CI | Docker and Spark verified; hosted milestone status tracked in worklog | PySpark matched all 1,494 accepted order IDs on Java 17; rebuilt Linux/x86_64 image passed the full isolated gate |
+| Interview-grade learner practice | Explicitly ungraded and deferred | 38 tools/formats have explain/use/diagnose/defend/retain requirements in the practice plan |
+| Public portfolio release | Not authorized | Requires explicit approval; `main` remains untouched |
 
 ### Latest project session
 
-**Aneesh did:** Reconciled the March 2026 USD one-off row by supplying the missing unattributed amount, `158.75`, so `5,320.00 + 158.75 = 5,478.75`. **Agent implemented:** Added the compact real-data SQL Lab preview; a source-independent Python/PyArrow control for every month/type/currency group; a direct-source dbt comparison; boundary and corruption tests; complete mart measure tests; and the 0%-versus-null attribution-rate boundary. Existing dashboard aggregations are pinned to currency-separated sums and weighted attribution. **Verification:** Native macOS and rebuilt Linux/x86_64 gates passed 136 dbt nodes, 19 controls, 92 Python tests, four exports, six dashboard queries and Ruff. All 96 revenue groups reconcile and all six source hashes are unchanged. Next: order KPI registry-to-display audit.
+**Aneesh did:** Corrected the order-line business population to 3,021 after clarification; this is recorded as a KPI-population decision, not tool mastery. Aneesh then explicitly paused learning checkpoints until the product is finished and required a complete interview-grade tool plan for later. **Agent implemented:** Added direct-source Python and dbt order controls, corruption coverage, full accepted-line dashboard totals, exact labels, transient DuckDB-lock handling, truthful dependency declarations, acceptance/presentation updates, and the 38-item grading contract. **Verification:** Native macOS and rebuilt Linux/x86_64 gates passed 140 dbt nodes, 20 controls, 107 Python tests, four exports, seven dashboard queries and Ruff. Spark again matched all 1,494 accepted orders on Java 17. All source hashes are unchanged.
 
 ### Previous session
 
@@ -119,7 +120,7 @@ At each completed project milestone, update this section's date, status, evidenc
 - [x] Isolate test data so tests never replace the demo run.
 - [x] Lock the full dependency environment.
 - [x] Correct synthetic customer chronology and enforce it in dbt and reconciliation.
-- [ ] Audit remaining KPI semantics and independent reconciliation.
+- [x] Audit remaining KPI semantics and independent reconciliation.
 - [x] Validate dashboard values and visuals against the completed models.
 - [x] Verify PySpark parity on Java 17.
 - [x] Verify Docker and clean-clone setup.
@@ -127,7 +128,7 @@ At each completed project milestone, update this section's date, status, evidenc
 - [x] Publish reproducible local scale benchmarks with explicit claim boundaries.
 - [x] Finish customer handover for the known quarantined-line case with a learner-authored operator action.
 
-Learning is a release gate, not a side activity. Each major tool or workflow requires a concrete learner attempt on real project evidence—such as writing or correcting SQL, predicting a result, diagnosing a failed control, selecting a grain/test with justification, or editing a small configuration—before the milestone closes. Approval or delegation alone does not count. The exact binding protocol lives in [CLAUDE.md](CLAUDE.md).
+Learning remains required before claiming personal tool proficiency, but Aneesh explicitly deferred it so the private software and portfolio pipeline could be completed first. No prior arithmetic, approval, observation, or display choice is counted as tool mastery. The exact 38-item grading contract lives in [the interview-practice plan](docs/interview-practice-plan.md) and resumes only when Aneesh requests it.
 
 If another coding agent must continue this exact local project, start with [CLAUDE.md](CLAUDE.md), then read this README and [ASTRA_WORKLOG.md](ASTRA_WORKLOG.md).
 
@@ -141,7 +142,7 @@ make all
 make dashboard
 ```
 
-SQL practice workspace after running the pipeline:
+Optional SQL practice workspace after running the pipeline (do not launch unless it supports an active learner-authored exercise):
 
 ```bash
 .venv/bin/streamlit run dashboard/sql_lab.py --server.port 8502

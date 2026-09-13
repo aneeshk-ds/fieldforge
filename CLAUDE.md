@@ -29,7 +29,7 @@ Preserve unrelated user changes. Use the existing environment when present; othe
 - Explicit rule-coded quarantine with no silent record loss
 - Deterministic exact-email identity crosswalk with unmatched identities retained
 - dbt sources, dimensions, revenue and order-line facts, KPI marts, tests, reconciliation, and evidence artifacts
-- 18 dbt models with grain declared on every model, 118 dbt tests, and 19 reconciliation controls
+- 18 dbt models with grain declared on every model, 122 dbt tests, and 20 reconciliation controls
 - Order lines whose parent order was quarantined are retained with `order_link_status = 'order_not_accepted'`
 - `mart_order_line_integrity` publishes orders whose accepted lines no longer reconcile to the header amount
 - Paths resolve at call time from `FIELDFORGE_DATA_ROOT` and `FIELDFORGE_ARTIFACTS_ROOT`, so a run can be relocated
@@ -40,7 +40,7 @@ Preserve unrelated user changes. Use the existing environment when present; othe
 - USD, CAD, and GBP remain separate because no FX policy has been approved
 - Docker, GitHub Actions, optional PySpark slice, architecture, discovery, handover, troubleshooting, demo, and resume documents exist
 
-The repository is a strong verified prototype, not a finished public release. Never claim the definition of done until every open item in `README.md`, `docs/acceptance-criteria.md`, and `ASTRA_WORKLOG.md` has current evidence.
+The repository is a verified private portfolio prototype, not a public or production release. Never merge to `main`, change repository visibility, or make a production claim without Aneesh's explicit authorization.
 
 ## Commands
 
@@ -80,6 +80,8 @@ After tests that regenerate source files, run `make pipeline` again before demon
 ## Non-negotiable learner-in-the-loop mode
 
 The project must progress through the same short, interactive rhythm Aneesh established with Codex. Technical autonomy does not authorize skipping the learning experience or changing the agreed roadmap.
+
+**Current explicit override (13 September 2026):** Aneesh directed the agent to finish the entire private project and pipeline first, stop generating lab/checkpoint work, and resume learning later to conserve tokens. Implementation and verification may therefore complete without new learner attempts. This does not waive or backfill learning credit: every tool remains ungraded under `docs/interview-practice-plan.md` until Aneesh later completes its explain/use/diagnose/defend/retain exercise.
 
 For every new concept or vertical slice:
 
@@ -134,9 +136,9 @@ The target cadence is: **explain one concept → show real data → Aneesh attem
 
 Branch and CI confirmation, dimensional coverage, test-output isolation, and reproducible 1×/10× local benchmarks are complete, all on branch `claudework`. See the newest `ASTRA_WORKLOG.md` entries for evidence.
 
-1. Finish the KPI-semantics and independent-reconciliation audit, one KPI and learner attempt at a time. Accepted support metrics, full-series logo churn reconciliation/presentation, and monthly/type/currency revenue plus attribution reconciliation are verified. Do not repeat the completed churn or `158.75` revenue exercises. Next complete the order KPI registry-to-display review. Track coverage in `docs/kpi-audit.md`; reconciliation completion does not imply full release acceptance.
-2. Close required data-quality gaps, then verify troubleshooting and acceptance evidence before dashboard polish, portfolio screenshots, or demo rehearsal. Docker is verified with its disk image on the external SSD; the current revenue changes passed both native and rebuilt-container verification. When Docker is available, include the relevant image build, container pipeline/tests and dashboard checks for packaged changes, as Aneesh explicitly requested; do not substitute native-only evidence.
-3. Keep hosted CI green for meaningful milestones and preserve exact learner attribution. Request explicit user approval before any public-visibility or main-branch action.
+1. The KPI-semantics, independent-reconciliation, operational, acceptance, and private portfolio implementation sequence is complete; verify the newest worklog receipt rather than repeating completed exercises.
+2. When Aneesh asks to resume learning, start at the first ungraded row in `docs/interview-practice-plan.md`. Teach and grade one tool at a time; do not prefill answers or launch SQL Lab without a real learner-authored task.
+3. Keep hosted CI green for meaningful milestones and preserve exact learner attribution. Request explicit user approval before any public-visibility or `main`-branch action.
 
 ## Branch convention
 
@@ -160,13 +162,13 @@ Verify these rather than trusting the summary above.
 8. **Failed-run evidence accumulates.** `artifacts/test-runs/<run-id>/` is Git-ignored and never cleaned automatically.
 9. **Streamlit width migration.** Repository-owned dashboard and SQL Lab calls now use `width="stretch"`; historical worklog text still mentions the former deprecation as past context.
 10. **CI lint scope.** GitHub Actions lints only `fieldforge dashboard tests`, so `spark/` is uncovered. `ruff check .` is currently clean; keep checking the whole tree.
-11. **Teaching contract.** The learner-in-the-loop and hands-on contribution sections above are binding. They were violated when the agent completed several tools while substituting vague decisions for learner practice. One concept, real evidence, one concrete learner attempt, feedback, correction, and visible verification are required.
+11. **Teaching contract.** Software completion under Aneesh's current explicit override does not create learner credit. When learning resumes, use `docs/interview-practice-plan.md`: one concept, real evidence, one learner-authored attempt, feedback, correction, diagnosis, defense, retained recheck, and exact attribution.
 12. **Chronology fix changes generated data.** Regenerating with corrected `created_at` changes every source CSV checksum. Quarantine counts, revenue totals and order-line integrity figures should not move, because no validation rule or monetary model reads `created_at`. If any of them do move, stop and investigate rather than updating the documented figures.
 13. **SQL Lab coverage.** The lab exposes `quarantined_orders`, `incoming_orders`, and the one-row-per-accepted-customer `customer_chronology` table. Keep future teaching tables equally small and traceable.
 
 ## Tool-claim accuracy
 
-See `docs/tools-and-evidence.md` for the implementation inventory and evidence boundaries. Pandera and PyYAML are declared but unused by application code; validation is custom Python/pandas. Historical Python/Pandera wording must not be repeated as a current runtime claim. Spark is a verified local accepted-order-ID parity slice on Java 17, not full-pipeline or distributed-production verification.
+See `docs/tools-and-evidence.md` for the implementation inventory and evidence boundaries. NumPy is now an explicit locked dependency. Pandera and PyYAML are declared but unused by application code; validation is custom Python/pandas. Historical Python/Pandera wording must not be repeated as a current runtime claim. Spark is a verified local accepted-order-ID parity slice on Java 17, not full-pipeline or distributed-production verification.
 
 ## Handoff discipline
 

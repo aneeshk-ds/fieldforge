@@ -54,6 +54,7 @@ def test_order_investigation_preserves_evidence_and_exposes_contract_gap():
 
 def test_order_integrity_dashboard_keeps_known_and_unexplained_gaps_visible():
     with duckdb.connect(str(warehouse_path()), read_only=True) as connection:
+        summary = connection.execute(QUERIES["order_line_summary"]).fetchone()
         integrity = connection.execute(QUERIES["order_line_integrity"]).df()
 
     incomplete = integrity.query("line_coverage_status != 'complete'")
@@ -61,10 +62,21 @@ def test_order_integrity_dashboard_keeps_known_and_unexplained_gaps_visible():
     unexplained = incomplete.query("line_coverage_status == 'incomplete_unexplained_line'")
 
     assert len(integrity) == 1494
+    assert summary == (1494, 3021, 3013, 8, 1, 2)
     assert known["order_id"].tolist() == ["ORD-0000015"]
     assert known["quarantined_lines_same_order"].tolist() == [1]
     assert set(unexplained["order_id"]) == {"ORD-0000021", "ORD-0000026"}
     assert unexplained["quarantined_lines_same_order"].eq(0).all()
+
+
+def test_order_integrity_dashboard_renders_registered_line_population():
+    app = AppTest.from_file("dashboard/app.py", default_timeout=30).run()
+
+    assert not app.exception
+    markup = "\n".join(element.value for element in app.markdown)
+    assert "Accepted order lines" in markup
+    assert "3,021" in markup
+    assert "3,013 linked · 8 retained without accepted parent" in markup
 
 
 def test_subscription_dashboard_query_exposes_churn_and_denominator():

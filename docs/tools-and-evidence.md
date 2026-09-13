@@ -2,10 +2,12 @@
 
 This is an implementation inventory for technical reviewers, not a production deployment claim. FieldForge uses seeded synthetic data for the fictional Northstar Commerce customer. It requires no paid service or cloud account. The worklog records dated verification and distinguishes Aneesh's practice from agent implementation.
 
+The separate [interview-grade practice plan](interview-practice-plan.md) lists every implementation, operations, testing, visualization, and evidence tool in this repository. All rows remain ungraded until Aneesh completes the learner-authored explain/use/diagnose/defend/retain sequence; a working agent-built artifact is not a learner credential.
+
 | Tool or format | Input → output and practical purpose | Code or reproducible evidence |
 |---|---|---|
 | Python | Source records → pipeline stages, controls and command-line orchestration | [CLI](../fieldforge/cli.py), [independent controls](../fieldforge/reconciliation.py); `make all` |
-| NumPy, Faker | Fixed seed and customer count → repeatable synthetic values and identities | [Generator](../fieldforge/generate.py); NumPy is currently resolved transitively in `uv.lock` although imported directly |
+| NumPy, Faker | Fixed seed and customer count → repeatable synthetic values and identities | [Generator](../fieldforge/generate.py); both direct imports are explicitly locked dependencies |
 | pandas | Six CSV extracts → profiles, standardized records, identity crosswalk and quarantine populations | [Pipeline](../fieldforge/pipeline.py), [generation](../fieldforge/generate.py) |
 | PyArrow / Parquet | DataFrames and accepted records → typed columnar bronze/silver/gold storage and independent control inputs | [Pipeline](../fieldforge/pipeline.py), [reconciliation](../fieldforge/reconciliation.py) |
 | DuckDB / SQL | Accepted Parquet → local analytical warehouse, joins, windows and dashboard aggregates | [dbt models](../dbt/models/), [dashboard queries](../dashboard/queries.py) |

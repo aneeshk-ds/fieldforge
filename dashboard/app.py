@@ -5,7 +5,6 @@ from __future__ import annotations
 import html
 from pathlib import Path
 
-import duckdb
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -19,11 +18,16 @@ from dashboard.data_quality import (
     load_quarantined_record,
 )
 from dashboard.queries import QUERIES
+from dashboard.warehouse import WarehouseBusyError, load_query_frames
 from fieldforge.settings import data_root, warehouse_path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = data_root()
 DB = warehouse_path()
+WAREHOUSE_BUSY_MESSAGE = (
+    "Warehouse rebuild in progress. Wait for the pipeline gate to finish, then refresh this page. "
+    "No Docker Desktop restart or data cleanup is required."
+)
 
 st.set_page_config(
     page_title="FieldForge · Northstar Commerce",
@@ -276,11 +280,26 @@ def business_page() -> None:
     if not DB.exists():
         st.info("Gold warehouse not found. Run `make all` to build business models.")
         return
-    with duckdb.connect(str(DB), read_only=True) as connection:
-        attribution = connection.execute(QUERIES["revenue_attribution"]).df()
-        revenue = connection.execute(QUERIES["revenue_trend"]).df()
-        subs = connection.execute(QUERIES["subscriber_trend"]).df()
-        support = connection.execute(QUERIES["support"]).df()
+    try:
+        frames = load_query_frames(
+            DB,
+            {
+                name: QUERIES[name]
+                for name in (
+                    "revenue_attribution",
+                    "revenue_trend",
+                    "subscriber_trend",
+                    "support",
+                )
+            },
+        )
+    except WarehouseBusyError:
+        st.warning(WAREHOUSE_BUSY_MESSAGE)
+        return
+    attribution = frames["revenue_attribution"]
+    revenue = frames["revenue_trend"]
+    subs = frames["subscriber_trend"]
+    support = frames["support"]
     st.markdown('<h2 class="ff-section">Business health</h2>', unsafe_allow_html=True)
     st.markdown('<div class="ff-kicker">Governed outputs by currency, plan, and support category</div>', unsafe_allow_html=True)
     st.info(
@@ -384,32 +403,57 @@ def order_integrity_page() -> None:
     if not DB.exists():
         st.info("Gold warehouse not found. Run `make all` to build order-line integrity.")
         return
-    with duckdb.connect(str(DB), read_only=True) as connection:
-        integrity = connection.execute(QUERIES["order_line_integrity"]).df()
+    try:
+        frames = load_query_frames(
+            DB,
+            {
+                name: QUERIES[name]
+                for name in ("order_line_summary", "order_line_integrity")
+            },
+        )
+    except WarehouseBusyError:
+        st.warning(WAREHOUSE_BUSY_MESSAGE)
+        return
+    summary = frames["order_line_summary"].iloc[0]
+    integrity = frames["order_line_integrity"]
 
     incomplete = integrity[integrity["line_coverage_status"] != "complete"].copy()
     known = incomplete[incomplete["line_coverage_status"] == "incomplete_quarantined_line"]
-    unexplained = incomplete[incomplete["line_coverage_status"] == "incomplete_unexplained_line"]
+    accepted_line_total = int(summary["accepted_order_lines"])
+    linked_line_total = int(summary["linked_order_lines"])
+    unlinked_line_total = int(summary["parent_order_not_accepted_lines"])
 
     st.markdown('<h2 class="ff-section">Order-line integrity</h2>', unsafe_allow_html=True)
     st.markdown(
         '<div class="ff-kicker">Does each accepted order header reconcile to its accepted lines?</div>',
         unsafe_allow_html=True,
     )
-    columns = st.columns(3)
+    columns = st.columns(4)
     with columns[0]:
-        card("Accepted orders", f"{len(integrity):,}", "One row per accepted order", "ff-card--good")
+        card(
+            "Accepted orders",
+            f"{int(summary['accepted_orders']):,}",
+            "One row per accepted order",
+            "ff-card--good",
+        )
     with columns[1]:
         card(
-            "Known quarantine impact",
-            f"{len(known):,}",
-            "Variance linked to retained rejection evidence",
-            "ff-card--alert",
+            "Accepted order lines",
+            f"{accepted_line_total:,}",
+            f"{linked_line_total:,} linked · {unlinked_line_total:,} retained without accepted parent",
+            "ff-card--good",
         )
     with columns[2]:
         card(
+            "Known quarantine impact",
+            f"{int(summary['known_quarantine_impacts']):,}",
+            "Variance linked to retained rejection evidence",
+            "ff-card--alert",
+        )
+    with columns[3]:
+        card(
             "Unexplained gaps",
-            f"{len(unexplained):,}",
+            f"{int(summary['unexplained_gaps']):,}",
             "Secondary source-owner investigation backlog",
             "ff-card--compact",
         )
@@ -448,16 +492,21 @@ def order_integrity_page() -> None:
             "accepted_line_amount": st.column_config.NumberColumn(
                 "Accepted-line amount", format="%.2f"
             ),
-            "line_variance": st.column_config.NumberColumn("Variance", format="%.2f"),
-            "accepted_lines": "Accepted lines",
-            "quarantined_lines_same_order": "Quarantined lines",
-            "line_coverage_status": "Coverage status",
+            "line_variance": st.column_config.NumberColumn(
+                "Order line variance", format="%.2f"
+            ),
+            "accepted_lines": "Accepted lines linked to order",
+            "quarantined_lines_same_order": "Quarantined lines for order",
+            "line_coverage_status": "Order line coverage status",
         },
     )
     st.caption(
-        "Known quarantine impact is shown first by learner decision. Unexplained gaps remain visible "
-        "and are never silently treated as complete."
+        "Accepted order lines includes every validated product row. The per-order linked count "
+        "excludes retained lines whose parent order was quarantined. Known quarantine impact is "
+        "shown first; unexplained gaps remain visible and are never silently treated as complete."
     )
+
+
 def governance_page(snapshot: QualitySnapshot) -> None:
     st.markdown('<h2 class="ff-section">Lineage & governance</h2>', unsafe_allow_html=True)
     st.markdown('<div class="ff-kicker">How raw customer data becomes a decision-ready metric</div>', unsafe_allow_html=True)
