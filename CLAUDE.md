@@ -39,6 +39,7 @@ Preserve unrelated user changes. Use the existing environment when present; othe
 - Company revenue includes valid unattributed transactions; customer metrics use attributed revenue only
 - USD, CAD, and GBP remain separate because no FX policy has been approved
 - Docker, GitHub Actions, optional PySpark slice, architecture, discovery, handover, troubleshooting, demo, and resume documents exist
+- GitHub-facing portfolio README includes a genuine dashboard screenshot, verified proof points, business/architecture narrative, reproducible commands, and an explicit 38-item tool-and-format usage inventory
 
 The repository is a verified private portfolio prototype, not a public or production release. Never merge to `main`, change repository visibility, or make a production claim without Aneesh's explicit authorization.
 
@@ -137,8 +138,9 @@ The target cadence is: **explain one concept → show real data → Aneesh attem
 Branch and CI confirmation, dimensional coverage, test-output isolation, and reproducible 1×/10× local benchmarks are complete, all on branch `claudework`. See the newest `ASTRA_WORKLOG.md` entries for evidence.
 
 1. The KPI-semantics, independent-reconciliation, operational, acceptance, and private portfolio implementation sequence is complete; verify the newest worklog receipt rather than repeating completed exercises.
-2. When Aneesh asks to resume learning, start at the first ungraded row in `docs/interview-practice-plan.md`. Teach and grade one tool at a time; do not prefill answers or launch SQL Lab without a real learner-authored task.
-3. Keep hosted CI green for meaningful milestones and preserve exact learner attribution. Request explicit user approval before any public-visibility or `main`-branch action.
+2. The private GitHub presentation is complete on `claudework`: the repository description/topics, recruiter-facing README, real dashboard screenshot, and all 38 tool/format roles are published. The repository remains private and `main` remains the default branch; neither state changes without explicit authorization.
+3. When Aneesh asks to resume learning, start at the first ungraded row in `docs/interview-practice-plan.md`. Teach and grade one tool at a time; do not prefill answers or launch SQL Lab without a real learner-authored task.
+4. Keep hosted CI green for meaningful milestones and preserve exact learner attribution. Request explicit user approval before any public-visibility, deployment, default-branch, or `main`-branch action.
 
 ## Branch convention
 
