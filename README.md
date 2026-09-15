@@ -105,6 +105,54 @@ Use the [ten-minute demo path](docs/demo.md) or the [customer handover](docs/han
 
 The [tools and evidence map](docs/tools-and-evidence.md) links every claim to code or a reproduction command. Pandera and PyYAML are locked dependencies but are not invoked by application logic; validation currently uses explicit Python/pandas rules. That limitation is documented rather than inflated into a tooling claim.
 
+<details>
+<summary><strong>Complete 38-item tool and format inventory</strong></summary>
+
+| # | Tool or format | FieldForge usage and evidence status |
+|---:|---|---|
+| 1 | Shell / terminal | Runs, inspects, composes, and troubleshoots the local workflow; commands are documented throughout the runbook and worklog |
+| 2 | Git | Branching, diff review, focused milestone commits, and local/remote SHA verification |
+| 3 | GitHub and GitHub CLI | Private remote delivery plus repository, branch, workflow, and artifact inspection |
+| 4 | GitHub Actions | Executes locked Linux setup, Ruff, the full pipeline/tests, and evidence upload in [CI](.github/workflows/ci.yml) |
+| 5 | Python 3.13 | Implements generation, profiling, validation, identity, orchestration, exports, and independent controls in [`fieldforge/`](fieldforge/) |
+| 6 | `pyproject.toml` and Hatchling | Define package metadata, supported Python, dependency groups, build backend, and the `fieldforge` CLI |
+| 7 | uv and `uv.lock` | Provision Python 3.13 and reproduce the complete locked dependency graph |
+| 8 | Make | Encodes the supported setup, pipeline, dbt, test, dashboard, Spark, benchmark, and clean command graph |
+| 9 | NumPy | Provides deterministic numeric generation under a fixed seed |
+| 10 | Faker | Generates deterministic synthetic customer and business identities |
+| 11 | pandas | Profiles, standardizes, validates, joins, and partitions all six source extracts |
+| 12 | PyArrow | Reads and writes typed Parquet and powers source-independent reconciliation inputs |
+| 13 | Parquet | Stores typed bronze, silver, quarantine, gold, benchmark, and Spark artifacts |
+| 14 | CSV | Represents the six raw operational source boundaries |
+| 15 | JSON | Stores manifests, profiles, validation summaries, reconciliations, parity, and benchmark receipts |
+| 16 | YAML | Defines dbt, CI, Compose, source contracts, KPIs, and planted-error configuration |
+| 17 | TOML | Declares Python packaging and tool configuration in `pyproject.toml` |
+| 18 | SQL | Implements staging, dimensions, facts, marts, tests, investigations, and dashboard queries |
+| 19 | DuckDB | Queries Parquet and hosts the local analytical warehouse |
+| 20 | dbt Core | Compiles and runs 18 declared-grain models plus lineage and 122 data tests |
+| 21 | dbt-duckdb | Connects dbt models and tests to the relocatable DuckDB target |
+| 22 | Jinja in dbt | Resolves `ref`, `source`, environment-aware paths, and compile-time SQL expressions |
+| 23 | Pandera | **Declared and locked, but not invoked by application code**; retained as an honest evaluation candidate |
+| 24 | PyYAML | **Declared and locked, but not invoked by application code**; repository YAML is consumed by its owning tools |
+| 25 | Streamlit | Renders the operational command center and optional SQL practice workspace |
+| 26 | Plotly | Builds interactive quality, revenue, subscriber, churn, support, and integrity visuals |
+| 27 | Streamlit AppTest | Verifies rendered values, labels, progress, interactions, and error-free app execution |
+| 28 | pytest | Runs isolated regression, boundary, corruption, reconciliation, query, and UI tests |
+| 29 | Ruff | Enforces the Python lint contract locally, in containers, and in hosted CI |
+| 30 | Apache Spark | Supplies the optional independent accepted-order transformation/parity path |
+| 31 | PySpark 4.0.0 | Expresses the Spark DataFrame transformations and anti-join ID comparison |
+| 32 | Java 17 / JVM | Executes the verified local Spark runtime |
+| 33 | Docker Engine / Desktop | Runs the rebuilt Linux/x86_64 application and isolated full gates |
+| 34 | Dockerfile | Defines the locked Python application image and supported container command |
+| 35 | Docker Compose | Defines isolated pipeline and dashboard services, mounts, commands, and port behavior |
+| 36 | Docker Buildx | Builds and loads the verified `linux/amd64` image |
+| 37 | Markdown | Carries the product, architecture, audit, runbook, troubleshooting, demo, and evidence narrative |
+| 38 | Mermaid | Keeps architecture and verification flows reviewable as versioned text diagrams |
+
+Implementation evidence and personal interview mastery are separate: the software receipts above prove what the repository executes, while [the practice plan](docs/interview-practice-plan.md) governs later hands-on grading.
+
+</details>
+
 ## Quick start
 
 Requirements: `uv`, `make`, and internet access for the initial locked dependency download. Setup provisions Python 3.13 locally.
