@@ -30,7 +30,7 @@ It runs without paid APIs, cloud billing, proprietary warehouses, secrets, or re
 | Native and rebuilt Linux gates | **Passed** |
 | Private acceptance checklist | **15 / 15** |
 
-A verified [GitHub Actions run](https://github.com/aneeshk-ds/fieldforge/actions/runs/35763841382) passed locked setup, the complete pipeline and test suite, Ruff, Java 17/PySpark parity, a clean-checkout Buildx/Compose gate, and separate evidence uploads. Detailed, dated receipts live in [ASTRA_WORKLOG.md](ASTRA_WORKLOG.md) and [the acceptance gate](docs/acceptance-criteria.md).
+A verified [GitHub Actions run](https://github.com/aneeshk-ds/fieldforge/actions/runs/35766783120) passed full-history credential scanning, locked setup, the complete pipeline and test suite, Ruff, Java 17/PySpark parity, a clean-checkout Buildx/Compose gate, and separate evidence uploads. Detailed, dated receipts live in [ASTRA_WORKLOG.md](ASTRA_WORKLOG.md) and [the acceptance gate](docs/acceptance-criteria.md).
 
 ## Why this is more than a dashboard
 
