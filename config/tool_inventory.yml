@@ -13,8 +13,8 @@ tools:
   - {id: 11, name: pandas, usage: Profiles validates standardizes and partitions extracts, evidence: [fieldforge/pipeline.py]}
   - {id: 12, name: PyArrow, usage: Writes typed Parquet and powers independent controls, evidence: [fieldforge/pipeline.py, fieldforge/reconciliation.py]}
   - {id: 13, name: Parquet, usage: Stores bronze silver quarantine gold and parity data, evidence: [fieldforge/pipeline.py, fieldforge/cli.py]}
-  - {id: 14, name: CSV, usage: Represents six raw operational extract boundaries, evidence: [data/source]}
-  - {id: 15, name: JSON, usage: Stores manifests profiles controls and verification receipts, evidence: [fieldforge/utils.py, artifacts]}
+  - {id: 14, name: CSV, usage: Represents six raw operational extract boundaries, evidence: [fieldforge/generate.py, config/source_contracts.yml]}
+  - {id: 15, name: JSON, usage: Stores manifests profiles controls and verification receipts, evidence: [fieldforge/utils.py, fieldforge/reconciliation.py]}
   - {id: 16, name: YAML, usage: Defines executable source contracts KPIs dbt CI and Compose, evidence: [config/source_contracts.yml, .github/workflows/ci.yml]}
   - {id: 17, name: TOML, usage: Defines Python packaging dependency and tool configuration, evidence: [pyproject.toml]}
   - {id: 18, name: SQL, usage: Implements models tests controls investigations and dashboard queries, evidence: [dbt/models, dashboard/queries.py]}
