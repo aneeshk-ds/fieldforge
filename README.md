@@ -2,7 +2,7 @@
 
 ### A production-minded customer data onboarding platform—built locally, verified end to end, and designed to make bad data impossible to hide.
 
-[![CI](https://github.com/aneeshk-ds/fieldforge/actions/workflows/ci.yml/badge.svg?branch=claudework)](https://github.com/aneeshk-ds/fieldforge/actions/workflows/ci.yml)
+[![CI](https://github.com/aneeshk-ds/fieldforge/actions/workflows/ci.yml/badge.svg?branch=production-preview)](https://github.com/aneeshk-ds/fieldforge/actions/workflows/ci.yml)
 ![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![dbt Core](https://img.shields.io/badge/dbt_Core-1.10-FF694B?logo=dbt&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-1.4-FFF000?logo=duckdb&logoColor=111)
@@ -24,11 +24,11 @@ It runs without paid APIs, cloud billing, proprietary warehouses, secrets, or re
 | Acceptance rate | **99.71%** |
 | dbt models / tests | **18 / 122** |
 | Independent reconciliation controls | **20 / 20 passed** |
-| Python tests | **109 passed** |
+| Python tests | **118 passed** |
 | Dashboard production SQL checks | **7 / 7 passed** |
 | Gold exports | **4** |
 | Native and rebuilt Linux gates | **Passed** |
-| Private acceptance checklist | **14 / 14** |
+| Private acceptance checklist | **15 / 15** |
 
 A verified [GitHub Actions run](https://github.com/aneeshk-ds/fieldforge/actions/runs/34762439776) passed locked setup, Ruff, the complete pipeline and test suite, and evidence upload. Detailed, dated receipts live in [ASTRA_WORKLOG.md](ASTRA_WORKLOG.md) and [the acceptance gate](docs/acceptance-criteria.md).
 
@@ -61,7 +61,7 @@ flowchart LR
   R --> CI[GitHub Actions evidence]
 ```
 
-The Python pipeline owns source generation, profiling, validation, standardization, identity resolution, orchestration, and independent reconciliation. dbt owns analytical SQL, model lineage, documented grains, relationships, and data tests. DuckDB and Parquet keep the system inspectable and laptop-friendly; Streamlit exposes both business health and the evidence behind it.
+The Python pipeline owns source generation, YAML/Pandera structural contracts, profiling, business validation, standardization, identity resolution, orchestration, and independent reconciliation. dbt owns analytical SQL, model lineage, documented grains, relationships, and data tests. DuckDB and Parquet keep the system inspectable and laptop-friendly; Streamlit exposes both business health and the evidence behind it.
 
 Read the deeper [architecture](docs/architecture.md) and [data model](docs/data-model.md).
 
@@ -103,7 +103,7 @@ Use the [ten-minute demo path](docs/demo.md) or the [customer handover](docs/han
 | Delivery | Git, GitHub, GitHub Actions | Preserve milestone history and run the hosted quality/evidence gate |
 | Contracts and communication | YAML, TOML, Markdown, Mermaid | Version source rules, KPIs, configuration, architecture, and handover evidence |
 
-The [tools and evidence map](docs/tools-and-evidence.md) links every claim to code or a reproduction command. Pandera and PyYAML are locked dependencies but are not invoked by application logic; validation currently uses explicit Python/pandas rules. That limitation is documented rather than inflated into a tooling claim.
+The [tools and evidence map](docs/tools-and-evidence.md) links every claim to code or a reproduction command. `make portfolio-check` safely loads the versioned inventory with PyYAML, validates all 38 entries with Pandera, confirms evidence paths and reviewer documents, and emits a machine-readable receipt.
 
 <details>
 <summary><strong>Complete 38-item tool and format inventory</strong></summary>
@@ -132,9 +132,9 @@ The [tools and evidence map](docs/tools-and-evidence.md) links every claim to co
 | 20 | dbt Core | Compiles and runs 18 declared-grain models plus lineage and 122 data tests |
 | 21 | dbt-duckdb | Connects dbt models and tests to the relocatable DuckDB target |
 | 22 | Jinja in dbt | Resolves `ref`, `source`, environment-aware paths, and compile-time SQL expressions |
-| 23 | Pandera | **Declared and locked, but not invoked by application code**; retained as an honest evaluation candidate |
-| 24 | PyYAML | **Declared and locked, but not invoked by application code**; repository YAML is consumed by its owning tools |
-| 25 | Streamlit | Renders the operational command center and optional SQL practice workspace |
+| 23 | Pandera | Enforces strict ordered schemas on all six raw extracts and validates the 38-tool evidence registry |
+| 24 | PyYAML | Safely loads executable source contracts and the tool evidence registry |
+| 25 | Streamlit | Renders the operational command center and read-only SQL investigation workbench |
 | 26 | Plotly | Builds interactive quality, revenue, subscriber, churn, support, and integrity visuals |
 | 27 | Streamlit AppTest | Verifies rendered values, labels, progress, interactions, and error-free app execution |
 | 28 | pytest | Runs isolated regression, boundary, corruption, reconciliation, query, and UI tests |
@@ -149,7 +149,7 @@ The [tools and evidence map](docs/tools-and-evidence.md) links every claim to co
 | 37 | Markdown | Carries the product, architecture, audit, runbook, troubleshooting, demo, and evidence narrative |
 | 38 | Mermaid | Keeps architecture and verification flows reviewable as versioned text diagrams |
 
-Implementation evidence and personal interview mastery are separate: the software receipts above prove what the repository executes, while [the practice plan](docs/interview-practice-plan.md) governs later hands-on grading.
+The inventory is executable rather than decorative: missing IDs, duplicate names, missing evidence paths, stale branch claims, or missing reviewer documents fail the portfolio gate.
 
 </details>
 
@@ -162,7 +162,7 @@ GitHub authentication is required only to clone the repository while it remains 
 ```bash
 git clone https://github.com/aneeshk-ds/fieldforge.git
 cd fieldforge
-git switch claudework
+git switch production-preview
 make setup
 make all
 make dashboard
@@ -193,9 +193,12 @@ The verified container target is Linux/x86_64. Inspect existing Docker workloads
 | Command | Purpose |
 |---|---|
 | `make setup` | Create `.venv` and install the locked project plus development dependencies |
+| `make setup-all` | Install locked development and Spark dependencies |
 | `make pipeline` | Generate → profile → bronze → silver/quarantine → dbt gold → reconcile |
 | `make test` | Run Python tests and all production dashboard SQL checks |
 | `make all` | Run the complete supported local pipeline and test gate |
+| `make portfolio-check` | Validate all 38 tool claims, evidence paths, and required reviewer documents |
+| `make verify` | Run the complete gate, portfolio contract, full-tree Ruff, and Spark parity |
 | `make dashboard` | Start the Streamlit command center on port 8501 |
 | `make spark` | Run the optional PySpark accepted-order parity check; requires the `spark` extra and Java 17 |
 | `make benchmark` | Run the isolated 10× profile with reproducible evidence |
@@ -206,7 +209,7 @@ The verified container target is Linux/x86_64. Inspect existing Docker workloads
 flowchart TD
   S[Seeded source contracts] --> P[Pipeline checks]
   P --> D[122 dbt tests]
-  P --> Y[109 Python tests]
+  P --> Y[118 Python tests]
   D --> C[20 independent controls]
   Y --> C
   C --> Q[7 dashboard SQL checks]
@@ -233,8 +236,8 @@ fieldforge/          Python pipeline, validation, identity, orchestration, contr
 dbt/                 Sources, staging, dimensions, facts, marts, and data tests
 dashboard/           Streamlit application, Plotly views, and production queries
 spark/               Optional PySpark accepted-order parity implementation
-tests/               Isolated regression, corruption, reconciliation, and UI tests
-config/              Source contracts, governed KPIs, and planted-error definitions
+tests/               Isolated contract, regression, corruption, reconciliation, and UI tests
+config/              Executable source/tool contracts, governed KPIs, and planted-error definitions
 docs/                Architecture, discovery, audit, benchmark, demo, and handover
 .github/workflows/   Hosted CI and evidence upload
 ```
@@ -244,8 +247,7 @@ docs/                Architecture, discovery, audit, benchmark, demo, and handov
 - All people, companies, emails, transactions, and tickets are synthetic.
 - This is a verified local/private portfolio implementation, not a deployed production service.
 - No claim is made for cloud scale, concurrency, high availability, real PII handling, or production capacity.
-- The software acceptance gate is complete; the separate interview-practice plan does not claim personal mastery from agent-built artifacts.
-- The repository remains private on `claudework`. A merge to `main`, public visibility, and deployment require explicit authorization.
+- The repository remains private on its default `production-preview` branch. A merge to `main`, public visibility, and deployment require explicit authorization.
 
 ## Documentation
 
@@ -255,6 +257,7 @@ docs/                Architecture, discovery, audit, benchmark, demo, and handov
 - [Data model](docs/data-model.md)
 - [KPI audit](docs/kpi-audit.md)
 - [Tools and evidence](docs/tools-and-evidence.md)
+- [Repository knowledge map](docs/repository-knowledge.md)
 - [Acceptance criteria](docs/acceptance-criteria.md)
 - [Benchmark protocol](docs/benchmark.md)
 - [Troubleshooting](docs/troubleshooting.md)

@@ -1,0 +1,47 @@
+version: 1
+sources:
+  customers:
+    primary_key: crm_customer_id
+    columns:
+      - crm_customer_id
+      - first_name
+      - last_name
+      - email
+      - phone
+      - country
+      - created_at
+      - _planted_error
+  subscriptions:
+    primary_key: subscription_id
+    columns:
+      - subscription_id
+      - billing_customer_id
+      - customer_email
+      - plan_code
+      - status
+      - start_date
+      - cancelled_at
+      - monthly_price_cents
+      - currency
+      - _planted_error
+  invoices:
+    primary_key: invoice_id
+    columns:
+      - invoice_id
+      - subscription_id
+      - billing_customer_id
+      - paid_at
+      - refunded_at
+      - gross_amount_cents
+      - refund_amount_cents
+      - currency
+      - _planted_error
+  orders:
+    primary_key: order_id
+    columns: [order_id, storefront_customer_id, customer_email, ordered_at, delivered_at, status, order_amount_cents, refund_amount_cents, currency, _planted_error]
+  order_items:
+    primary_key: [order_id, line_number]
+    columns: [order_id, line_number, product_id, quantity, unit_price_cents, _planted_error]
+  tickets:
+    primary_key: ticket_id
+    columns: [ticket_id, requester_email, opened_at, resolved_at, category, csat, _planted_error]

@@ -1,6 +1,6 @@
 # KPI audit and working gap assessment
 
-Updated 13 September 2026. The registry-to-source-to-model-to-test-to-display audit is complete for the current private prototype. Interview-grade tool practice is tracked separately and remains ungraded in `docs/interview-practice-plan.md`.
+Updated 22 September 2026. The registry-to-source-to-model-to-test-to-display audit is complete for the current private portfolio implementation. Personal teaching and grading are outside the active project scope.
 
 ## Accepted support tickets opened — verified slice
 
@@ -65,7 +65,7 @@ Updated 13 September 2026. The registry-to-source-to-model-to-test-to-display au
 
 | KPI family | Evidence and remaining work |
 |---|---|
-| Active subscribers | Month-end learner checkpoint and source comparison completed at `58d2ec7`; do not repeat the exercise. Continue any remaining edge-case/display assessment within the overall audit. |
+| Active subscribers | Month-end source comparison, inclusive cancellation boundary, edge cases, display, and independent control are verified. |
 | Logo churn | Full-series independent reconciliation, boundary checks and a learner-selected percentage presentation are verified above. |
 | Support ticket count | Verified above for accepted opening-month demand. |
 | Average resolution hours | Verified above, including null/zero eligibility, elapsed precision, denominator and current tooltip. |

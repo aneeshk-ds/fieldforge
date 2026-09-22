@@ -5,11 +5,15 @@ BENCHMARK_CUSTOMERS ?= 5000
 export UV_CACHE_DIR := $(CURDIR)/.uv-cache
 export UV_PYTHON_INSTALL_DIR := $(CURDIR)/.uv-python
 
-.PHONY: setup pipeline dbt test all dashboard spark benchmark clean
+.PHONY: setup setup-all pipeline dbt test all portfolio-check verify dashboard spark benchmark clean
 
 setup:
 	uv venv --python 3.13 .venv
 	uv sync --locked --extra dev
+
+setup-all:
+	uv venv --python 3.13 .venv
+	uv sync --locked --extra dev --extra spark
 
 pipeline:
 	$(PYTHON) -m fieldforge.cli pipeline
@@ -24,7 +28,14 @@ test:
 	$(PYTHON) -m pytest
 	$(PYTHON) -m fieldforge.cli dashboard-check
 
+portfolio-check:
+	$(PYTHON) -m fieldforge.cli portfolio-check
+
 all: pipeline test
+
+verify: all portfolio-check
+	.venv/bin/ruff check .
+	$(MAKE) spark
 
 dashboard:
 	.venv/bin/streamlit run dashboard/app.py

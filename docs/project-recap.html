@@ -167,9 +167,9 @@
       <div class="grid">
         <article class="card third"><span class="number">10,163</span><strong>default source rows</strong><p class="muted">Customers, subscriptions, invoices, orders, order lines, and support tickets.</p></article>
         <article class="card third"><span class="number">29</span><strong>bad records quarantined</strong><p class="muted">Nothing silently disappeared; every rejected record carries a reason.</p></article>
-        <article class="card third"><span class="number">140/140</span><strong>dbt nodes passing</strong><p class="muted">18 models and 122 data tests, plus 107 Python tests and 20 reconciliation controls.</p></article>
+        <article class="card third"><span class="number">140/140</span><strong>dbt nodes passing</strong><p class="muted">18 models and 122 data tests, plus 118 Python tests and 20 reconciliation controls.</p></article>
         <article class="card"><h3>Trusted data layer</h3><p>Bronze preserves incoming evidence. Silver contains validated records. Gold contains customer, revenue, product, date, subscription, support, and order-integrity models.</p></article>
-        <article class="card"><h3>Operational experience</h3><p>The dashboard shows source-backed KPIs and quality problems. SQL Lab is retained only as an optional surface for later learner-authored practice.</p></article>
+        <article class="card"><h3>Operational experience</h3><p>The dashboard shows source-backed KPIs and quality problems. A separate read-only SQL Workbench supports traceable operational investigation.</p></article>
         <article class="card"><h3>Reproducible delivery</h3><p>The same seeded inputs produce the same outputs. A full dependency lock and clean-clone test prove another engineer can rebuild it.</p></article>
         <article class="card"><h3>Scale and runtime evidence</h3><p>The 10× profile processed 102,479 rows. PySpark matched all 1,494 accepted orders with zero missing or unexpected IDs.</p></article>
       </div>
@@ -183,7 +183,7 @@
         <div class="decision"><strong>You chose the investigation story.</strong> You asked us to emphasize the known quarantined-line case instead of presenting two unexplained order gaps as if they were solved.</div>
         <div class="decision"><strong>You selected meaningful scale.</strong> You chose the 10× / 5,000-customer benchmark after seeing the real 500-customer baseline.</div>
         <div class="decision"><strong>You set delivery discipline.</strong> You required milestone commits, pushes only for major progress, work on the SSD branch, no merge to <code>main</code>, and no public release without approval.</div>
-        <div class="decision"><strong>You corrected the coaching process.</strong> You noticed when implementation had replaced learning and required the learner-in-the-loop agreement to be restored.</div>
+        <div class="decision"><strong>You enforced honest evidence.</strong> You required every named tool to map to executed code, a reproducible command, or a machine-readable receipt.</div>
       </div>
     </section>
 
@@ -205,7 +205,7 @@
             <li>Implemented Python, SQL, dbt, Spark, tests, and UI changes.</li>
             <li>Ran benchmarks and clean-environment verification.</li>
             <li>Maintained documentation, commits, and branch safety.</li>
-            <li>Separated software verification from learner proficiency claims.</li>
+            <li>Separated verified implementation evidence from unsupported production-scale claims.</li>
           </ul>
         </article>
       </div>
@@ -218,10 +218,10 @@
           <thead><tr><th>Tool</th><th>Job in FieldForge</th><th>Skill it demonstrates</th></tr></thead>
           <tbody>
             <tr><td>Python, pandas, PyArrow</td><td>Generate, profile, validate, and store source data.</td><td>Data engineering</td></tr>
-            <tr><td>Custom Python/pandas rules</td><td>Apply validation contracts and separate accepted from rejected rows; Pandera and PyYAML are declared but not invoked.</td><td>Data quality with explicit claim boundaries</td></tr>
+            <tr><td>PyYAML + Pandera + pandas</td><td>Load executable source contracts, reject structural drift before bronze, and separate accepted from quarantined business records.</td><td>Data quality with explicit boundaries</td></tr>
             <tr><td>DuckDB + SQL</td><td>Query local Parquet and power analytical results.</td><td>Analytical SQL</td></tr>
             <tr><td>dbt Core</td><td>Build dimensions, facts, marts, lineage, and data tests.</td><td>Analytics engineering</td></tr>
-            <tr><td>Streamlit + Plotly</td><td>Turn governed models into an operational dashboard and SQL Lab.</td><td>Data product development</td></tr>
+            <tr><td>Streamlit + Plotly</td><td>Turn governed models into an operational dashboard and read-only SQL Workbench.</td><td>Data product development</td></tr>
             <tr><td>pytest + Ruff</td><td>Catch regressions and enforce code quality.</td><td>Software engineering</td></tr>
             <tr><td>PySpark + Java</td><td>Prove the order-selection logic matches the canonical pipeline.</td><td>Distributed-processing parity</td></tr>
             <tr><td>uv + uv.lock</td><td>Recreate the complete dependency environment reliably.</td><td>Reproducible delivery</td></tr>
@@ -235,27 +235,27 @@
     <section>
       <h2>What the project evidence currently supports</h2>
       <div class="card full">
-        <p>“I directed FieldForge as a governed customer-data onboarding project and worked with an AI engineering partner to implement and verify it. I made business-rule decisions around quarantine, chronology, unresolved identity, and currency handling. The system processes six synthetic sources through bronze, silver, and dbt gold models, exposes traceable KPIs, passes independent reconciliation, reproduces from a lockfile, and has measured 10×, Docker, and PySpark evidence.” Tool-by-tool personal proficiency remains unclaimed until the practice plan is completed.</p>
+        <p>“I directed FieldForge as a governed customer-data onboarding project and worked with an AI engineering partner to implement and verify it. I made business-rule decisions around quarantine, chronology, unresolved identity, and currency handling. The system processes six synthetic sources through executable contracts, bronze, silver, and dbt gold models; exposes traceable KPIs; passes independent reconciliation; reproduces from a lockfile; and has measured 10×, Docker, and PySpark evidence.”</p>
       </div>
     </section>
 
     <section>
-      <h2>The honest learning gap</h2>
+      <h2>Executable reviewer evidence</h2>
       <div class="note">
-        The earlier checkpoints did not teach or grade the project tools. Arithmetic, observation, approval, and presentation choices do not count as proficiency. The versioned interview-practice plan therefore marks all 38 tools and formats ungraded until each has a learner-authored use, diagnosis, design defense, and later retention check. Learning is deliberately paused until Aneesh asks to resume it.
+        The repository does not rely on a decorative technology list. A versioned 38-item registry maps each tool to real evidence, while <code>make portfolio-check</code> uses PyYAML and Pandera to fail on missing IDs, duplicate names, missing evidence paths, stale active-state claims, or missing reviewer documents.
       </div>
     </section>
 
     <section>
       <h2>What remains</h2>
       <div class="grid">
-        <article class="card third"><h3>Tool practice</h3><p class="muted">Resume the 38-item interview-grade matrix one learner-authored exercise at a time.</p></article>
+        <article class="card third"><h3>Tool evidence</h3><p class="muted">Run the 38-item executable portfolio contract and inspect its JSON receipt.</p></article>
         <article class="card third"><h3>Public release</h3><p class="muted">Requires Aneesh’s explicit authorization; the private branch remains the delivery boundary.</p></article>
         <article class="card third"><h3>Production extensions</h3><p class="muted">PII controls, orchestration, observability, object storage, and approved FX policy remain outside this local prototype.</p></article>
       </div>
     </section>
 
-    <footer>FieldForge recap · SSD workspace · <code>claudework</code> · September 2026</footer>
+    <footer>FieldForge recap · SSD workspace · <code>production-preview</code> · September 2026</footer>
   </main>
 </body>
 </html>

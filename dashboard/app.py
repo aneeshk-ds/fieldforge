@@ -569,8 +569,8 @@ st.markdown(
 )
 st.progress(completion_percent, text="Verified acceptance progress")
 st.markdown(
-    '<div class="ff-progress-note">Learning is tracked separately: 0/38 tools graded. '
-    'This bar does not claim learner mastery, public release, or a merge to main.</div>',
+    '<div class="ff-progress-note">Every checked criterion is backed by versioned evidence. '
+    'Public hosting and production operations remain separate release decisions.</div>',
     unsafe_allow_html=True,
 )
 

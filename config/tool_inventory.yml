@@ -1,0 +1,40 @@
+version: 1
+tools:
+  - {id: 1, name: Shell / terminal, usage: Executes supported local workflows and diagnostics, evidence: [Makefile, docs/troubleshooting.md]}
+  - {id: 2, name: Git, usage: Preserves reviewable milestone history and branch state, evidence: [ASTRA_WORKLOG.md, README.md]}
+  - {id: 3, name: GitHub and GitHub CLI, usage: Hosts the private repository and verifies remote state, evidence: [.github/workflows/ci.yml, ASTRA_WORKLOG.md]}
+  - {id: 4, name: GitHub Actions, usage: Runs clean hosted quality and container gates, evidence: [.github/workflows/ci.yml]}
+  - {id: 5, name: Python 3.13, usage: Implements pipeline orchestration and controls, evidence: [fieldforge/cli.py, pyproject.toml]}
+  - {id: 6, name: pyproject.toml and Hatchling, usage: Defines package metadata dependencies and build backend, evidence: [pyproject.toml]}
+  - {id: 7, name: uv and uv.lock, usage: Reproduces the locked Python environment, evidence: [uv.lock, Makefile]}
+  - {id: 8, name: Make, usage: Encodes supported setup build test and verification commands, evidence: [Makefile]}
+  - {id: 9, name: NumPy, usage: Produces deterministic numeric source data, evidence: [fieldforge/generate.py]}
+  - {id: 10, name: Faker, usage: Produces deterministic synthetic identities, evidence: [fieldforge/generate.py]}
+  - {id: 11, name: pandas, usage: Profiles validates standardizes and partitions extracts, evidence: [fieldforge/pipeline.py]}
+  - {id: 12, name: PyArrow, usage: Writes typed Parquet and powers independent controls, evidence: [fieldforge/pipeline.py, fieldforge/reconciliation.py]}
+  - {id: 13, name: Parquet, usage: Stores bronze silver quarantine gold and parity data, evidence: [fieldforge/pipeline.py, fieldforge/cli.py]}
+  - {id: 14, name: CSV, usage: Represents six raw operational extract boundaries, evidence: [data/source]}
+  - {id: 15, name: JSON, usage: Stores manifests profiles controls and verification receipts, evidence: [fieldforge/utils.py, artifacts]}
+  - {id: 16, name: YAML, usage: Defines executable source contracts KPIs dbt CI and Compose, evidence: [config/source_contracts.yml, .github/workflows/ci.yml]}
+  - {id: 17, name: TOML, usage: Defines Python packaging dependency and tool configuration, evidence: [pyproject.toml]}
+  - {id: 18, name: SQL, usage: Implements models tests controls investigations and dashboard queries, evidence: [dbt/models, dashboard/queries.py]}
+  - {id: 19, name: DuckDB, usage: Hosts and queries the local analytical warehouse, evidence: [dbt/profiles.yml, fieldforge/cli.py]}
+  - {id: 20, name: dbt Core, usage: Builds declared-grain models lineage and data tests, evidence: [dbt/dbt_project.yml, dbt/models/schema.yml]}
+  - {id: 21, name: dbt-duckdb, usage: Connects dbt to the relocatable DuckDB target, evidence: [dbt/profiles.yml, pyproject.toml]}
+  - {id: 22, name: Jinja in dbt, usage: Resolves refs sources and environment-aware SQL paths, evidence: [dbt/models, dbt/profiles.yml]}
+  - {id: 23, name: Pandera, usage: Enforces ordered strict source schemas before bronze ingestion, evidence: [fieldforge/contracts.py, tests/test_contracts.py]}
+  - {id: 24, name: PyYAML, usage: Safely loads source contracts and tool evidence registries, evidence: [fieldforge/contracts.py, fieldforge/portfolio.py]}
+  - {id: 25, name: Streamlit, usage: Renders the operational command center and SQL workbench, evidence: [dashboard/app.py, dashboard/sql_lab.py]}
+  - {id: 26, name: Plotly, usage: Builds interactive governed KPI visualizations, evidence: [dashboard/app.py]}
+  - {id: 27, name: Streamlit AppTest, usage: Verifies rendered values labels and error-free app execution, evidence: [tests/test_dashboard_quality.py]}
+  - {id: 28, name: pytest, usage: Runs isolated regression corruption reconciliation and UI tests, evidence: [tests, pyproject.toml]}
+  - {id: 29, name: Ruff, usage: Enforces the Python lint contract locally and in CI, evidence: [pyproject.toml, .github/workflows/ci.yml]}
+  - {id: 30, name: Apache Spark, usage: Supplies an independent accepted-order parity transformation, evidence: [spark/standardize_orders.py, Makefile]}
+  - {id: 31, name: PySpark 4.0.0, usage: Expresses Spark transformations and anti-join comparisons, evidence: [spark/standardize_orders.py, pyproject.toml]}
+  - {id: 32, name: Java 17 / JVM, usage: Executes the Spark verification runtime, evidence: [.github/workflows/ci.yml, docs/tools-and-evidence.md]}
+  - {id: 33, name: Docker Engine / Desktop, usage: Runs rebuilt Linux application and isolated gates, evidence: [Dockerfile, compose.yml]}
+  - {id: 34, name: Dockerfile, usage: Defines the locked application container image, evidence: [Dockerfile]}
+  - {id: 35, name: Docker Compose, usage: Defines pipeline and dashboard services and mounts, evidence: [compose.yml]}
+  - {id: 36, name: Docker Buildx, usage: Builds and loads the verified linux/amd64 image, evidence: [.github/workflows/ci.yml]}
+  - {id: 37, name: Markdown, usage: Carries architecture runbooks audits and evidence narratives, evidence: [README.md, docs]}
+  - {id: 38, name: Mermaid, usage: Keeps architecture and verification flows reviewable as text, evidence: [README.md, docs/architecture.md]}

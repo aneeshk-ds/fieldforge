@@ -5,16 +5,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
       - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
           python-version: "3.13"
           cache-local-path: ${{ github.workspace }}/.uv-cache
-      - run: make setup
-      - run: .venv/bin/ruff check fieldforge dashboard tests
-      - run: make all
+      - run: make setup-all
+      - run: make verify
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: fieldforge-evidence
           path: artifacts/
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build Linux application image with Buildx
+        run: docker buildx build --platform linux/amd64 --load -t fieldforge-fieldforge:latest -t fieldforge-dashboard:latest .
+      - name: Run isolated Compose pipeline gate
+        run: >-
+          docker compose run --rm --no-deps
+          -e FIELDFORGE_DATA_ROOT=/app/data/ci-container
+          -e FIELDFORGE_ARTIFACTS_ROOT=/app/artifacts/ci-container
+          fieldforge
+      - name: Upload container evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: fieldforge-container-evidence
+          path: artifacts/ci-container/

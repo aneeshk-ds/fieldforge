@@ -1,23 +1,22 @@
 """Optional Spark parity slice for accepted silver orders."""
 
 from datetime import UTC, datetime
-from pathlib import Path
 
 import pyspark
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 
+from fieldforge.settings import artifacts_root, bronze_dir, silver_dir
 from fieldforge.utils import write_json
 
-root = Path(__file__).resolve().parents[1]
 spark = SparkSession.builder.master("local[*]").appName("fieldforge-orders").getOrCreate()
-orders = spark.read.parquet(str(root / "data/bronze/orders.parquet"))
+orders = spark.read.parquet(str(bronze_dir() / "orders.parquet"))
 accepted = orders.filter(
     F.col("currency").isin("USD", "CAD", "GBP")
     & ((F.col("delivered_at") == "") | (F.to_timestamp("delivered_at") >= F.to_timestamp("ordered_at")))
     & ((F.trim("customer_email") != "") | (F.trim("storefront_customer_id") != ""))
 ).withColumn("normalized_email", F.lower(F.trim("customer_email")))
-expected = spark.read.parquet(str(root / "data/silver/orders.parquet"))
+expected = spark.read.parquet(str(silver_dir() / "orders.parquet"))
 accepted_ids = accepted.select("order_id")
 expected_ids = expected.select("order_id")
 accepted_count = accepted_ids.count()
@@ -27,9 +26,9 @@ unexpected_count = accepted_ids.join(expected_ids, "order_id", "left_anti").coun
 assert accepted_count == expected_count
 assert missing_count == 0
 assert unexpected_count == 0
-accepted.write.mode("overwrite").parquet(str(root / "artifacts/spark_orders"))
+accepted.write.mode("overwrite").parquet(str(artifacts_root() / "spark_orders"))
 write_json(
-    root / "artifacts/spark_parity.json",
+    artifacts_root() / "spark_parity.json",
     {
         "checked_at_utc": datetime.now(UTC).isoformat(),
         "pyspark_version": pyspark.__version__,

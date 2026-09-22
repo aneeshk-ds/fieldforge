@@ -17,6 +17,7 @@ import duckdb
 
 from fieldforge.generate import generate
 from fieldforge.pipeline import ingest_bronze, profile_sources, resolve_identities, validate_silver
+from fieldforge.portfolio import portfolio_check
 from fieldforge.reconciliation import (
     logo_churn_matches,
     monthly_revenue_matches,
@@ -230,7 +231,7 @@ def main() -> None:
     pipeline = sub.add_parser("pipeline")
     pipeline.add_argument("--seed", type=int, default=20260907)
     pipeline.add_argument("--customers", type=int, default=500)
-    for command in ("export-gold", "reconcile", "dashboard-check", "clean"):
+    for command in ("export-gold", "reconcile", "dashboard-check", "portfolio-check", "clean"):
         sub.add_parser(command)
     benchmark_parser = sub.add_parser("benchmark")
     benchmark_parser.add_argument("--profile", default="1x")
@@ -245,6 +246,9 @@ def main() -> None:
         reconcile()
     elif args.command == "dashboard-check":
         dashboard_check()
+    elif args.command == "portfolio-check":
+        result = portfolio_check()
+        print(f"Portfolio check passed ({result['tool_count']} tools evidenced)")
     elif args.command == "clean":
         clean()
     elif args.command == "benchmark":

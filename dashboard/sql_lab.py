@@ -1,4 +1,4 @@
-"""A disposable SQL workspace over FieldForge's governed local data."""
+"""A read-only operational SQL workbench over FieldForge's governed local data."""
 
 import json
 import tomllib
@@ -35,9 +35,9 @@ BENCHMARK_RESULTS = [
 ]
 SPARK_PARITY_RESULT = artifacts_root() / "spark_parity.json"
 
-st.set_page_config(page_title="FieldForge SQL Lab", page_icon="🔎", layout="wide")
-st.title("FieldForge · SQL Lab")
-st.caption("Northstar Commerce / Synthetic data / DuckDB SQL")
+st.set_page_config(page_title="FieldForge SQL Workbench", page_icon="🔎", layout="wide")
+st.title("FieldForge · SQL Workbench")
+st.caption("Read-only operational investigation / Synthetic data / DuckDB SQL")
 required_sources = (
     SOURCE,
     INCOMING,
@@ -147,10 +147,10 @@ with duckdb.connect() as connection:
     )
     connection.execute("SET enable_external_access = false")
     preview = connection.sql("SELECT * FROM quarantined_orders ORDER BY order_id").df()
-    st.subheader("Your table: quarantined_orders")
+    st.subheader("Available table: quarantined_orders")
     st.write("One row per rejected order. All four columns are VARCHAR (text). order_id identifies the order.")
     st.dataframe(preview, hide_index=True, width="stretch")
-    st.subheader("Your table: incoming_orders")
+    st.subheader("Available table: incoming_orders")
     incoming_count = connection.sql("SELECT COUNT(*) FROM incoming_orders").fetchone()[0]
     st.write(
         f"{incoming_count:,} rows · One row per incoming order, including orders later quarantined. "
@@ -161,7 +161,7 @@ with duckdb.connect() as connection:
         hide_index=True,
         width="stretch",
     )
-    st.subheader("Your table: source_scale_profile")
+    st.subheader("Available table: source_scale_profile")
     source_total = connection.sql("SELECT SUM(records) FROM source_scale_profile").fetchone()[0]
     st.write(
         f"{source_total:,} generated source records. Grain: one row per source extract. "
@@ -195,7 +195,7 @@ with duckdb.connect() as connection:
                     ],
                 }
             )
-        st.subheader("Your table: benchmark_results")
+        st.subheader("Available table: benchmark_results")
         st.write(
             "Two isolated, seeded benchmark runs on this Mac. Grain: one row per scale "
             "profile. Memory columns are separate per-process peaks and must not be added."
@@ -203,7 +203,7 @@ with duckdb.connect() as connection:
         st.dataframe(benchmark_rows, hide_index=True, width="stretch")
     if SPARK_PARITY_RESULT.exists():
         parity = json.loads(SPARK_PARITY_RESULT.read_text())
-        st.subheader("Your table: runtime_parity")
+        st.subheader("Available table: runtime_parity")
         st.write(
             "One executed engine comparison at accepted-order grain. The canonical result is "
             "FieldForge's trusted Python/pandas output; Spark reimplements the same rules. "
@@ -239,14 +239,14 @@ with duckdb.connect() as connection:
         )
     installed_count = len(list(metadata.distributions()))
     locked_count = len(tomllib.loads((ROOT / "uv.lock").read_text())["package"])
-    st.subheader("Your table: dependency_inventory")
+    st.subheader("Available table: dependency_inventory")
     st.write(
         f"{len(direct_dependencies)} direct packages are declared, while {installed_count} "
         f"distributions are installed and {locked_count} cross-platform packages are resolved "
         "in uv.lock. Grain: one row per direct project dependency."
     )
     st.dataframe(direct_dependencies, hide_index=True, width="stretch")
-    st.subheader("Your table: customer_chronology")
+    st.subheader("Available table: customer_chronology")
     chronology_summary = connection.sql(
         """
         SELECT
@@ -274,7 +274,7 @@ with duckdb.connect() as connection:
         hide_index=True,
         width="stretch",
     )
-    st.subheader("Your table: order_line_integrity")
+    st.subheader("Available table: order_line_integrity")
     integrity_summary = connection.sql(
         """
         SELECT COUNT(*) AS accepted_orders,
@@ -314,7 +314,7 @@ with duckdb.connect() as connection:
         hide_index=True,
         width="stretch",
     )
-    st.subheader("Your table: subscription_health")
+    st.subheader("Available table: subscription_health")
     st.write(
         "Grain: one row per calendar month and plan. These Premium rows show the current "
         "month-end subscriber count and the separate churn measure already returned to the app."
@@ -334,7 +334,7 @@ with duckdb.connect() as connection:
         hide_index=True,
         width="stretch",
     )
-    st.subheader("Your table: monthly_revenue")
+    st.subheader("Available table: monthly_revenue")
     st.write(
         "Grain: one row per calendar month, revenue type and transaction currency. "
         "These March USD rows keep subscription and one-off revenue separate."
@@ -358,50 +358,25 @@ with duckdb.connect() as connection:
         hide_index=True,
         width="stretch",
     )
+    st.subheader("Read-only SQL console")
     st.write(
-        "SQL names used below: `header_amount_cents` is the recorded order total; "
-        "`accepted_line_amount_cents` is the total of product rows FieldForge accepted."
+        "Investigate any available table with one SELECT statement. External access is disabled, "
+        "and each session uses an in-memory DuckDB connection."
     )
-    st.subheader("Exercise 6 · Check one order total")
-    st.write(
-        "Use SQL to select ORD-0000015 from order_line_integrity. Show order_id and calculate "
-        "header_amount_cents minus accepted_line_amount_cents. Name the calculated column "
-        "difference_cents."
+    query = st.text_area(
+        "SQL query",
+        height=200,
+        placeholder="SELECT * FROM order_line_integrity LIMIT 20",
     )
-    order_check_query = st.text_area(
-        "Write the order-check SQL",
-        height=160,
-        placeholder="SELECT ...",
-        key="order_check_query",
-    )
-    if st.button("Run order check", type="primary"):
-        try:
-            statements = connection.extract_statements(order_check_query)
-            if len(statements) != 1 or statements[0].type != duckdb.StatementType.SELECT:
-                st.warning("Enter one SELECT query. This workspace only reads project data.")
-            else:
-                result = connection.execute(order_check_query).fetchdf()
-                st.success(f"Query ran successfully · {len(result)} result rows")
-                st.dataframe(result, hide_index=True, width="stretch")
-        except duckdb.Error as error:
-            st.error(str(error))
-    st.subheader("Exercise 5 · Calculate the quarantine rate")
-    st.write(
-        "Return one row with one column named quarantine_rate_pct. Calculate quarantined "
-        "orders as a percentage of all incoming orders using a count subquery for each "
-        "table. Use 100.0 to convert to a percentage; do not type either row count. "
-        "For this exercise, incoming_orders is nonempty. No sorting is needed."
-    )
-    query = st.text_area("Write your SQL", height=200, placeholder="Write your query here…")
-    if st.button("Run query", type="primary"):
+    if st.button("Run SELECT", type="primary"):
         try:
             statements = connection.extract_statements(query)
             if len(statements) != 1 or statements[0].type != duckdb.StatementType.SELECT:
-                st.warning("Enter one SELECT query. This workspace is for reading the practice table.")
+                st.warning("Enter exactly one SELECT query. This workbench is read-only.")
             else:
                 result = connection.execute(query).fetchdf()
                 st.success(f"Query ran successfully · {len(result)} result rows")
                 st.dataframe(result, hide_index=True, width="stretch")
         except duckdb.Error as error:
             st.error(str(error))
-    st.caption("Each run uses a temporary copy. Your queries do not modify the pipeline files.")
+    st.caption("Queries do not modify pipeline files; the connection is discarded when the session ends.")

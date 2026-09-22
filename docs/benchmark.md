@@ -2,7 +2,7 @@
 
 Run `make benchmark` on an idle machine. The command refuses to use the demo roots, generates a deterministic workload under `data/benchmarks/<profile>/`, and writes evidence under `artifacts/benchmarks/<profile>/`. A repeat archives the previous `benchmark.json` before writing the latest result.
 
-Override `BENCHMARK_PROFILE` and `BENCHMARK_CUSTOMERS` together to define a scale profile. The default is the learner-approved 10× profile:
+Override `BENCHMARK_PROFILE` and `BENCHMARK_CUSTOMERS` together to define a scale profile. The default is the governed 10× profile:
 
 ```bash
 make benchmark BENCHMARK_PROFILE=1x BENCHMARK_CUSTOMERS=500

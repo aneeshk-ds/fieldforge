@@ -8,6 +8,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from fieldforge.contracts import validate_source_frame
 from fieldforge.settings import (
     artifacts_root,
     bronze_dir,
@@ -34,9 +35,15 @@ def profile_sources() -> dict:
 
 def ingest_bronze(run_id: str) -> None:
     ensure_directories()
+    frames = {}
+    receipts = {}
     for name in SOURCES:
         path = source_dir() / f"{name}.csv"
         df = pd.read_csv(path, dtype=str, keep_default_na=False)
+        frames[name], receipts[name] = validate_source_frame(name, df)
+    write_json(artifacts_root() / "source_contract_validation.json", receipts)
+    for name, df in frames.items():
+        path = source_dir() / f"{name}.csv"
         df.insert(0, "_source_row_number", range(2, len(df) + 2))
         df["_source_file"] = path.name
         df["_ingested_at_utc"] = datetime.now(UTC).isoformat()
@@ -56,6 +63,11 @@ def _valid_csat(value: str | None) -> bool:
     return rating.is_finite() and 1 <= rating <= 5 and rating == rating.to_integral_value()
 
 
+def _before(left: str, right: str) -> bool:
+    """Compare ISO-8601 source values without invoking pandas once per row."""
+    return datetime.fromisoformat(left) < datetime.fromisoformat(right)
+
+
 def _reasons(name: str, row: pd.Series, context: dict) -> list[tuple[str, str]]:
     result = []
     def add(condition: bool, code: str, reason: str) -> None:
@@ -67,20 +79,20 @@ def _reasons(name: str, row: pd.Series, context: dict) -> list[tuple[str, str]]:
         add(context["customer_ids"].get(row.crm_customer_id, 0) > 1, "CUSTOMER_ID_DUPLICATE", "crm_customer_id is not unique")
     elif name == "subscriptions":
         add(row.plan_code not in {"ESSENTIALS", "PLUS", "PREMIUM"}, "SUBSCRIPTION_PLAN_UNKNOWN", "plan_code is unsupported")
-        add(bool(row.cancelled_at) and pd.to_datetime(row.cancelled_at) < pd.to_datetime(row.start_date), "SUBSCRIPTION_DATES_INVALID", "cancelled_at precedes start_date")
+        add(bool(row.cancelled_at) and _before(row.cancelled_at, row.start_date), "SUBSCRIPTION_DATES_INVALID", "cancelled_at precedes start_date")
     elif name == "invoices":
         gross, refund = int(row.gross_amount_cents), int(row.refund_amount_cents)
         add(gross < 0, "INVOICE_GROSS_NEGATIVE", "gross amount cannot be negative")
         add(refund > gross, "INVOICE_REFUND_EXCESS", "refund exceeds gross amount")
     elif name == "orders":
         add(row.currency not in {"USD", "CAD", "GBP"}, "ORDER_CURRENCY_UNSUPPORTED", "currency is unsupported")
-        add(bool(row.delivered_at) and pd.to_datetime(row.delivered_at) < pd.to_datetime(row.ordered_at), "ORDER_DATES_INVALID", "delivered_at precedes ordered_at")
+        add(bool(row.delivered_at) and _before(row.delivered_at, row.ordered_at), "ORDER_DATES_INVALID", "delivered_at precedes ordered_at")
         add(not (str(row.customer_email).strip() or str(row.storefront_customer_id).strip()), "ORDER_IDENTITY_MISSING", "customer email and source id are both missing")
     elif name == "order_items":
         add(int(row.quantity) <= 0, "ORDER_ITEM_QUANTITY_INVALID", "quantity must be positive")
         add(row.order_id not in context["order_ids"], "ORDER_ITEM_ORPHAN", "order_id does not exist")
     elif name == "tickets":
-        add(bool(row.resolved_at) and pd.to_datetime(row.resolved_at) < pd.to_datetime(row.opened_at), "TICKET_DATES_INVALID", "resolved_at precedes opened_at")
+        add(bool(row.resolved_at) and _before(row.resolved_at, row.opened_at), "TICKET_DATES_INVALID", "resolved_at precedes opened_at")
         add(not _valid_csat(row.csat), "TICKET_CSAT_INVALID", "csat must be a whole-number rating from 1 through 5")
     return result
 

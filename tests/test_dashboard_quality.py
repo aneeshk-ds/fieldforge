@@ -28,14 +28,15 @@ def test_acceptance_progress_is_derived_from_the_release_checklist(tmp_path):
     assert acceptance_progress(checklist) == (2, 3)
 
 
-def test_dashboard_renders_separate_software_and_learning_progress():
+def test_dashboard_renders_verified_acceptance_progress():
     app = AppTest.from_file("dashboard/app.py", default_timeout=30).run()
 
     assert not app.exception
     markup = "\n".join(element.value for element in app.markdown)
     assert "Private software &amp; portfolio acceptance" in markup
-    assert "14/14 · 100%" in markup
-    assert "Learning is tracked separately: 0/38 tools graded" in markup
+    assert "15/15 · 100%" in markup
+    assert "Every checked criterion is backed by versioned evidence" in markup
+    assert "Learning is tracked separately" not in markup
     progress = app.get("progress")
     assert len(progress) == 1
     assert progress[0].value == 100
