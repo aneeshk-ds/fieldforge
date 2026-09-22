@@ -1,5 +1,12 @@
 # ASTRA Worklog
 
+## 2026-09-22 — GitHub hygiene and credential guard
+
+- **Aneesh did:** Requested a final README review, removal of unnecessary repository files, and explicit assurance that no secrets or credentials were uploaded.
+- **Agent implemented:** Removed the canceled interview-practice plan, the unlinked internal HTML recap, and the redundant repository-structure page. Kept the requirements, discovery, and synthetic-data specifications as genuine engineering evidence and linked them from the README. Added credential/private-key ignore rules and a pinned Gitleaks v8.30.1 full-history scan to hosted CI; expanded the executable inventory to 39 tools so the security scanner is disclosed rather than name-dropped.
+- **Verification:** The README's local links all resolve. Redacted Gitleaks scanned all 45 existing commits (805.94 KB) and the exact staged Git snapshot (643.14 KB) and found no leaks in either. A broader local-directory scan found candidates only in ignored caches, environments, logs, generated data, or artifacts; none are tracked or uploaded. GitHub reports zero Actions secrets and zero environments; native GitHub secret scanning is unavailable/disabled for this private repository. Ruff, CI-YAML parsing, the 39-tool portfolio check, focused portfolio tests, and whitespace checks pass locally. Hosted confirmation remains pending for this cleanup milestone.
+- **Scope:** Generated data, test evidence, virtual environments, dependency caches, dbt targets, and logs remain ignored and were not uploaded. The preserved demo data was not deleted. No `main` merge, visibility change, release, or deployment occurred.
+
 ## 2026-09-22 — Executable tool evidence and production-preview delivery gate
 
 - **Aneesh did:** Explicitly canceled the repository teaching/checkpoint workflow, required the complete end-to-end project to function on GitHub, required every claimed tool to have real implementation evidence, approved `production-preview` as the default private branch, and launched Docker Desktop for final container verification. These are product and delivery directions, not claims of code authorship or personal tool proficiency.

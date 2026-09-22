@@ -14,7 +14,7 @@ from fieldforge.settings import ROOT, artifacts_root
 from fieldforge.utils import write_json
 
 DEFAULT_INVENTORY = ROOT / "config" / "tool_inventory.yml"
-EXPECTED_TOOL_IDS = set(range(1, 39))
+EXPECTED_TOOL_IDS = set(range(1, 40))
 REQUIRED_DOCS = (
     "README.md",
     "CLAUDE.md",
@@ -71,7 +71,7 @@ def load_tool_inventory(path: Path = DEFAULT_INVENTORY) -> list[dict[str, Any]]:
     except (pa.errors.SchemaError, pa.errors.SchemaErrors) as error:
         raise PortfolioCheckError(f"Tool inventory schema failed: {error}") from error
     if set(frame["id"]) != EXPECTED_TOOL_IDS:
-        raise PortfolioCheckError("Tool inventory must contain exactly IDs 1 through 38")
+        raise PortfolioCheckError("Tool inventory must contain exactly IDs 1 through 39")
     return tools
 
 

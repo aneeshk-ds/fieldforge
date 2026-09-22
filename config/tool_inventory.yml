@@ -38,3 +38,4 @@ tools:
   - {id: 36, name: Docker Buildx, usage: Builds and loads the verified linux/amd64 image, evidence: [.github/workflows/ci.yml]}
   - {id: 37, name: Markdown, usage: Carries architecture runbooks audits and evidence narratives, evidence: [README.md, docs]}
   - {id: 38, name: Mermaid, usage: Keeps architecture and verification flows reviewable as text, evidence: [README.md, docs/architecture.md]}
+  - {id: 39, name: Gitleaks, usage: Scans the complete Git history for credentials with redacted output, evidence: [.github/workflows/ci.yml, README.md]}

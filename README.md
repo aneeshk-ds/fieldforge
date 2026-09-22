@@ -97,16 +97,16 @@ Use the [ten-minute demo path](docs/demo.md) or the [customer handover](docs/han
 | Storage and interchange | CSV, JSON, PyArrow, Parquet | Represent source boundaries, typed layers, manifests, and auditable evidence |
 | Analytics engineering | SQL, DuckDB, dbt Core, dbt-duckdb, Jinja | Build declared-grain staging models, dimensions, facts, marts, lineage, and tests |
 | Product interface | Streamlit, Plotly | Turn governed outputs into traceable operational and KPI views |
-| Quality | pytest, Streamlit AppTest, Ruff | Test transformations, corruptions, reconciliations, queries, and UI contracts |
+| Quality and security | pytest, Streamlit AppTest, Ruff, Gitleaks | Test transformations, corruptions, reconciliations, queries, UI contracts, and complete Git history for credentials |
 | Reproducibility | uv, `uv.lock`, Hatchling, Make | Lock the environment and encode supported setup, build, pipeline, test, and benchmark workflows |
 | Runtime parity | Docker, Compose, Buildx, Java 17, Spark, PySpark | Verify Linux packaging and independently compare all 1,494 accepted order IDs |
 | Delivery | Git, GitHub, GitHub Actions | Preserve milestone history and run the hosted quality/evidence gate |
 | Contracts and communication | YAML, TOML, Markdown, Mermaid | Version source rules, KPIs, configuration, architecture, and handover evidence |
 
-The [tools and evidence map](docs/tools-and-evidence.md) links every claim to code or a reproduction command. `make portfolio-check` safely loads the versioned inventory with PyYAML, validates all 38 entries with Pandera, confirms evidence paths and reviewer documents, and emits a machine-readable receipt.
+The [tools and evidence map](docs/tools-and-evidence.md) links every claim to code or a reproduction command. `make portfolio-check` safely loads the versioned inventory with PyYAML, validates all 39 entries with Pandera, confirms evidence paths and reviewer documents, and emits a machine-readable receipt.
 
 <details>
-<summary><strong>Complete 38-item tool and format inventory</strong></summary>
+<summary><strong>Complete 39-item tool and format inventory</strong></summary>
 
 | # | Tool or format | FieldForge usage and evidence status |
 |---:|---|---|
@@ -132,7 +132,7 @@ The [tools and evidence map](docs/tools-and-evidence.md) links every claim to co
 | 20 | dbt Core | Compiles and runs 18 declared-grain models plus lineage and 122 data tests |
 | 21 | dbt-duckdb | Connects dbt models and tests to the relocatable DuckDB target |
 | 22 | Jinja in dbt | Resolves `ref`, `source`, environment-aware paths, and compile-time SQL expressions |
-| 23 | Pandera | Enforces strict ordered schemas on all six raw extracts and validates the 38-tool evidence registry |
+| 23 | Pandera | Enforces strict ordered schemas on all six raw extracts and validates the 39-tool evidence registry |
 | 24 | PyYAML | Safely loads executable source contracts and the tool evidence registry |
 | 25 | Streamlit | Renders the operational command center and read-only SQL investigation workbench |
 | 26 | Plotly | Builds interactive quality, revenue, subscriber, churn, support, and integrity visuals |
@@ -148,6 +148,7 @@ The [tools and evidence map](docs/tools-and-evidence.md) links every claim to co
 | 36 | Docker Buildx | Builds and loads the verified `linux/amd64` image |
 | 37 | Markdown | Carries the product, architecture, audit, runbook, troubleshooting, demo, and evidence narrative |
 | 38 | Mermaid | Keeps architecture and verification flows reviewable as versioned text diagrams |
+| 39 | Gitleaks | Scans every commit and branch for credentials with fully redacted output locally and in hosted CI |
 
 The inventory is executable rather than decorative: missing IDs, duplicate names, missing evidence paths, stale branch claims, or missing reviewer documents fail the portfolio gate.
 
@@ -247,12 +248,16 @@ docs/                Architecture, discovery, audit, benchmark, demo, and handov
 - All people, companies, emails, transactions, and tickets are synthetic.
 - This is a verified local/private portfolio implementation, not a deployed production service.
 - No claim is made for cloud scale, concurrency, high availability, real PII handling, or production capacity.
+- A redacted Gitleaks scan of the complete repository history found no credentials; hosted CI repeats the full-history scan on every push and pull request.
 - The repository remains private on its default `production-preview` branch. A merge to `main`, public visibility, and deployment require explicit authorization.
 
 ## Documentation
 
 - [Product specification](docs/product-specification.md)
+- [Requirements](docs/requirements.md)
 - [Customer brief](docs/customer-brief.md)
+- [Customer discovery guide](docs/discovery-guide.md)
+- [Synthetic data specification](docs/synthetic-data-specification.md)
 - [Architecture](docs/architecture.md)
 - [Data model](docs/data-model.md)
 - [KPI audit](docs/kpi-audit.md)
@@ -263,6 +268,7 @@ docs/                Architecture, discovery, audit, benchmark, demo, and handov
 - [Troubleshooting](docs/troubleshooting.md)
 - [Customer handover](docs/handover.md)
 - [Demo script](docs/demo.md)
+- [Résumé-ready bullets](docs/resume-bullets.md)
 - [Full implementation worklog](ASTRA_WORKLOG.md)
 
 ## License

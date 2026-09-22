@@ -6,11 +6,11 @@ from fieldforge.portfolio import PortfolioCheckError, load_tool_inventory, portf
 from fieldforge.settings import ROOT
 
 
-def test_portfolio_inventory_evidences_all_38_tools():
+def test_portfolio_inventory_evidences_all_39_tools():
     result = portfolio_check(write_receipt=False)
 
     assert result["status"] == "passed"
-    assert result["tool_count"] == 38
+    assert result["tool_count"] == 39
     assert result["tool_ids_complete"]
 
 

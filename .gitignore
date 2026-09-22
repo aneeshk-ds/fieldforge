@@ -13,3 +13,13 @@ data/
 artifacts/
 *.duckdb.wal
 .DS_Store
+
+# Local credentials and private keys must never enter Git.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+credentials.json
+secrets.json

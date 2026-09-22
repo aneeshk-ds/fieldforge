@@ -31,7 +31,7 @@ Historical attribution remains in `ASTRA_WORKLOG.md`. New worklog entries must d
 - 18 dbt models, declared grains, data tests, independent controls, four gold exports, and seven dashboard SQL checks.
 - Streamlit/Plotly command center, order-integrity view, exception investigation, and read-only DuckDB SQL workbench.
 - Docker/Compose/Buildx, GitHub Actions, optional Java 17/PySpark parity, isolated benchmarks, and versioned operational documentation.
-- Executable `portfolio-check` validates the 38-tool inventory, evidence paths, essential reviewer documents, and stale active-state claims.
+- Executable `portfolio-check` validates the 39-tool inventory, evidence paths, essential reviewer documents, and stale active-state claims.
 
 The repository is a verified private portfolio implementation, not a publicly hosted production service. Keep scope claims explicit.
 
@@ -43,7 +43,7 @@ make setup-all        # default, development, and Spark dependencies
 make pipeline         # generation through gold exports and reconciliation
 make test             # Python tests and dashboard SQL checks
 make all              # supported pipeline and test gate
-make portfolio-check  # 38-tool and reviewer-evidence contract
+make portfolio-check  # 39-tool and reviewer-evidence contract
 make verify           # all + portfolio check + full Ruff + Spark parity
 make dashboard        # command center on localhost:8501
 .venv/bin/streamlit run dashboard/sql_lab.py --server.port 8502
